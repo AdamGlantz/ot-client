@@ -1,3 +1,5 @@
 *
 !/README.txt
 !.gitignore
+!/client_classic/
+!/client_classic/**

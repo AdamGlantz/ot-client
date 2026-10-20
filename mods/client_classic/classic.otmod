@@ -1,0 +1,8 @@
+Module
+  name: client_classic
+  description: Classic (7.x era) look: hides modern extras and sets classic option defaults
+  author: ot-client
+  sandboxed: true
+  scripts: [ classic ]
+  @onLoad: init()
+  @onUnload: terminate()
