@@ -123,7 +123,7 @@ void WebConnection::connect(const std::string_view host, uint16_t port, const st
         webConnection->m_connected = true;
 
         if (webConnection->m_connectCallback) {
-            emscripten_dispatch_to_thread(webConnection->m_pthread, EM_FUNC_SIG_VI, reinterpret_cast<void*>(runOnConnectCallback), nullptr, &webConnection->m_connectCallback);
+            emscripten_dispatch_to_thread(webConnection->m_pthread, EM_FUNC_SIG_VI, reinterpret_cast<void*>(runOnConnectCallback), nullptr, new std::function<void()>(webConnection->m_connectCallback));
         }
 
         webConnection->m_connecting = false;
@@ -134,7 +134,7 @@ void WebConnection::connect(const std::string_view host, uint16_t port, const st
     emscripten_websocket_set_onerror_callback(m_websocket, this, ([](int /*eventType*/, const EmscriptenWebSocketErrorEvent* /*event*/, void* userData) -> EM_BOOL {
         WebConnection* webConnection = static_cast<WebConnection*>(userData);
         if (webConnection->m_errorCallback) {
-            emscripten_dispatch_to_thread(webConnection->m_pthread, EM_FUNC_SIG_VI, reinterpret_cast<void*>(runOnErrorCallback), nullptr, &webConnection->m_errorCallback);
+            emscripten_dispatch_to_thread(webConnection->m_pthread, EM_FUNC_SIG_VI, reinterpret_cast<void*>(runOnErrorCallback), nullptr, new ErrorCallback(webConnection->m_errorCallback));
         }
         if (webConnection->m_connected || webConnection->m_connecting) {
             webConnection->close();
@@ -240,12 +240,16 @@ void WebConnection::read(const uint16_t size, const RecvCallback& callback, int 
     onRecv(size);
 }
 
-void WebConnection::runOnConnectCallback(std::function<void()> callback) {
-    callback();
+void WebConnection::runOnConnectCallback(std::function<void()>* callback) {
+    const std::unique_ptr<std::function<void()>> owned(callback);
+    if (*owned)
+        (*owned)();
 }
 
-void WebConnection::runOnErrorCallback(ErrorCallback callback) {
-    callback(asio::error::timed_out);
+void WebConnection::runOnErrorCallback(ErrorCallback* callback) {
+    const std::unique_ptr<ErrorCallback> owned(callback);
+    if (*owned)
+        (*owned)(asio::error::timed_out);
 }
 
 void WebConnection::onWrite(const std::shared_ptr<asio::streambuf>& outputStream)
