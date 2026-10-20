@@ -21,6 +21,7 @@ function ProtocolLogin:login(host, port, accountName, accountPassword, authentic
         return
     end
 
+    self.host = host
     self.accountName = accountName
     self.accountPassword = accountPassword
     self.authenticatorToken = authenticatorToken
@@ -237,6 +238,11 @@ function ProtocolLogin:parseCharacterList(msg)
             character.worldName = msg:getString()
             character.worldIp = iptostring(msg:getU32())
             character.worldPort = msg:getU16()
+            -- Old protocols can only advertise an IPv4 address; in the browser the game
+            -- connection goes through a wss:// bridge, so reuse the login hostname.
+            if g_app.getOs() == 'browser' then
+                character.worldIp = self.host
+            end
 
             if g_game.getFeature(GamePreviewState) then
                 character.previewState = msg:getU8()

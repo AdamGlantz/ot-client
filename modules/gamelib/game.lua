@@ -39,6 +39,12 @@ function g_game.chooseRsa(host)
     if g_game.getClientVersion() <= 760 then
         g_game.setCustomOs(2)
     end
+
+    -- 7.80-7.92 servers (e.g. Sabrehaven) switch to OTCv8-specific packets when the
+    -- client reports an OTClient OS; identify as the classic Windows client instead.
+    if g_game.getClientVersion() >= 780 and g_game.getClientVersion() <= 792 then
+        g_game.setCustomOs(2)
+    end
 end
 
 function g_game.setRsa(rsa, e)
