@@ -11,8 +11,34 @@ permissions:
 
 jobs:
   build-browser:
-    name: Browser
-    uses: ./.github/workflows/reusable-build-browser.yml
+    name: Browser Bundle
+    runs-on: ubuntu-latest
+    env:
+      BUILD_LOG: docker-browser-build.log
+      OUTPUT_DIR: build-emscripten-web
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Build browser bundle with Docker
+        run: bash Dockerfile.browser.sh
+
+      - name: Report the end of the build log
+        if: failure()
+        run: |
+          # One annotation with the last lines of the log, readable without
+          # downloading the job log
+          tail -n 80 "$BUILD_LOG" | cut -c1-300 > tail.txt
+          echo "::error title=Build log (last 80 lines)::$(sed -e 's/%/%25/g' -e 's/\r/%0D/g' tail.txt | sed ':a;N;$!ba;s/\n/%0A/g')"
+
+      - name: Upload browser artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: otclient-browser-${{ github.sha }}
+          path: |
+            ${{ env.BUILD_LOG }}
+            ${{ env.OUTPUT_DIR }}
+          retention-days: 14
 
   publish:
     name: Publish pre-release
