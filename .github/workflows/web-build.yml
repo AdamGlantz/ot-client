@@ -1,0 +1,15 @@
+name: Web Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - web-client-792
+
+permissions:
+  contents: read
+
+jobs:
+  build-browser:
+    name: Browser
+    uses: ./.github/workflows/reusable-build-browser.yml
