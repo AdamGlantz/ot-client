@@ -1,23 +1,51 @@
 -- Classic look for the 7.x era servers this client is shipped with.
 --
 -- Hides modern extras (login screen news panels, Discord/YouTube counters,
--- store button, health/mana arcs) without unloading their modules, since other
--- modules call into them. Option defaults are applied once per profile, so
--- players can change them afterwards in the options window.
+-- store button, health/mana arcs, the top stats bars, minimap layer slider,
+-- rose and clock) without unloading their modules, since other modules call
+-- into them. Trims the first action bar to twelve slots for F1-F12 (bound by
+-- the defaults in client_classic_theme). Option defaults are applied once per
+-- profile, so players can change them afterwards in the options window.
 
-local DEFAULTS_APPLIED_KEY = 'client_classic_defaults_applied'
-
--- Options as in client_options/data_options.lua
-local CLASSIC_OPTIONS = {
-    classicControl = true,                -- left click walks/uses, right click looks/uses
-    floatingEffect = false,
-    enableHighlightMouseTarget = false,
-    showLeftPanel = false,                -- one column on the right, as in 7.x
-    showLeftExtraPanel = false,
-    showRightExtraPanel = false,
+-- Each set of defaults is applied once; add a new set instead of changing an
+-- applied one, so existing profiles pick up only the new settings.
+local DEFAULTS = {
+    {
+        key = 'client_classic_defaults_applied',
+        options = {
+            classicControl = true,                -- left click walks/uses, right click looks/uses
+            floatingEffect = false,
+            enableHighlightMouseTarget = false,
+            showLeftPanel = false,                -- one column on the right, as in 7.x
+            showLeftExtraPanel = false,
+            showRightExtraPanel = false,
+        },
+        apply = function()
+            local circles = modules.game_healthcircle
+            if circles and circles.setHealthCircle then
+                circles.setHealthCircle(false)
+                circles.setManaCircle(false)
+            end
+        end,
+    },
+    {
+        key = 'client_classic_defaults_2',
+        options = {
+            -- Keep some light at night; with none, torches wash the map yellow
+            ambientLight = 30,
+        },
+        apply = function()
+            local statsBar = modules.game_interface and modules.game_interface.StatsBar
+            if statsBar and statsBar.updateStatsBarOption then
+                statsBar.updateStatsBarOption('hide', 'hide')
+            end
+        end,
+    },
 }
 
+local ACTION_BAR_SLOTS = 12
 local HIDDEN_TOP_MENU_WIDGETS = { 'topLeftOnlinePlayers', 'topLeftDiscord', 'topLeftYoutube' }
+local HIDDEN_MINIMAP_WIDGETS = { 'layersPanel', 'rosePanel', 'fullMap' }
 
 local originalBottomMenuShow
 
@@ -30,6 +58,12 @@ local function hideLoginExtras()
     originalBottomMenuShow = originalBottomMenuShow or bottomMenu.show
     bottomMenu.show = function() end
     bottomMenu.hide()
+
+    -- Floating particles over the login background
+    local particles = rootWidget:recursiveGetChildById('particles')
+    if particles then
+        particles:setVisible(false)
+    end
 end
 
 local function restoreLoginExtras()
@@ -62,34 +96,119 @@ local function setStoreButtonVisible(visible)
     end
 end
 
-local function applyDefaultsOnce()
-    if g_settings.getBoolean(DEFAULTS_APPLIED_KEY) then
+-- 7.x minimap: the map with zoom and floor buttons only
+local function setClassicMinimap()
+    local controller = modules.game_minimap and modules.game_minimap.mapController
+    local ui = controller and controller.ui
+    if not ui then
         return
     end
-
-    local options = modules.client_options
-    if options and options.setOption then
-        for key, value in pairs(CLASSIC_OPTIONS) do
-            options.setOption(key, value, true)
+    for _, id in ipairs(HIDDEN_MINIMAP_WIDGETS) do
+        local widget = ui:recursiveGetChildById(id)
+        if widget then
+            widget:setVisible(false)
         end
     end
 
-    local circles = modules.game_healthcircle
-    if circles and circles.setHealthCircle then
-        circles.setHealthCircle(false)
-        circles.setManaCircle(false)
+    -- Zoom buttons move to the right edge and the map takes the freed width.
+    -- Anchor both to the panel itself: the zoom buttons are positioned from
+    -- the map's bottom, so anchoring the map to them would form a cycle.
+    local zoomIn = ui:getChildById('zoomIn')
+    if zoomIn then
+        zoomIn:addAnchor(AnchorRight, 'parent', AnchorRight)
+        zoomIn:setMarginRight(7)
+    end
+    local border = ui:getChildById('minimapBorder')
+    if border then
+        border:addAnchor(AnchorRight, 'parent', AnchorRight)
+        border:setMarginRight(7 + 20 + 4) -- zoom button width and gap
     end
 
-    g_settings.set(DEFAULTS_APPLIED_KEY, true)
+    local minimap = border and border:getChildById('minimap')
+    if minimap then
+        for _, id in ipairs({ 'floorUpButton', 'floorDownButton' }) do
+            local button = minimap:getChildById(id)
+            if button then
+                button:setVisible(true)
+            end
+        end
+    end
+end
+
+-- First action bar: twelve slots (F1-F12), centred under the map
+local ACTION_BAR_SLOT_WIDTH = 36
+
+local function centerActionBar(bar)
+    local panel = bar:getParent()
+    if not panel then
+        return
+    end
+    local arrows = (bar.prevPanel and bar.prevPanel:getWidth() or 0) + (bar.nextPanel and bar.nextPanel:getWidth() or 0)
+    local width = ACTION_BAR_SLOTS * ACTION_BAR_SLOT_WIDTH + arrows + 8
+    -- The panel stacks its bars in a vertical box that stretches them to its
+    -- full width; equal side margins centre the bar inside it
+    local margin = math.max(0, math.floor((panel:getWidth() - width) / 2))
+    if bar:getMarginLeft() ~= margin then
+        bar:setMarginLeft(margin)
+        bar:setMarginRight(margin)
+    end
+end
+
+local function setClassicActionBar()
+    local actionBars = modules.game_actionbar and modules.game_actionbar.actionBars
+    local bar = actionBars and actionBars[1]
+    if not bar or not bar.tabBar then
+        return
+    end
+    local buttons = bar.tabBar:getChildren()
+    for i = #buttons, ACTION_BAR_SLOTS + 1, -1 do
+        buttons[i]:destroy()
+    end
+
+    centerActionBar(bar)
+    local panel = bar:getParent()
+    if panel then
+        -- Stone background like the map border on both sides of the bar
+        panel:setImageSource('/images/ui/panel_map')
+    end
+    if panel and not panel.classicCentering then
+        panel.classicCentering = true
+        connect(panel, { onGeometryChange = function() centerActionBar(bar) end })
+    end
+end
+
+local function applyDefaults()
+    local options = modules.client_options
+    for _, set in ipairs(DEFAULTS) do
+        if not g_settings.getBoolean(set.key) then
+            if options and options.setOption then
+                for key, value in pairs(set.options) do
+                    options.setOption(key, value, true)
+                end
+            end
+            set.apply()
+            g_settings.set(set.key, true)
+        end
+    end
     g_settings.save()
 end
 
 local function onGameStart()
     setStoreButtonVisible(false)
-    applyDefaultsOnce()
+    applyDefaults()
+    -- The action bars and minimap set themselves up on game start as well
+    scheduleEvent(function()
+        setClassicMinimap()
+        setClassicActionBar()
+    end, 100)
 end
 
 function init()
+    -- The Hotkeys window pre-creates empty F1-F12 entries for new profiles,
+    -- which would claim the keys before the action bar can bind them
+    if modules.game_hotkeys and modules.game_hotkeys.setDefaultComboKeys then
+        modules.game_hotkeys.setDefaultComboKeys({})
+    end
     hideLoginExtras()
     setTopMenuWidgetsVisible(false)
     connect(g_game, { onGameStart = onGameStart })

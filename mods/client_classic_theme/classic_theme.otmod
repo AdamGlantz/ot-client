@@ -1,0 +1,10 @@
+Module
+  name: client_classic_theme
+  description: Files of the classic look that replace the client's own (backgrounds, action bar defaults)
+  author: ot-client
+  sandboxed: true
+  autoload: true
+  autoload-priority: 90
+  scripts: [ classic_theme ]
+  @onLoad: init()
+  @onUnload: terminate()
