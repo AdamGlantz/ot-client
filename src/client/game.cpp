@@ -2361,7 +2361,7 @@ void Game::sendApplyWheelPoints(const std::vector<uint16_t>& slotPoints,uint16_t
 
 void Game::sendWeaponProficiencyAction(const uint8_t actionType, const uint16_t itemId)
 {
-    if (!canPerformGameAction())
+    if (!canPerformGameAction() || !getFeature(Otc::GameProficiency))
         return;
 
     m_protocolGame->sendWeaponProficiencyAction(actionType, itemId);
@@ -2369,7 +2369,7 @@ void Game::sendWeaponProficiencyAction(const uint8_t actionType, const uint16_t 
 
 void Game::sendWeaponProficiencyApply(const uint16_t itemId, const std::vector<uint8_t>& levels, const std::vector<uint8_t>& perkPositions)
 {
-    if (!canPerformGameAction())
+    if (!canPerformGameAction() || !getFeature(Otc::GameProficiency))
         return;
 
     m_protocolGame->sendWeaponProficiencyApply(itemId, levels, perkPositions);
