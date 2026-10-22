@@ -1038,6 +1038,19 @@ function processMouseAction(menuPosition, mouseButton, autoWalkPos, lookThing, u
             return true
         end
         local shortcut = modules.game_shortcuts.getShortcut()
+        -- The touch layout's tap handling (client_mobile): a tap does the
+        -- obvious thing and creatures are hit within reach of the finger
+        if mouseButton == MouseLeftButton and shortcut == "" and MobileTapHandler and
+            MobileTapHandler(gameMapPanel, menuPosition, useThing) then
+            return true
+        end
+        if (shortcut == "attack" or shortcut == "follow") and MobileCreatureAtTap then
+            local creature = MobileCreatureAtTap(gameMapPanel, menuPosition)
+            if creature then
+                creatureThing = creature
+                attackCreature = creature
+            end
+        end
         if shortcut == "look" then
             if lookThing then
                 modules.game_shortcuts.resetShortcuts()

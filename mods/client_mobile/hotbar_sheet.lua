@@ -200,6 +200,9 @@ local function showItems()
         row.item:setItemId(id)
         row.item:setVisible(true)
     end
+    -- Hotkeys use items from open containers, as in 7.x
+    local hint = addRow(tr('Missing something?'), tr('Items in closed backpacks are not listed: open them first'))
+    hint:setOpacity(0.7)
 end
 
 -- Spells tab -------------------------------------------------------------

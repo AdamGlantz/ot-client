@@ -421,6 +421,7 @@ function init()
     applyDefaultScale()
     g_ui.importStyle('mobile')
     g_ui.importStyle('hotbar_sheet')
+    initTap()
     -- Long press on a hotbar slot opens the touch sheet instead of the menu
     if modules.game_actionbar then
         modules.game_actionbar.ActionBarAssignSheet = openHotbarSheet
@@ -474,6 +475,7 @@ function terminate()
         modules.game_actionbar.ActionBarAssignSheet = nil
     end
     closeHotbarSheet()
+    terminateTap()
     toolbar:destroy()
     stats:destroy()
     chatButton:destroy()
