@@ -127,7 +127,27 @@ ActionBarSpecialActions = {{
 }, {
     id = "toggleChase",
     text = tr("Toggle chase mode")
-}}
+},
+-- Targeting and general actions (logics/TargetActions.lua)
+{ id = "attackNearestMonster", group = "Monsters", text = tr("Attack nearest monster") },
+{ id = "attackFurthestMonster", group = "Monsters", text = tr("Attack furthest monster") },
+{ id = "attackHighestHpMonster", group = "Monsters", text = tr("Attack monster with highest HP") },
+{ id = "attackLowestHpMonster", group = "Monsters", text = tr("Attack monster with lowest HP") },
+{ id = "cycleMonster", group = "Monsters", text = tr("Cycle monster targets") },
+{ id = "attackNearestPlayer", group = "Players", text = tr("Attack nearest player") },
+{ id = "attackFurthestPlayer", group = "Players", text = tr("Attack furthest player") },
+{ id = "attackHighestHpPlayer", group = "Players", text = tr("Attack player with highest HP") },
+{ id = "attackLowestHpPlayer", group = "Players", text = tr("Attack player with lowest HP") },
+{ id = "cyclePlayer", group = "Players", text = tr("Cycle player targets") },
+{ id = "followNearestPlayer", group = "Players", text = tr("Follow nearest player") },
+{ id = "attackSkulled", group = "Players", text = tr("Cycle skulled players") },
+{ id = "attackYellowSkull", group = "Players", text = tr("Cycle yellow skull players") },
+{ id = "attackNonParty", group = "Players", text = tr("Cycle players outside the party") },
+{ id = "stopAttack", group = "General", text = tr("Stop attack") },
+{ id = "convertCurrency", group = "General", text = tr("Change a stack of 100 coins") },
+{ id = "useAtCrosshair", group = "General", text = tr("Use on crosshair") },
+{ id = "lookAtCrosshair", group = "General", text = tr("Look at crosshair") },
+{ id = "contextMenuAtCrosshair", group = "General", text = tr("Context menu on crosshair") }}
 
 function getActionBarSpecialAction(actionId)
     for _, specialAction in ipairs(ActionBarSpecialActions) do

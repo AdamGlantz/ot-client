@@ -237,6 +237,8 @@ local function executeSpecialAction(specialActionId)
         modules.game_battle.attackNext(true)
     elseif specialActionId == "toggleChase" then
         modules.game_hotkeys.toggleChaseMode()
+    elseif TargetActionHandlers[specialActionId] then
+        TargetActionHandlers[specialActionId]()
     end
 end
 
