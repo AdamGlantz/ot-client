@@ -157,20 +157,20 @@ local function showItemUses(itemId)
     local list = sheet.panel.list
     list:destroyChildren()
     setFilters({})
-    local useTypes = actionbar().UseTypes
+    -- The action bar stores the use type by name (see UseTypes)
     local thingType = g_things.getThingType(itemId, ThingCategoryItem)
     local uses
     if thingType and thingType:isMultiUse() then
         -- Runes, potions and other items used on something
         uses = {
-            { useTypes['UseOnYourself'], tr('Use on yourself') },
-            { useTypes['UseOnTarget'], tr('Use on attack target') },
-            { useTypes['SelectUseTarget'], tr('Use with crosshair'), tr('Tap the button, then tap a target') },
+            { 'UseOnYourself', tr('Use on yourself') },
+            { 'UseOnTarget', tr('Use on attack target') },
+            { 'SelectUseTarget', tr('Use with crosshair'), tr('Tap the button, then tap a target') },
         }
     else
         uses = {
-            { useTypes['Use'], tr('Use') },
-            { useTypes['Equip'], tr('Equip') },
+            { 'Use', tr('Use') },
+            { 'Equip', tr('Equip') },
         }
     end
     addHeading(itemName(itemId))
