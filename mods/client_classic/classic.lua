@@ -52,8 +52,49 @@ local DEFAULTS = {
 }
 
 local ACTION_BAR_SLOTS = 12
-local HIDDEN_TOP_MENU_WIDGETS = { 'topLeftOnlinePlayers', 'topLeftDiscord', 'topLeftYoutube' }
+local HIDDEN_TOP_MENU_WIDGETS = { 'topLeftOnlinePlayers', 'topLeftDiscord', 'topLeftYoutube',
+    -- no sound on 7.x servers (see HIDDEN_CATEGORIES)
+    'audioButton', 'soundDebugButton' }
 local HIDDEN_MINIMAP_WIDGETS = { 'layersPanel', 'rosePanel', 'fullMap' }
+
+-- Options that do nothing on a 7.x server or in the browser, by options
+-- panel. The options keep their values; only the controls are hidden.
+local HIDDEN_OPTIONS = {
+    generalPanel = {
+        'showPing',          -- the client measures ping from protocol 9.53 on
+        { 'lootControlMode', mode = 'widget' }, -- quick looting (12.x); shares the mouse control row
+    },
+    interface = {
+        'showSpellGroupCooldowns', -- spell group cooldowns arrived in 8.7
+        'showInfoBanner',          -- modern event banners
+        'frames',                  -- loot value frames (market prices)
+        'showExpiryInInvetory',    -- item expiry/charges display (modern)
+        'showExpiryInContainers',
+        'showExpiryOnUnusedItems',
+    },
+    interfaceHUD = {
+        'displayHarmony',    -- monk vocation (14.x)
+        'rightJoystick',     -- touch layout places the joystick itself
+    },
+    graphicsPanel = {
+        'fullscreen',        -- no effect in the browser (it has its own)
+        { 'vsync', mode = 'stacked' }, -- the browser always syncs to the display
+        'asyncTxtLoading',   -- technical setting with no visible effect
+    },
+    graphicsEffectsPanel = {
+        'GameEffectSource',  -- per-source effect opacity needs 12.x effects
+    },
+    misc = {
+        'autoChaseOverride', -- duplicate of the one in Controls
+    },
+    miscHelp = {
+        'wikiButton',        -- links to the upstream project's wiki (with Info)
+        -- English only for now; the other languages stay installed
+        { 'changeLanguageButton', mode = 'widget' },
+    },
+}
+-- 7.x servers send no sounds and the client ships none
+local HIDDEN_CATEGORIES = { 'Sound' }
 
 local originalBottomMenuShow
 
@@ -191,6 +232,25 @@ local function setClassicActionBar()
     end
 end
 
+local function hideUnusedOptions()
+    local options = modules.client_options
+    if not options or not options.hideOption then
+        return
+    end
+    for panelName, ids in pairs(HIDDEN_OPTIONS) do
+        for _, entry in ipairs(ids) do
+            if type(entry) == 'table' then
+                options.hideOption(panelName, entry[1], entry.mode)
+            else
+                options.hideOption(panelName, entry)
+            end
+        end
+    end
+    for _, category in ipairs(HIDDEN_CATEGORIES) do
+        options.hideCategory(category)
+    end
+end
+
 local function applyDefaults()
     local options = modules.client_options
     for _, set in ipairs(DEFAULTS) do
@@ -225,6 +285,7 @@ function init()
     end
     hideLoginExtras()
     setTopMenuWidgetsVisible(false)
+    hideUnusedOptions()
     connect(g_game, { onGameStart = onGameStart })
     if g_game.isOnline() then
         onGameStart()

@@ -947,6 +947,65 @@ function getPanel()
     return controller.ui.optionsTabContent
 end
 
+-- Hides an option that does not apply (a server version or platform without
+-- the feature): the row holding the widget is collapsed, so the rows below
+-- move up. panelName is a key of `panels` (e.g. 'generalPanel'). For a row
+-- shared with other options, mode 'widget' hides only the widget and
+-- 'stacked' also takes its height out of the row (options stacked under it).
+function hideOption(panelName, widgetId, mode)
+    local panel = panels[panelName]
+    local widget = panel and panel:recursiveGetChildById(widgetId)
+    if not widget then
+        return false
+    end
+    if mode == 'widget' or mode == 'stacked' then
+        if mode == 'stacked' then
+            local parent = widget:getParent()
+            local height = widget:getHeight() + widget:getMarginTop() + widget:getMarginBottom()
+            widget:setHeight(0)
+            widget:setMargin(0)
+            parent:setHeight(math.max(0, parent:getHeight() - height))
+        end
+        widget:setVisible(false)
+        widget.setVisible = function() end
+        return true
+    end
+    local row = widget
+    while row:getParent() and row:getParent() ~= panel and row:getParent():getClassName() ~= 'UIScrollArea' do
+        row = row:getParent()
+    end
+    row:setVisible(false)
+    row:setHeight(0)
+    row:setMarginTop(0)
+    row:setMarginBottom(0)
+    -- Option actions show some widgets again; keep them hidden
+    row.setVisible = function() end
+    widget.setVisible = function() end
+    return true
+end
+
+-- Hides a whole category (e.g. 'Sound') or one of its subcategories from the
+-- menu on the left
+function hideCategory(categoryText, subcategoryText)
+    for i = #buttons, 1, -1 do
+        local button = buttons[i]
+        if button.text == categoryText then
+            if not subcategoryText then
+                table.remove(buttons, i)
+            elseif button.subCategories then
+                for j = #button.subCategories, 1, -1 do
+                    if button.subCategories[j].text == subcategoryText then
+                        table.remove(button.subCategories, j)
+                    end
+                end
+            end
+        end
+    end
+    if controller.ui then
+        configureCharacterCategories()
+    end
+end
+
 function openOptionsCategory(category, subcategory)
     if not controller.ui:isVisible() then
         show()
