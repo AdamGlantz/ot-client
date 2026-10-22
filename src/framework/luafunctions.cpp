@@ -588,6 +588,7 @@ void Application::registerLuaFunctions()
     g_lua.bindClassMemberFunction<UIWidget>("setFocusable", &UIWidget::setFocusable);
     g_lua.bindClassMemberFunction<UIWidget>("setPhantom", &UIWidget::setPhantom);
     g_lua.bindClassMemberFunction<UIWidget>("setDraggable", &UIWidget::setDraggable);
+    g_lua.bindClassMemberFunction<UIWidget>("setTouchControl", &UIWidget::setTouchControl);
     g_lua.bindClassMemberFunction<UIWidget>("setFixedSize", &UIWidget::setFixedSize);
     g_lua.bindClassMemberFunction<UIWidget>("setClipping", &UIWidget::setClipping);
     g_lua.bindClassMemberFunction<UIWidget>("setLastFocusReason", &UIWidget::setLastFocusReason);
@@ -650,6 +651,7 @@ void Application::registerLuaFunctions()
     g_lua.bindClassMemberFunction<UIWidget>("isFocusable", &UIWidget::isFocusable);
     g_lua.bindClassMemberFunction<UIWidget>("isPhantom", &UIWidget::isPhantom);
     g_lua.bindClassMemberFunction<UIWidget>("isDraggable", &UIWidget::isDraggable);
+    g_lua.bindClassMemberFunction<UIWidget>("isTouchControl", &UIWidget::isTouchControl);
     g_lua.bindClassMemberFunction<UIWidget>("isFixedSize", &UIWidget::isFixedSize);
     g_lua.bindClassMemberFunction<UIWidget>("isClipping", &UIWidget::isClipping);
     g_lua.bindClassMemberFunction<UIWidget>("isDestroyed", &UIWidget::isDestroyed);

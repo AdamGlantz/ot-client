@@ -69,8 +69,6 @@ public:
     void handleKeyboardCallback(int eventType, const EmscriptenKeyboardEvent* event);
     void handleFocusCallback(int eventType, const EmscriptenFocusEvent* event);
     void handleTouchCallback(int eventType, const EmscriptenTouchEvent* event);
-    void updateTouchPosition(const EmscriptenTouchEvent* event);
-    void processLongTouch(const EmscriptenTouchEvent* event);
 
     Size getDisplaySize() override;
     std::string getClipboardText() override;
@@ -79,9 +77,24 @@ public:
 protected:
     int internalLoadMouseCursor(const ImagePtr& image, const Point& hotSpot) override;
 private:
+    void touchStart(int64_t id, const Point& pos);
+    void touchMove(int64_t id, const Point& pos);
+    void touchEnd(int64_t id, const Point& pos, bool cancelled);
+    void sendTouchMouseEvent(Fw::InputEventType type, Fw::MouseButton button, const Point& pos);
+
+    struct Touch
+    {
+        Point start;
+        ticks_t startTime;
+        bool moved = false;
+        bool onControl = false;
+    };
+
     bool m_running;
-    Timer m_clickTimer;
     bool m_usingTouch = false;
+    std::unordered_map<int64_t, Touch> m_touches;
+    // The finger that acts as the mouse (fingers on touch controls do not)
+    int64_t m_mouseTouchId = -1;
     std::vector<std::pair<char const*, Fw::Key>> web_keymap;
     std::string m_clipboardText;
     std::vector<std::string> m_cursors;

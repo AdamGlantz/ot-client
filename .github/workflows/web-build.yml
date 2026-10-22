@@ -5,6 +5,9 @@ on:
   push:
     branches:
       - web-client-792
+      # Experimental branches publish to their own <branch>-latest release
+      - touch-input
+      - mobile-ui
 
 permissions:
   contents: read
@@ -48,7 +51,7 @@ jobs:
       contents: write
     env:
       GH_TOKEN: ${{ github.token }}
-      TAG: web-client-792-latest
+      TAG: ${{ github.ref_name }}-latest
     steps:
       - name: Download browser artifact
         uses: actions/download-artifact@v5
@@ -67,5 +70,5 @@ jobs:
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
             --prerelease \
-            --title "Web client (web-client-792, ${GITHUB_SHA::7})" \
-            --notes "Browser build of ${GITHUB_SHA}. Game assets (Tibia.dat/Tibia.spr) are not included."
+            --title "Web client (${GITHUB_REF_NAME}, ${GITHUB_SHA::7})" \
+            --notes "Browser build of ${GITHUB_SHA} (${GITHUB_REF_NAME}). Game assets (Tibia.dat/Tibia.spr) are not included."

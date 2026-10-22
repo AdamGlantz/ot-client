@@ -3,6 +3,9 @@ local keypad
 local keypadUpdateEvent
 local keypadMousePos = {x=0.5, y=0.5}
 local firstStep = true
+-- The keypad gets its own finger (touch-control), so the mouse button state
+-- does not say whether it is held
+local keypadHeld = false
 local moveListener
 
 function init()
@@ -72,6 +75,7 @@ function onKeypadTouchPress(widget, pos, button)
                     y=(pos.y - widget:getPosition().y) / widget:getHeight()}
 
   firstStep = true
+  keypadHeld = true
   executeWalk()
 
   return true
@@ -91,6 +95,7 @@ function onKeypadTouchRelease(widget, pos, button)
                     y=(pos.y - widget:getPosition().y) / widget:getHeight()}
 
   firstStep = false
+  keypadHeld = false
   executeWalk()
   removeEvent(keypadUpdateEvent)
 
@@ -104,7 +109,7 @@ function executeWalk()
   removeEvent(keypadUpdateEvent)
   keypadUpdateEvent = nil
 
-  if not g_mouse.isPressed(MouseLeftButton) then
+  if not keypadHeld then
     keypad.pointer:setMarginTop(0)
     keypad.pointer:setMarginLeft(0)
     return
