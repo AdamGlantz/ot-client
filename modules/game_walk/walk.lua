@@ -270,7 +270,15 @@ function WalkController:onGameStart()
     })
 
     modules.game_interface.getRootPanel().onFocusChange = stopSmartWalk
-    modules.game_joystick.addOnJoystickMoveListener(function(dir) g_game.walk(dir) end)
+    -- The joystick reports its direction every few milliseconds while held;
+    -- walk like a held arrow key (one step at a time) and stop on release
+    modules.game_joystick.addOnJoystickMoveListener(function(dir)
+        if dir then
+            walk(dir)
+        else
+            cancelWalkEvent()
+        end
+    end)
 
     if not g_game.isOfficialTibia() then
         g_game.enableFeature(GameForceFirstAutoWalkStep)

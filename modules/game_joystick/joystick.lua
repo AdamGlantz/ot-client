@@ -98,6 +98,9 @@ function onKeypadTouchRelease(widget, pos, button)
   keypadHeld = false
   executeWalk()
   removeEvent(keypadUpdateEvent)
+  if moveListener then
+    moveListener(nil)
+  end
 
   keypad.pointer:setMarginTop(0)
   keypad.pointer:setMarginLeft(0)
