@@ -4,6 +4,7 @@ local walkEvent = nil
 local lastTurn = 0
 local nextWalkDir = nil
 local lastCancelWalkTime = 0
+local walkKeyDownTime = {}
 
 
 local keys = {
@@ -289,12 +290,21 @@ function bindWalkKey(key, dir)
 
     g_keyboard.bindKeyDown(key, function()
         g_keyboard.setKeyDelay(key, 1)
+        walkKeyDownTime[key] = g_clock.millis()
         changeWalkDir(dir)
     end, gameRootPanel, true)
 
     g_keyboard.bindKeyUp(key, function()
         g_keyboard.setKeyDelay(key, 30)
         changeWalkDir(dir, true)
+        -- A held key keeps queueing the next step while the current one is in
+        -- progress; drop that step on release so the player stops right away.
+        -- A quick tap keeps its queued step.
+        local heldFor = g_clock.millis() - (walkKeyDownTime[key] or 0)
+        walkKeyDownTime[key] = nil
+        if #smartWalkDirs == 0 and heldFor >= gameRootPanel:getAutoRepeatDelay() then
+            cancelWalkEvent()
+        end
     end, gameRootPanel, true)
 
     g_keyboard.bindKeyPress(key, function() smartWalk(dir) end, gameRootPanel)

@@ -113,10 +113,12 @@ local function setClassicMinimap()
     -- Zoom buttons move to the right edge and the map takes the freed width.
     -- Anchor both to the panel itself: the zoom buttons are positioned from
     -- the map's bottom, so anchoring the map to them would form a cycle.
-    local zoomIn = ui:getChildById('zoomIn')
-    if zoomIn then
-        zoomIn:addAnchor(AnchorRight, 'parent', AnchorRight)
-        zoomIn:setMarginRight(7)
+    for _, id in ipairs({ 'zoomIn', 'zoomOut' }) do
+        local button = ui:getChildById(id)
+        if button then
+            button:addAnchor(AnchorRight, 'parent', AnchorRight)
+            button:setMarginRight(7)
+        end
     end
     local border = ui:getChildById('minimapBorder')
     if border then
