@@ -307,7 +307,9 @@ local function layout()
         end
     end
 
-    -- Game view: full width, above the toolbar (landscape) or at the top (portrait)
+    -- Game view: full width, above the toolbar (landscape) or centred
+    -- vertically between the top and the toolbar (portrait), leaving room
+    -- above and below it
     local map = gi.getMapPanel()
     map:breakAnchors()
     map:addAnchor(AnchorLeft, 'parent', AnchorLeft)
@@ -323,6 +325,7 @@ local function layout()
     if portrait then
         mapHeight = math.floor(width * 11 / 15)
         map:setHeight(mapHeight)
+        map:setMarginTop(math.max(0, math.floor((height - TOOLBAR_HEIGHT - mapHeight) / 2)))
     else
         map:addAnchor(AnchorBottom, 'mobileToolbar', AnchorTop)
         mapHeight = height - TOOLBAR_HEIGHT
@@ -332,10 +335,10 @@ local function layout()
 
     stats:breakAnchors()
     if portrait then
-        stats:addAnchor(AnchorTop, 'gameMapPanel', AnchorBottom)
+        stats:addAnchor(AnchorTop, 'parent', AnchorTop)
         stats:addAnchor(AnchorLeft, 'parent', AnchorLeft)
         stats:addAnchor(AnchorRight, 'parent', AnchorRight)
-        stats:setMarginTop(6)
+        stats:setMarginTop(8)
         stats:setMarginLeft(8)
         stats:setMarginRight(8)
     else
@@ -360,15 +363,21 @@ local function layout()
     local keypadHeight = keypad and keypad:getHeight() or 150
     local shortcutsHeight = shortcuts and shortcuts:getHeight() or 150
 
-    -- Action grid on the right, above look/use/attack/follow
+    -- Action grid: landscape on the right above look/use/attack/follow;
+    -- portrait above the game view, beside the chat button
     local actionPanel = root:getChildById('gameBottomActionPanel')
     if actionPanel then
-        local gridWidth = setActionGrid(portrait and (width - 12) or (side - 6))
+        local gridWidth = setActionGrid(portrait and (width - 12 - 70) or (side - 6))
         actionPanel:breakAnchors()
         actionPanel:addAnchor(AnchorRight, 'parent', AnchorRight)
-        actionPanel:addAnchor(AnchorBottom, 'mobileToolbar', AnchorTop)
         actionPanel:setMarginRight(6)
-        actionPanel:setMarginBottom(shortcutsHeight + 6)
+        if portrait then
+            actionPanel:addAnchor(AnchorTop, 'mobileStats', AnchorBottom)
+            actionPanel:setMarginTop(8)
+        else
+            actionPanel:addAnchor(AnchorBottom, 'mobileToolbar', AnchorTop)
+            actionPanel:setMarginBottom(shortcutsHeight + 6)
+        end
         actionPanel:setWidth(gridWidth)
         actionPanel:setVisible(true)
         actionPanel:raise()
@@ -377,18 +386,13 @@ local function layout()
         end
     end
 
-    -- Chat button above the joystick (portrait) or below the bars beside the
-    -- game view (landscape); the console opens over the game view
+    -- Chat button below the health and mana bars; the console opens over the
+    -- game view
     chatButton:breakAnchors()
     chatButton:addAnchor(AnchorLeft, 'parent', AnchorLeft)
+    chatButton:addAnchor(AnchorTop, 'mobileStats', AnchorBottom)
     chatButton:setMarginLeft(12)
-    if portrait then
-        chatButton:addAnchor(AnchorBottom, 'mobileToolbar', AnchorTop)
-        chatButton:setMarginBottom(keypadHeight + 8)
-    else
-        chatButton:addAnchor(AnchorTop, 'mobileStats', AnchorBottom)
-        chatButton:setMarginTop(10)
-    end
+    chatButton:setMarginTop(10)
 
     local console = gi.getBottomPanel()
     console:breakAnchors()
