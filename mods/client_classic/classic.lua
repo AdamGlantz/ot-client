@@ -41,6 +41,14 @@ local DEFAULTS = {
             end
         end,
     },
+    {
+        key = 'client_classic_defaults_3',
+        options = {
+            -- 7.x draws the floor below at full brightness, not shaded
+            shadowFloorIntensity = 0,
+        },
+        apply = function() end,
+    },
 }
 
 local ACTION_BAR_SLOTS = 12
