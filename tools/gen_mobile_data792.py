@@ -59,7 +59,8 @@ def main():
     out += ["", "-- Rune names by item id", "Data792.runes = {"]
     runes = {}
     for rune in spells.findall("rune"):
-        runes[int(rune.get("id"))] = rune.get("name") + " Rune"
+        name = rune.get("name")
+        runes[int(rune.get("id"))] = name if name.lower().endswith(" rune") else name + " Rune"
     for item_id in sorted(runes):
         out.append(f"    [{item_id}] = {lua_string(runes[item_id])},")
     out.append("}")
