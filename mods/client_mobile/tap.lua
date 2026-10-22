@@ -3,8 +3,8 @@
 --   - a monster: attack it (tapping the current target keeps it)
 --   - an NPC: say "hi" when close, otherwise walk to it
 --   - a player: look at them
---   - a container (corpse, chest), something used like a ladder, or
---     whatever blocks the tile (doors, levers): open or use it
+--   - a container (corpse, chest) or an object that is used rather than
+--     walked to (doors, ladders, levers, grates): open or use it
 --   - anything else: walk there
 -- Creatures count as tapped within about half a tile of the finger, since
 -- they are often between tiles while walking. Sliding the finger to another
@@ -70,11 +70,11 @@ local function tapCreature(creature)
     return true
 end
 
-local function interactive(thing, tile)
+local function interactive(thing)
     if not thing or thing:isGround() or thing:isCreature() then
         return false
     end
-    return thing:isContainer() or thing:isForceUse() or (tile and not tile:isWalkable() and thing:isNotMoveable())
+    return thing:isContainer() or thing:isForceUse() or Data792.usable[thing:getId()] == true
 end
 
 -- Called by game_interface for a left click/tap on the game view in mobile
@@ -93,8 +93,7 @@ function onGameViewTap(map, mousePosition, useThing)
         return tapCreature(creature)
     end
 
-    local tile = map:getTile(mousePosition)
-    if interactive(useThing, tile) then
+    if interactive(useThing) then
         if useThing:isContainer() then
             g_game.open(useThing)
         else

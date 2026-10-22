@@ -1422,3 +1422,29 @@ Data792.items = {
     [6578] = "Party hat",
     [6579] = "Doll",
 }
+
+-- Fixed objects that are used (doors, levers, ladders...), by item id
+Data792.usable = {
+    [372] = true, [386] = true, [421] = true, [435] = true, [593] = true, [606] = true, [608] = true, [611] = true, [614] = true, [1628] = true, [1629] = true, [1630] = true,
+    [1631] = true, [1632] = true, [1633] = true, [1638] = true, [1639] = true, [1640] = true, [1641] = true, [1642] = true, [1643] = true, [1644] = true, [1645] = true, [1646] = true,
+    [1647] = true, [1648] = true, [1649] = true, [1650] = true, [1651] = true, [1652] = true, [1653] = true, [1654] = true, [1655] = true, [1656] = true, [1657] = true, [1658] = true,
+    [1659] = true, [1660] = true, [1661] = true, [1662] = true, [1663] = true, [1664] = true, [1665] = true, [1666] = true, [1667] = true, [1668] = true, [1669] = true, [1670] = true,
+    [1671] = true, [1672] = true, [1673] = true, [1674] = true, [1675] = true, [1676] = true, [1677] = true, [1678] = true, [1679] = true, [1680] = true, [1681] = true, [1682] = true,
+    [1683] = true, [1684] = true, [1685] = true, [1686] = true, [1687] = true, [1688] = true, [1689] = true, [1690] = true, [1691] = true, [1692] = true, [1693] = true, [1694] = true,
+    [1695] = true, [1696] = true, [1697] = true, [1698] = true, [1699] = true, [1926] = true, [1928] = true, [1930] = true, [1931] = true, [1948] = true, [1968] = true, [2334] = true,
+    [2335] = true, [2336] = true, [2337] = true, [2338] = true, [2339] = true, [2340] = true, [2341] = true, [2487] = true, [2489] = true, [2491] = true, [2493] = true, [2495] = true,
+    [2497] = true, [2499] = true, [2501] = true, [2503] = true, [2505] = true, [2507] = true, [2509] = true, [2566] = true, [2567] = true, [2569] = true, [2570] = true, [2616] = true,
+    [2617] = true, [2772] = true, [2773] = true, [2774] = true, [2959] = true, [2960] = true, [2961] = true, [2962] = true, [2963] = true, [2964] = true, [2976] = true, [3101] = true,
+    [3255] = true, [3256] = true, [3257] = true, [3258] = true, [3259] = true, [3260] = true, [3261] = true, [3262] = true, [3263] = true, [3653] = true, [3696] = true, [3699] = true,
+    [3702] = true, [4911] = true, [4912] = true, [4913] = true, [4914] = true, [5006] = true, [5007] = true, [5082] = true, [5083] = true, [5084] = true, [5085] = true, [5097] = true,
+    [5098] = true, [5099] = true, [5100] = true, [5101] = true, [5102] = true, [5103] = true, [5104] = true, [5105] = true, [5106] = true, [5107] = true, [5108] = true, [5109] = true,
+    [5110] = true, [5111] = true, [5112] = true, [5113] = true, [5114] = true, [5115] = true, [5116] = true, [5117] = true, [5118] = true, [5119] = true, [5120] = true, [5121] = true,
+    [5122] = true, [5123] = true, [5124] = true, [5125] = true, [5126] = true, [5127] = true, [5128] = true, [5129] = true, [5130] = true, [5131] = true, [5132] = true, [5133] = true,
+    [5134] = true, [5135] = true, [5136] = true, [5137] = true, [5138] = true, [5139] = true, [5140] = true, [5141] = true, [5142] = true, [5143] = true, [5144] = true, [5277] = true,
+    [5278] = true, [5279] = true, [5280] = true, [5281] = true, [5282] = true, [5283] = true, [5284] = true, [5285] = true, [5286] = true, [5287] = true, [5288] = true, [5289] = true,
+    [5290] = true, [5291] = true, [5292] = true, [5293] = true, [5294] = true, [5495] = true, [5497] = true, [5499] = true, [5501] = true, [5514] = true, [5515] = true, [5516] = true,
+    [5517] = true, [5542] = true, [5732] = true, [5733] = true, [5734] = true, [5735] = true, [5736] = true, [5737] = true, [5745] = true, [5746] = true, [5748] = true, [5749] = true,
+    [6191] = true, [6192] = true, [6193] = true, [6194] = true, [6195] = true, [6196] = true, [6197] = true, [6198] = true, [6199] = true, [6200] = true, [6201] = true, [6202] = true,
+    [6203] = true, [6204] = true, [6205] = true, [6206] = true, [6207] = true, [6208] = true, [6248] = true, [6249] = true, [6250] = true, [6251] = true, [6252] = true, [6253] = true,
+    [6254] = true, [6255] = true, [6256] = true, [6257] = true, [6258] = true, [6259] = true, [6260] = true, [6261] = true, [6262] = true, [6263] = true, [6264] = true, [6265] = true,
+}

@@ -1,6 +1,8 @@
 """Generates mods/client_mobile/data792.lua from a Sabrehaven (7.92) server's
-data files: the spells players can cast (for the hotbar's spell list) and
-names for runes and carryable items (the 7.92 client data has no names).
+data files: the spells players can cast (for the hotbar's spell list),
+names for runes and carryable items (the 7.92 client data has no names), and
+which fixed objects are used rather than walked to (doors, levers, grates;
+the client data cannot tell a closed door from a wall).
 
     python3 tools/gen_mobile_data792.py SERVER_DATA_DIR > mods/client_mobile/data792.lua
 
@@ -65,15 +67,26 @@ def main():
         out.append(f"    [{item_id}] = {lua_string(runes[item_id])},")
     out.append("}")
 
-    # Item names, for items that can be picked up (Take flag)
-    out += ["", "-- Names of items that can be carried, by item id", "Data792.items = {"]
+    # Item names, for items that can be picked up (Take flag), and fixed
+    # objects with a use action or doors
+    names, usable = [], []
     text = open(os.path.join(data_dir, "items792", "items.srv"), encoding="latin-1").read()
     for block in re.split(r"\n\s*\n", text):
         type_id = re.search(r"^TypeID\s*=\s*(\d+)", block, re.M)
         name = re.search(r'^Name\s*=\s*"([^"]*)"', block, re.M)
         flags = re.search(r"^Flags\s*=\s*\{([^}]*)\}", block, re.M)
-        if type_id and name and name.group(1) and flags and "Take" in flags.group(1).split(","):
-            out.append(f"    [{type_id.group(1)}] = {lua_string(display_name(name.group(1)))},")
+        flags = flags.group(1).split(",") if flags else []
+        if not type_id:
+            continue
+        if name and name.group(1) and "Take" in flags:
+            names.append(f"    [{type_id.group(1)}] = {lua_string(display_name(name.group(1)))},")
+        if ("UseEvent" in flags or "Door" in flags) and "Take" not in flags:
+            usable.append(type_id.group(1))
+    out += ["", "-- Names of items that can be carried, by item id", "Data792.items = {"] + names + ["}"]
+    out += ["", "-- Fixed objects that are used (doors, levers, ladders...), by item id",
+            "Data792.usable = {"]
+    for i in range(0, len(usable), 12):
+        out.append("    " + " ".join(f"[{u}] = true," for u in usable[i:i + 12]))
     out.append("}")
     print("\n".join(out))
 
