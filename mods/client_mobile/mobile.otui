@@ -1,0 +1,85 @@
+MobileToolbarButton < UIButton
+  size: 46 40
+  margin-left: 2
+  margin-right: 2
+  icon-size: 24 24
+  icon-align: center
+  background-color: alpha
+  border-width: 1
+  border-color: #00000000
+  $checked:
+    background-color: #ffffff22
+    border-color: #ffffff55
+  $pressed:
+    background-color: #ffffff33
+
+MobileToolbar < UIWidget
+  height: 44
+  background-color: #141414ee
+  border-width-top: 1
+  border-color-top: #3a3a3a
+
+  UIWidget
+    id: buttons
+    anchors.horizontalCenter: parent.horizontalCenter
+    anchors.verticalCenter: parent.verticalCenter
+    height: 40
+    layout:
+      type: horizontalBox
+      fit-children: true
+
+MobileStatBar < UIWidget
+  height: 16
+  background-color: #000000aa
+  border-width: 1
+  border-color: #000000
+  phantom: true
+
+  UIWidget
+    id: fill
+    anchors.left: parent.left
+    anchors.top: parent.top
+    anchors.bottom: parent.bottom
+    margin: 1
+    width: 0
+    phantom: true
+
+  Label
+    id: text
+    anchors.fill: parent
+    text-align: center
+    font: verdana-11px-rounded
+    color: #ffffff
+    phantom: true
+
+MobileStats < UIWidget
+  height: 36
+  phantom: true
+
+  MobileStatBar
+    id: health
+    anchors.top: parent.top
+    anchors.left: parent.left
+    anchors.right: parent.right
+    @onSetup: self.fill:setBackgroundColor('#2f9a2fee')
+
+  MobileStatBar
+    id: mana
+    anchors.top: health.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-top: 3
+    @onSetup: self.fill:setBackgroundColor('#2c55c8ee')
+
+MobileChatButton < UIButton
+  size: 52 52
+  image-source: /images/game/mobile/chat
+  image-color: #ffffffcc
+  background-color: #000000aa
+  border-width: 1
+  border-color: #ffffff44
+  $pressed:
+    image-color: #ffffff
+  $checked:
+    border-color: #ffffffcc
+    background-color: #ffffff33

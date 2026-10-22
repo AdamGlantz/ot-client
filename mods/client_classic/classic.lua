@@ -166,6 +166,10 @@ local function setClassicActionBar()
     for i = #buttons, ACTION_BAR_SLOTS + 1, -1 do
         buttons[i]:destroy()
     end
+    -- In mobile mode client_mobile places the bar
+    if g_platform.isMobile() then
+        return
+    end
 
     centerActionBar(bar)
     local panel = bar:getParent()

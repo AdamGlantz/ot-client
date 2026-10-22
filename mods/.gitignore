@@ -5,3 +5,5 @@
 !/client_classic/**
 !/client_classic_theme/
 !/client_classic_theme/**
+!/client_mobile/
+!/client_mobile/**
