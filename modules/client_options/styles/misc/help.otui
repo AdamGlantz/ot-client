@@ -8,6 +8,7 @@ UIWidget
     height: 60
 
     QtButton
+      id: wikiButton
       !text: tr('Wiki')
       anchors.left: parent.left
       anchors.top: parent.top
@@ -17,6 +18,7 @@ UIWidget
       @onClick: g_platform.openUrl("https://github.com/mehah/otclient/wiki")
 
     QtButton
+      id: infoButton
       !text: tr('Info')
       size: 130 20
       margin-top: 5
@@ -46,6 +48,7 @@ UIWidget
           g_app.restart()
         end, 1000)
     QtButton
+      id: changeLanguageButton
       !text: tr('Change language')
       size: 130 20
       margin-top: 5
