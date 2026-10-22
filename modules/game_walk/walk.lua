@@ -229,12 +229,10 @@ end
 
 --- Handles the end of a walking event.
 local function onWalkFinish(player)
+    -- Start the queued step right away: waiting (50 ms, or until the next
+    -- key repeat) left the character standing still between tiles
     if nextWalkDir then
-        if not g_game.getFeature(GameAllowPreWalk) then
-            walk(nextWalkDir)
-        else
-            addWalkEvent(nextWalkDir, 50)
-        end
+        walk(nextWalkDir)
     end
 end
 
