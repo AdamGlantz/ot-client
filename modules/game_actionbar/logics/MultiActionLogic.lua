@@ -65,7 +65,7 @@ local function playerCanUseSpellLocal(spellData)
     if spellData.soul and player and player:getSoul() < spellData.soul then
         return false
     end
-    if spellData.vocations and player and
+    if spellData.vocations and player and player:getVocation() ~= 0 and
         not table.contains(spellData.vocations, translateVocation(player:getVocation())) then
         return false
     end

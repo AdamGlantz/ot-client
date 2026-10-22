@@ -123,7 +123,9 @@ local function playerCanUseSpell(spellData)
         return false
     end
 
-    if spellData.vocations and (not table.contains(spellData.vocations, translateVocation(player:getVocation()))) then
+    -- Old protocols (7.x) do not send the vocation (0): skip the check
+    if spellData.vocations and player:getVocation() ~= 0 and
+        (not table.contains(spellData.vocations, translateVocation(player:getVocation()))) then
         return false
     end
 
