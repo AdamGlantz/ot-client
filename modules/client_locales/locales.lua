@@ -71,20 +71,13 @@ function init()
 
     installLocales('/locales')
 
+    -- English unless another language was chosen; the first-run language
+    -- picker is not shown (the other languages stay installed)
     local userLocaleName = g_settings.get('locale', 'false')
     if userLocaleName ~= 'false' and setLocale(userLocaleName) then
         pdebug('Using configured locale: ' .. userLocaleName)
     else
         setLocale(defaultLocaleName)
-        if g_app.hasUpdater() then
-            connect(g_app, {
-                onUpdateFinished = createWindow,
-            })
-        else
-            connect(g_app, {
-                onRun = createWindow,
-            })
-        end
     end
 
     ProtocolGame.registerExtendedOpcode(ExtendedIds.Locale, onExtendedLocales)
