@@ -392,6 +392,9 @@ end
 
 local function onGameStart()
     setMenuVisible(false)
+    if modules.game_actionbar then
+        modules.game_actionbar.ActionBarAssignSheet = openHotbarSheet
+    end
     -- The console module adds its own chat toggles over the game view
     if modules.game_console and modules.game_console.destroyButtonChat then
         modules.game_console.destroyButtonChat()
@@ -417,6 +420,11 @@ function init()
     end
     applyDefaultScale()
     g_ui.importStyle('mobile')
+    g_ui.importStyle('hotbar_sheet')
+    -- Long press on a hotbar slot opens the touch sheet instead of the menu
+    if modules.game_actionbar then
+        modules.game_actionbar.ActionBarAssignSheet = openHotbarSheet
+    end
     local root = gameInterface().getRootPanel()
 
     toolbar = g_ui.createWidget('MobileToolbar', root)
@@ -462,6 +470,10 @@ function terminate()
     disconnect(g_game, { onGameStart = onGameStart })
     disconnect(LocalPlayer, { onHealthChange = updateStats, onManaChange = updateStats })
     disconnect(Container, { onOpen = onContainerOpen })
+    if modules.game_actionbar then
+        modules.game_actionbar.ActionBarAssignSheet = nil
+    end
+    closeHotbarSheet()
     toolbar:destroy()
     stats:destroy()
     chatButton:destroy()

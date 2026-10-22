@@ -805,6 +805,10 @@ function configureButtonMouseRelease(button)
     button.onMouseRelease = function(button, mousePos, mouseButton)
         button.cache = getButtonCache(button)
         if mouseButton == MouseRightButton then
+            -- A replacement for this menu (the touch layout's sheet) may take over
+            if ActionBarAssignSheet and ActionBarAssignSheet(button, mousePos) then
+                return true
+            end
             local menu = g_ui.createWidget('PopupMenu')
             menu:setGameMenu(true)
             menu:addOption(button.cache.isSpell and tr('Edit Spell') or tr('Assign Spell'), function()

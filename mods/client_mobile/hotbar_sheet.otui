@@ -1,0 +1,228 @@
+HotbarSheetRow < UIButton
+  height: 48
+  background-color: #ffffff0a
+  border-width-bottom: 1
+  border-color-bottom: #ffffff14
+  $pressed:
+    background-color: #ffffff26
+
+  Item
+    id: item
+    size: 34 34
+    anchors.left: parent.left
+    anchors.verticalCenter: parent.verticalCenter
+    margin-left: 6
+    virtual: true
+    phantom: true
+    visible: false
+
+  UIWidget
+    id: icon
+    size: 32 32
+    anchors.left: parent.left
+    anchors.verticalCenter: parent.verticalCenter
+    margin-left: 7
+    phantom: true
+    visible: false
+
+  Label
+    id: badge
+    anchors.right: parent.right
+    anchors.verticalCenter: parent.verticalCenter
+    margin-right: 10
+    font: verdana-11px-rounded
+    color: #9ec5ff
+    text-auto-resize: true
+    phantom: true
+
+  Label
+    id: title
+    anchors.left: parent.left
+    anchors.right: badge.left
+    anchors.top: parent.top
+    margin-left: 48
+    margin-right: 6
+    margin-top: 7
+    font: Verdana Bold-11px
+    color: #ffffff
+    phantom: true
+
+  Label
+    id: subtitle
+    anchors.left: title.left
+    anchors.right: title.right
+    anchors.top: title.bottom
+    margin-top: 3
+    font: verdana-11px-rounded
+    color: #b8b8b8
+    phantom: true
+
+HotbarSheetHeading < Label
+  height: 26
+  font: Verdana Bold-11px
+  color: #d9b45c
+  text-offset: 4 8
+
+HotbarSheetButton < UIButton
+  height: 34
+  font: Verdana Bold-11px
+  color: #e8e8e8
+  background-color: #2a2a2a
+  border-width: 1
+  border-color: #5a5a5a
+  text-align: center
+  $checked:
+    color: #f0c050
+    border-color: #d9b45c
+    background-color: #3a3222
+  $pressed:
+    background-color: #444444
+
+HotbarSheet < UIWidget
+  anchors.fill: parent
+  background-color: #000000aa
+  focusable: true
+  phantom: false
+
+  UIWidget
+    id: panel
+    anchors.centerIn: parent
+    size: 420 520
+    background-color: #1c1c1cf4
+    border-width: 1
+    border-color: #555555
+    padding: 10
+
+    Label
+      id: title
+      anchors.top: parent.top
+      anchors.left: parent.left
+      anchors.right: close.left
+      height: 34
+      font: Verdana Bold-13px
+      color: #ffffff
+      text-align: left
+
+    HotbarSheetButton
+      id: close
+      anchors.top: parent.top
+      anchors.right: parent.right
+      size: 34 34
+      !text: 'X'
+
+    UIWidget
+      id: tabs
+      anchors.top: title.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+      margin-top: 8
+      height: 34
+      layout:
+        type: grid
+        cell-size: 94 34
+        cell-spacing: 6
+        num-columns: 4
+        flow: true
+
+    UIWidget
+      id: filters
+      anchors.top: tabs.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+      margin-top: 8
+      height: 34
+      layout:
+        type: horizontalBox
+        spacing: 6
+
+    ScrollablePanel
+      id: list
+      anchors.top: filters.bottom
+      anchors.left: parent.left
+      anchors.right: listScroll.left
+      anchors.bottom: footer.top
+      margin-top: 8
+      margin-bottom: 8
+      vertical-scrollbar: listScroll
+      layout:
+        type: verticalBox
+
+    VerticalScrollBar
+      id: listScroll
+      anchors.top: filters.bottom
+      anchors.bottom: footer.top
+      anchors.right: parent.right
+      margin-top: 8
+      margin-bottom: 8
+      step: 48
+      pixels-scroll: true
+
+    UIWidget
+      id: textPanel
+      anchors.top: tabs.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+      anchors.bottom: footer.top
+      margin-top: 8
+      visible: false
+
+      Label
+        id: help
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+        text-wrap: true
+        text-auto-resize: true
+        font: verdana-11px-rounded
+        color: #c8c8c8
+        !text: tr('Sent to the chat when you press the button. Spell words work too.')
+
+      TextEdit
+        id: input
+        anchors.top: help.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        margin-top: 10
+        height: 34
+        font: verdana-11px-rounded
+        placeholder: e.g. exura, utani hur, hi
+
+      UIWidget
+        id: examples
+        anchors.top: input.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        margin-top: 10
+        height: 34
+        layout:
+          type: horizontalBox
+          spacing: 6
+
+      HotbarSheetButton
+        id: confirm
+        anchors.top: examples.bottom
+        anchors.right: parent.right
+        margin-top: 14
+        width: 110
+        !text: tr('Confirm')
+
+    UIWidget
+      id: footer
+      anchors.left: parent.left
+      anchors.right: parent.right
+      anchors.bottom: parent.bottom
+      height: 34
+      layout:
+        type: horizontalBox
+        spacing: 8
+
+      HotbarSheetButton
+        id: clear
+        width: 120
+        color: #ff9a8a
+        !text: tr('Clear slot')
+
+      HotbarSheetButton
+        id: more
+        width: 140
+        !text: tr('More options')
