@@ -531,7 +531,9 @@ void ThingType::unserialize(const uint16_t clientId, const ThingCategory categor
              * "Item Charges" flag.
              */
             if (attr == 8) {
-                attr = ThingAttrChargeable;
+                // Charges (runes): the server sends their count, like a
+                // stack's, so the flag must be set for the item to parse
+                m_flags |= ThingFlagAttrChargeable;
                 continue;
             }
             if (attr > 8)
