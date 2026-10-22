@@ -1143,7 +1143,13 @@ function updateButton(button)
 
     if specialAction then
         local specialActionData = getActionBarSpecialAction(specialAction)
-        button.item.text:setText(short_text(specialActionData and specialActionData.text or specialAction, 15))
+        if specialActionData and specialActionData.icon then
+            button.item.text:setImageSource(specialActionData.icon)
+            button.item.text:setImageClip("0 0 32 32")
+            button.item.text:setText('')
+        else
+            button.item.text:setText(short_text(specialActionData and specialActionData.text or specialAction, 15))
+        end
         button.item:setOn(true)
         button.cache.specialAction = specialAction
         button.cache.actionType = UseTypes["specialAction"]

@@ -322,11 +322,15 @@ local function showActions()
             group = actionGroup
             addHeading(tr(group))
         end
-        addRow(action.text, nil, nil, function()
+        local row = addRow(action.text, nil, nil, function()
             local barId, buttonId = slotIds()
             actionbar().ApiJson.createOrUpdateSpecialAction(barId, buttonId, action.id)
             slotChanged()
         end)
+        if action.icon then
+            row.icon:setImageSource(action.icon)
+            row.icon:setVisible(true)
+        end
     end
 end
 

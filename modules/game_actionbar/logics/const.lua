@@ -149,6 +149,13 @@ ActionBarSpecialActions = {{
 { id = "lookAtCrosshair", group = "General", text = tr("Look at crosshair") },
 { id = "contextMenuAtCrosshair", group = "General", text = tr("Context menu on crosshair") }}
 
+-- Targeting and general actions have icons (tools/gen_action_icons.py)
+for _, specialAction in ipairs(ActionBarSpecialActions) do
+    if specialAction.group then
+        specialAction.icon = '/images/game/actionbar/actions/' .. specialAction.id
+    end
+end
+
 function getActionBarSpecialAction(actionId)
     for _, specialAction in ipairs(ActionBarSpecialActions) do
         if specialAction.id == actionId then

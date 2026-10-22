@@ -11,9 +11,10 @@
 -- so on), shown and hidden in place, so their modules keep working as usual.
 
 local TOOLBAR_HEIGHT = 44
-local GRID_COLUMNS = 4
-local GRID_CELL = 34
-local GRID_SPACING = 3
+local GRID_CELL = 44
+local GRID_SPACING = 4
+local ROUND_SLOT = '/mods/client_mobile/images/slot_round'
+local ROUND_SLOT_PRESSED = '/mods/client_mobile/images/slot_round_pressed'
 
 -- Toolbar entries, left to right. A panel entry shows the widgets of one side
 -- panel whose id is listed (or starts with a listed prefix).
@@ -220,24 +221,52 @@ local function updateStats()
 end
 
 -- The first action bar becomes a grid (four columns) beside the game view
-local function setActionGrid()
+-- Round touch buttons: the slot frame becomes a circle and the item, spell
+-- or action icon sits in its middle
+local function makeRound(button)
+    if button.mobileRound then
+        return
+    end
+    button.mobileRound = true
+    button:mergeStyle({
+        ['image-source'] = ROUND_SLOT,
+        ['$pressed'] = { ['image-source'] = ROUND_SLOT_PRESSED },
+    })
+    button:setImageSource(ROUND_SLOT)
+    local item = button.item or button:getChildById('item')
+    if item then
+        -- The square slot frame of the item widget is replaced by the circle
+        item:mergeStyle({ ['$on'] = { ['image-source'] = '' }, ['$!on'] = { ['image-source'] = '' } })
+        item:setImageSource('')
+        item:breakAnchors()
+        item:addAnchor(AnchorHorizontalCenter, 'parent', AnchorHorizontalCenter)
+        item:addAnchor(AnchorVerticalCenter, 'parent', AnchorVerticalCenter)
+        item:setSize({ width = 34, height = 34 })
+    end
+end
+
+-- The first action bar as a grid of round buttons beside (landscape) or
+-- below (portrait) the game view, with as many columns as fit
+local function setActionGrid(availableWidth)
     local actionBars = modules.game_actionbar and modules.game_actionbar.actionBars
     local bar = actionBars and actionBars[1]
     if not bar or not bar.tabBar then
         return 0, 0
     end
     local tabBar = bar.tabBar
+    local slots = #tabBar:getChildren()
+    local columns = math.max(2, math.min(6, slots, math.floor((availableWidth - 6 + GRID_SPACING) / (GRID_CELL + GRID_SPACING))))
     if not tabBar.mobileGrid then
         tabBar.mobileGrid = true
         bar.showAllButtons = true
         local layout = UIGridLayout.create(tabBar)
         layout:setCellSize({ width = GRID_CELL, height = GRID_CELL })
         layout:setCellSpacing(GRID_SPACING)
-        layout:setNumColumns(GRID_COLUMNS)
         tabBar:setLayout(layout)
         tabBar:breakAnchors()
         tabBar:fill('parent')
         tabBar:setMargin(3)
+        bar:setImageSource('')
         for _, id in ipairs({ 'prevPanel', 'nextPanel' }) do
             local slider = bar:getChildById(id)
             if slider then
@@ -245,9 +274,12 @@ local function setActionGrid()
             end
         end
     end
-    local slots = #tabBar:getChildren()
-    local rows = math.max(1, math.ceil(slots / GRID_COLUMNS))
-    local width = GRID_COLUMNS * (GRID_CELL + GRID_SPACING) - GRID_SPACING + 6
+    tabBar:getLayout():setNumColumns(columns)
+    for _, button in ipairs(tabBar:getChildren()) do
+        makeRound(button)
+    end
+    local rows = math.max(1, math.ceil(slots / columns))
+    local width = columns * (GRID_CELL + GRID_SPACING) - GRID_SPACING + 6
     local height = rows * (GRID_CELL + GRID_SPACING) - GRID_SPACING + 6
     -- The bar style sets its height whenever it is switched on
     bar:mergeStyle({ ['$on'] = { height = height } })
@@ -331,7 +363,7 @@ local function layout()
     -- Action grid on the right, above look/use/attack/follow
     local actionPanel = root:getChildById('gameBottomActionPanel')
     if actionPanel then
-        local gridWidth = setActionGrid()
+        local gridWidth = setActionGrid(portrait and (width - 12) or (side - 6))
         actionPanel:breakAnchors()
         actionPanel:addAnchor(AnchorRight, 'parent', AnchorRight)
         actionPanel:addAnchor(AnchorBottom, 'mobileToolbar', AnchorTop)
