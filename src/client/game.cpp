@@ -667,6 +667,12 @@ void Game::forceLogout()
     processDisconnect();
 }
 
+void Game::dropConnection()
+{
+    if (m_protocolGame)
+        processDisconnect();
+}
+
 void Game::safeLogout()
 {
     if (!isOnline())
