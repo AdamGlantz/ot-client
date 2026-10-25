@@ -65,8 +65,39 @@ public:
         }) == 1;
 #endif
     }
+    // Browser only (always true elsewhere): navigator.onLine, and whether the
+    // page is shown (not a background tab or a minimized window)
+    bool isNetworkOnline() {
+#ifndef __EMSCRIPTEN__
+        return true;
+#else
+        return MAIN_THREAD_EM_ASM_INT({ return navigator.onLine ? 1 : 0; }) == 1;
+#endif
+    }
+    bool isPageVisible() {
+#ifndef __EMSCRIPTEN__
+        return true;
+#else
+        return MAIN_THREAD_EM_ASM_INT({ return document.visibilityState === 'visible' ? 1 : 0; }) == 1;
+#endif
+    }
     bool isBrowser() { return m_device.type == Browser; }
     bool isConsole() { return m_device.type == Console; }
+    // A yes/no setting from the web page (window.otclientConfig[key], set by
+    // the deployment): 1 yes, 0 no, -1 not set (and always -1 outside the browser)
+    int getBrowserConfigFlag(const std::string& key) {
+#ifndef __EMSCRIPTEN__
+        (void)key;
+        return -1;
+#else
+        return MAIN_THREAD_EM_ASM_INT({
+            var config = window.otclientConfig;
+            var value = config ? config[UTF8ToString($0)] : undefined;
+            if (value === undefined || value === null) return -1;
+            return (value === true || value === 1 || value === 'true' || value === 'on') ? 1 : 0;
+        }, key.c_str());
+#endif
+    }
     std::string getDeviceShortName(DeviceType type = DeviceUnknown);
     std::string getOsShortName(OperatingSystem os = OsUnknown);
     std::string traceback(std::string_view where, int level = 1, int maxDepth = 32);

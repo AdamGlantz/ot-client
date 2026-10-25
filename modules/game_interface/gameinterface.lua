@@ -312,7 +312,9 @@ function onGameStart()
 end
 
 function onGameEnd()
-    hide()
+    -- A dropped connection that is being reconnected keeps the game screen,
+    -- under the reconnect overlay
+    hide(modules.client_reconnect and modules.client_reconnect.willReconnect())
 end
 
 function show()
@@ -351,7 +353,7 @@ function show()
     end)
 end
 
-function hide()
+function hide(keepGameScreen)
     setupViewMode(0)
 
     disconnect(g_app, {
@@ -370,6 +372,9 @@ function hide()
     if countWindow then
         countWindow:destroy()
         countWindow = nil
+    end
+    if keepGameScreen then
+        return
     end
     gameRootPanel:hide()
     modules.client_background.show()

@@ -6,6 +6,13 @@ local toggleState = true  -- controls which effect  is active
 local timeLoopBackgroundEffect = 5000 -- 5 seconds
 
 -- public functions
+local function onGameEnd()
+    if modules.client_reconnect and modules.client_reconnect.willReconnect() then
+        return
+    end
+    show()
+end
+
 function init()
     background = g_ui.displayUI('background')
     background:lower()
@@ -26,7 +33,7 @@ function init()
         onGameStart = hide
     })
     connect(g_game, {
-        onGameEnd = show
+        onGameEnd = onGameEnd
     })
     startBackgroundEffectLoop() -- start the background effect loop
 end
@@ -36,7 +43,7 @@ function terminate()
         onGameStart = hide
     })
     disconnect(g_game, {
-        onGameEnd = show
+        onGameEnd = onGameEnd
     })
 
     g_effects.cancelFade(background:getChildById('clientVersionLabel'))
@@ -50,6 +57,7 @@ function terminate()
     clientVersionLabel = nil
 end
 
+-- A dropped connection that is being reconnected keeps the game screen
 function hide()
     background:hide()
     if bgEffectEvent then

@@ -10,4 +10,5 @@ Module
     - game_itemselector
     - client_textedit
     - client_classic
+    - client_reconnect
     - client_mobile

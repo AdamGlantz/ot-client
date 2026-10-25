@@ -1,0 +1,8 @@
+Module
+  name: client_reconnect
+  description: Reconnects to the game on its own after a dropped connection
+  author: ot-client
+  sandboxed: true
+  scripts: [ reconnect ]
+  @onLoad: init()
+  @onUnload: terminate()

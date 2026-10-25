@@ -87,6 +87,7 @@ void WebConnection::connect(const std::string_view host, uint16_t port, const st
 
     m_connected = false;
     m_connecting = true;
+    m_remoteClosed = false;
     m_connectCallback = connectCallback;
 
     std::string ip = std::string(host);
@@ -144,7 +145,13 @@ void WebConnection::connect(const std::string_view host, uint16_t port, const st
 
     emscripten_websocket_set_onclose_callback(m_websocket, this, ([](int /*eventType*/, const EmscriptenWebSocketCloseEvent* /*event*/, void* userData) -> EM_BOOL {
         WebConnection* webConnection = static_cast<WebConnection*>(userData);
-        webConnection->close();
+        // Not closed here: what the server sent right before closing (such
+        // as why it ended the session) is still waiting to be read. read()
+        // closes the connection once the received data runs out.
+        if (webConnection->m_connected)
+            webConnection->m_remoteClosed = true;
+        else
+            webConnection->close();
         return EM_TRUE;
     }));
 
@@ -232,6 +239,10 @@ void WebConnection::read(const uint16_t size, const RecvCallback& callback, int 
     }
 
     if (m_inputStream.size() < size) {
+        if (m_remoteClosed) {
+            close();
+            return;
+        }
         emscripten_thread_sleep(10);
         g_dispatcher.addEvent(std::move(retry));
         return;

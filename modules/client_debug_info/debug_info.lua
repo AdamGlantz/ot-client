@@ -25,6 +25,7 @@ function init()
 	debugInfoButton = modules.client_topmenu.addTopRightToggleButton("debugInfoButton", tr("Debug Info"),
 		"/images/topbuttons/debug", toggle)
 	debugInfoButton:setOn(false)
+	debugInfoButton:setVisible(isDeveloperToolsEnabled())
 
 	debugInfoWindow = g_ui.displayUI("debug_info")
 	debugInfoWindow:hide()
@@ -108,7 +109,7 @@ function toggle()
 		debugInfoWindow:hide()
 		debugInfoButton:setOn(false)
 		g_stats.pause()
-	else
+	elseif isDeveloperToolsEnabled() then
 		g_stats.resume()
 		debugInfoWindow:show()
 		debugInfoWindow:raise()

@@ -24,6 +24,7 @@
 
 #ifdef __EMSCRIPTEN__
 
+#include <atomic>
 #include "declarations.h"
 #include <framework/luaengine/luaobject.h>
 #include <emscripten/websocket.h>
@@ -89,6 +90,9 @@ protected:
     std::shared_ptr<asio::streambuf> m_outputStream;
     bool m_connected{ false };
     bool m_connecting{ false };
+    // The server closed the socket; set on the browser's thread, the
+    // connection closes once the data received before it has been read
+    std::atomic<bool> m_remoteClosed{ false };
     stdext::timer m_activityTimer;
 
     asio::streambuf m_inputStream;
