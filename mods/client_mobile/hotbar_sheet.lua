@@ -13,8 +13,9 @@ local TABS = {
     { id = 'actions', text = 'Actions' },
 }
 
--- 7.92 does not tell the client the character's vocation, so the spell list
--- filter is chosen by the player (per character)
+-- The spell list follows the character's vocation, which the server sends
+-- (client_vocation). Without it (a server that does not send it) the player
+-- picks the filter (per character).
 local VOCATION_FILTERS = {
     { id = 0, text = 'All' },
     { id = 4, text = 'Knight' },
@@ -22,6 +23,11 @@ local VOCATION_FILTERS = {
     { id = 1, text = 'Sorc' },
     { id = 2, text = 'Druid' },
 }
+
+-- The client's vocation ids (Knight 1, Paladin 2, Sorcerer 3, Druid 4;
+-- promoted + 10) -> the spell data's (server ids: Sorcerer 1, Druid 2,
+-- Paladin 3, Knight 4)
+local SPELL_VOCATIONS = { [1] = 4, [2] = 3, [3] = 1, [4] = 2, [11] = 4, [12] = 3, [13] = 1, [14] = 2 }
 
 local TEXT_EXAMPLES = { 'exura', 'utani hur', 'hi', 'trade' }
 
@@ -228,7 +234,9 @@ end
 
 local function showSpells()
     local hideUnusable = g_settings.getBoolean(settingKey('hide_unusable'), true)
-    local vocation = g_settings.getNumber(settingKey('vocation'), 0)
+    local player = g_game.getLocalPlayer()
+    local known = player and SPELL_VOCATIONS[player:getVocation()]
+    local vocation = known or g_settings.getNumber(settingKey('vocation'), 0)
     local filters = {
         {
             text = tr('Hide unusable'), width = 110, checked = hideUnusable,
@@ -238,7 +246,7 @@ local function showSpells()
             end
         },
     }
-    for _, filter in ipairs(VOCATION_FILTERS) do
+    for _, filter in ipairs(known and {} or VOCATION_FILTERS) do
         table.insert(filters, {
             text = tr(filter.text), width = 50, checked = vocation == filter.id,
             onClick = function()
@@ -249,7 +257,6 @@ local function showSpells()
     end
     setFilters(filters)
 
-    local player = g_game.getLocalPlayer()
     local shown = 0
     for _, spell in ipairs(Data792.spells) do
         local usable = spellUsable(spell, player, vocation)
@@ -277,7 +284,8 @@ local function showSpells()
         end
     end
     if shown == 0 then
-        addRow(tr('No spells to show'), tr('Turn off "Hide unusable" or pick another vocation'))
+        addRow(tr('No spells to show'), known and tr('Turn off "Hide unusable"')
+            or tr('Turn off "Hide unusable" or pick another vocation'))
     end
 end
 
