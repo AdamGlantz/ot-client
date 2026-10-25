@@ -93,6 +93,8 @@ function applySavedLayout()
             placePiece(piece, widget, saved[piece.key])
         end
     end
+    -- the bars' fill follows their width
+    refreshStats()
     if editing then
         updateFrames()
     end

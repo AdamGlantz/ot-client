@@ -534,8 +534,10 @@ local function onGameStart()
     setChatVisible(false)
     unread, unreadPrivate = 0, false
     updateChatBadge()
-    -- The other modules lay themselves out on game start as well
+    -- The other modules lay themselves out on game start as well (the
+    -- action bar rebuilds its buttons a little later)
     scheduleEvent(layout, 200)
+    scheduleEvent(layout, 800)
 end
 
 local function onContainerOpen()
