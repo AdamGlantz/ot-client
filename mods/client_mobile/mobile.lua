@@ -185,8 +185,48 @@ function selectTab(id)
     applyTab()
 end
 
+-- Unread badge on the chat button: what players, NPCs and channels say
+-- while the chat is closed (not monsters, spells or the player's own words)
+local COUNTED_MODES = {}
+for _, mode in ipairs({ 'Say', 'Whisper', 'Yell', 'PrivateFrom', 'Channel', 'ChannelHighlight', 'NpcFrom',
+                        'GamemasterBroadcast', 'GamemasterChannel', 'GamemasterPrivateFrom', 'Party', 'Guild' }) do
+    if MessageModes[mode] then
+        COUNTED_MODES[MessageModes[mode]] = true
+    end
+end
+local PRIVATE_MODES = { [MessageModes.PrivateFrom] = true, [MessageModes.GamemasterPrivateFrom] = true }
+local unread, unreadPrivate = 0, false
+
+local function updateChatBadge()
+    if not chatButton then
+        return
+    end
+    local badge = chatButton:getChildById('badge')
+    badge:setVisible(unread > 0)
+    badge:setText(unread > 99 and '99+' or tostring(unread))
+    -- private messages stand out
+    badge:setImageColor(unreadPrivate and '#9b3fd6' or '#d23030')
+end
+
+local function onTalk(name, level, mode)
+    if chatVisible or not COUNTED_MODES[mode] then
+        return
+    end
+    local player = g_game.getLocalPlayer()
+    if player and name == player:getName() then
+        return
+    end
+    unread = unread + 1
+    unreadPrivate = unreadPrivate or PRIVATE_MODES[mode] == true
+    updateChatBadge()
+end
+
 local function setChatVisible(visible)
     chatVisible = visible
+    if visible then
+        unread, unreadPrivate = 0, false
+        updateChatBadge()
+    end
     gameInterface().getBottomPanel():setVisible(visible)
     chatButton:setChecked(visible)
     -- The joystick and look/use/attack/follow would cover the console
@@ -486,6 +526,8 @@ local function onGameStart()
         modules.game_console.destroyButtonChat()
     end
     setChatVisible(false)
+    unread, unreadPrivate = 0, false
+    updateChatBadge()
     -- The other modules lay themselves out on game start as well
     scheduleEvent(layout, 200)
 end
@@ -544,7 +586,7 @@ function init()
         tr('Edit layout'), '/mods/client_mobile/images/edit_layout', toggleEditLayout)
 
     connect(root, { onGeometryChange = layout })
-    connect(g_game, { onGameStart = onGameStart, onGameEnd = onGameEnd })
+    connect(g_game, { onGameStart = onGameStart, onGameEnd = onGameEnd, onTalk = onTalk })
     connect(LocalPlayer, { onHealthChange = updateStats, onManaChange = updateStats })
     connect(Container, { onOpen = onContainerOpen })
     if g_game.isOnline() then
@@ -558,7 +600,7 @@ function terminate()
     end
     local root = gameInterface().getRootPanel()
     disconnect(root, { onGeometryChange = layout })
-    disconnect(g_game, { onGameStart = onGameStart, onGameEnd = onGameEnd })
+    disconnect(g_game, { onGameStart = onGameStart, onGameEnd = onGameEnd, onTalk = onTalk })
     stopEditLayout()
     if editLayoutButton then
         editLayoutButton:destroy()

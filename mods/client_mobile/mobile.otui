@@ -84,6 +84,22 @@ MobileChatButton < UIButton
     border-color: #ffffffcc
     background-color: #ffffff33
 
+  // Unread messages while the chat is closed
+  Label
+    id: badge
+    size: 24 24
+    anchors.top: parent.top
+    anchors.right: parent.right
+    margin-top: -8
+    margin-right: -8
+    image-source: /mods/client_mobile/images/slot_round
+    image-color: #d23030
+    text-align: center
+    font: verdana-11px-rounded
+    color: #ffffff
+    phantom: true
+    visible: false
+
 // Edit mode: a frame over each movable piece, dragged with one finger, with
 // a resize corner
 MobileEditFrame < UIWidget
