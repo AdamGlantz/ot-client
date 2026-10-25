@@ -43,6 +43,28 @@ UIWidget
       !text: tr('Show developer tools (terminal, debug info, OTUI editor)')
 
   SmallReversedQtPanel
+    id: touchModePanel
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: prev.bottom
+    height: 30
+    margin-top: 10
+    // set up by the touch layout mod (client_mobile/touchmode.lua)
+    visible: false
+
+    Label
+      anchors.left: parent.left
+      anchors.verticalCenter: parent.verticalCenter
+      !text: tr('Layout (reloads the client)')
+      text-auto-resize: true
+
+    ComboBox
+      id: touchModeBox
+      anchors.right: parent.right
+      anchors.verticalCenter: parent.verticalCenter
+      width: 130
+
+  SmallReversedQtPanel
     id: touchLayoutPanel
     anchors.left: parent.left
     anchors.right: parent.right

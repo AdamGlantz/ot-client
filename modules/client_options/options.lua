@@ -952,6 +952,11 @@ end
 -- move up. panelName is a key of `panels` (e.g. 'generalPanel'). For a row
 -- shared with other options, mode 'widget' hides only the widget and
 -- 'stacked' also takes its height out of the row (options stacked under it).
+-- An options panel by name (generalPanel, misc, ...), for mods that add to it
+function getPanel(panelName)
+    return panels[panelName]
+end
+
 function hideOption(panelName, widgetId, mode)
     local panel = panels[panelName]
     local widget = panel and panel:recursiveGetChildById(widgetId)

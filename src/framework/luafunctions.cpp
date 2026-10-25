@@ -133,6 +133,8 @@ void Application::registerLuaFunctions()
     g_lua.bindSingletonFunction("g_platform", "getOsShortName", &Platform::getOsShortName, &g_platform);
     g_lua.bindSingletonFunction("g_platform", "isDesktop", &Platform::isDesktop, &g_platform);
     g_lua.bindSingletonFunction("g_platform", "isMobile", &Platform::isMobile, &g_platform);
+    g_lua.bindSingletonFunction("g_platform", "getTouchMode", &Platform::getTouchMode, &g_platform);
+    g_lua.bindSingletonFunction("g_platform", "setTouchMode", &Platform::setTouchMode, &g_platform);
     g_lua.bindSingletonFunction("g_platform", "isNetworkOnline", &Platform::isNetworkOnline, &g_platform);
     g_lua.bindSingletonFunction("g_platform", "isPageVisible", &Platform::isPageVisible, &g_platform);
     g_lua.bindSingletonFunction("g_platform", "isBrowser", &Platform::isBrowser, &g_platform);

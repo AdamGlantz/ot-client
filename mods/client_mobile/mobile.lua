@@ -543,6 +543,7 @@ local function onContainerOpen()
 end
 
 function init()
+    initTouchMode()
     if not g_platform.isMobile() then
         return
     end
@@ -595,6 +596,7 @@ function init()
 end
 
 function terminate()
+    terminateTouchMode()
     if not toolbar then
         return
     end
