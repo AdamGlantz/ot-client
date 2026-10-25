@@ -135,6 +135,7 @@ void Application::registerLuaFunctions()
     g_lua.bindSingletonFunction("g_platform", "isMobile", &Platform::isMobile, &g_platform);
     g_lua.bindSingletonFunction("g_platform", "isBrowser", &Platform::isBrowser, &g_platform);
     g_lua.bindSingletonFunction("g_platform", "isConsole", &Platform::isConsole, &g_platform);
+    g_lua.bindSingletonFunction("g_platform", "getBrowserConfigFlag", &Platform::getBrowserConfigFlag, &g_platform);
     g_lua.bindSingletonFunction("g_platform", "openDir", &Platform::openDir, &g_platform);
 
     // Application

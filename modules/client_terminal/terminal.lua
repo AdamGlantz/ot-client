@@ -150,6 +150,7 @@ function init()
 
     terminalButton = modules.client_topmenu.addTopRightToggleButton('terminalButton', tr('Terminal') .. ' (Ctrl + T)',
                                                           '/images/topbuttons/terminal', toggle)
+    terminalButton:setVisible(isDeveloperToolsEnabled())
     Keybind.new("Misc.", "Toggle Terminal", "Ctrl+T", "")
     Keybind.bind("Misc.", "Toggle Terminal", {{
         type = KEY_DOWN,
@@ -275,6 +276,9 @@ function toggle()
     if terminalWindow:isVisible() then
         hide()
     else
+        if not isDeveloperToolsEnabled() then
+            return
+        end
         if not firstShown then
             local settings = g_settings.getNode('terminal-window')
             if settings then

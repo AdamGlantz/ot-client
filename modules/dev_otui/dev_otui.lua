@@ -2347,7 +2347,7 @@ function toggle()
   if editorWindow:isVisible() then
     editorWindow:hide()
     if topButton then topButton:setOn(false) end
-  else
+  elseif isDeveloperToolsEnabled() then
     editorWindow:show()
     restackLayers()
     editorWindow:focus()
@@ -2367,6 +2367,7 @@ function init()
   topButton = modules.client_topmenu.addTopRightToggleButton(
     'otuiEditorButton', tr('OTUI Editor'), '/images/topbuttons/buttons', toggle)
   topButton:setOn(false)
+  topButton:setVisible(isDeveloperToolsEnabled())
 
   Keybind.new('Debug', 'Toggle OTUI Editor', 'Ctrl+Alt+U', '')
   Keybind.bind('Debug', 'Toggle OTUI Editor', {

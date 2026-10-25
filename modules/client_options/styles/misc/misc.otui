@@ -28,3 +28,16 @@ UIWidget
       anchors.left: parent.left
       anchors.right: parent.right
       anchors.top: prev.bottom
+
+  SmallReversedQtPanel
+    id: developerToolsPanel
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: prev.bottom
+    height: 22
+    margin-top: 10
+    @onSetup: self:setVisible(not isDeveloperToolsForced())
+
+    OptionCheckBox
+      id: developerTools
+      !text: tr('Show developer tools (terminal, debug info, OTUI editor)')
