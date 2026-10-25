@@ -239,6 +239,8 @@ local function executeSpecialAction(specialActionId)
         modules.game_battle.attackNext(true)
     elseif specialActionId == "toggleChase" then
         modules.game_hotkeys.toggleChaseMode()
+    elseif TargetActionHandlers[specialActionId] then
+        TargetActionHandlers[specialActionId]()
     end
 end
 
@@ -805,6 +807,10 @@ function configureButtonMouseRelease(button)
     button.onMouseRelease = function(button, mousePos, mouseButton)
         button.cache = getButtonCache(button)
         if mouseButton == MouseRightButton then
+            -- A replacement for this menu (the touch layout's sheet) may take over
+            if ActionBarAssignSheet and ActionBarAssignSheet(button, mousePos) then
+                return true
+            end
             local menu = g_ui.createWidget('PopupMenu')
             menu:setGameMenu(true)
             menu:addOption(button.cache.isSpell and tr('Edit Spell') or tr('Assign Spell'), function()
@@ -1137,7 +1143,13 @@ function updateButton(button)
 
     if specialAction then
         local specialActionData = getActionBarSpecialAction(specialAction)
-        button.item.text:setText(short_text(specialActionData and specialActionData.text or specialAction, 15))
+        if specialActionData and specialActionData.icon then
+            button.item.text:setImageSource(specialActionData.icon)
+            button.item.text:setImageClip("0 0 32 32")
+            button.item.text:setText('')
+        else
+            button.item.text:setText(short_text(specialActionData and specialActionData.text or specialAction, 15))
+        end
         button.item:setOn(true)
         button.cache.specialAction = specialAction
         button.cache.actionType = UseTypes["specialAction"]

@@ -351,6 +351,7 @@ end
 function ActionBarController:onTerminate()
     ApiJson.saveData()
     cleanupMultiActionState()
+    terminateTargetActions()
     for _, actionbar in pairs(actionBars) do
         if actionbar and not actionbar:isDestroyed() then
             actionbar:destroy()

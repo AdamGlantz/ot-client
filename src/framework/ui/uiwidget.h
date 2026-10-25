@@ -72,7 +72,8 @@ enum FlagProp : uint64_t
     PropUpdateChildrenIndexStates = 1 << 24,
     PropDisableUpdateTemporarily = 1 << 25,
     PropApplyAnchorAlignment = 1 << 26,
-    PropUpdateSize = 1 << 27
+    PropUpdateSize = 1 << 27,
+    PropTouchControl = 1 << 28
 };
 
 enum class DisplayType : uint8_t
@@ -447,6 +448,9 @@ public:
     void setDraggable(bool draggable);
     void setFixedSize(bool fixed);
     void setClipping(const bool clipping) { setProp(PropClipping, clipping); }
+    // A touch control (and everything inside it) receives its own fingers
+    // directly, so it can be used while another finger acts as the mouse
+    void setTouchControl(const bool touchControl) { setProp(PropTouchControl, touchControl); }
     void setLastFocusReason(Fw::FocusReason reason);
     void setAutoFocusPolicy(Fw::AutoFocusPolicy policy);
     void setAutoRepeatDelay(const int delay) { m_autoRepeatDelay = delay; }
@@ -700,6 +704,7 @@ public:
     bool isFocusable() { return hasProp(PropFocusable); }
     bool isPhantom() { return hasProp(PropPhantom); }
     bool isDraggable() { return hasProp(PropDraggable); }
+    bool isTouchControl() { return hasProp(PropTouchControl); }
     bool isFixedSize() { return hasProp(PropFixedSize); }
     bool isClipping() {
         return hasProp(PropClipping) ||

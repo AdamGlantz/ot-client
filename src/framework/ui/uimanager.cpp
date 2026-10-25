@@ -61,6 +61,7 @@ void UIManager::terminate()
     m_checkEvent = nullptr;
     m_hoveredWidgets.clear();
     m_pressedWidgets.clear();
+    m_touchedWidgets.clear();
     m_hoveredText.clear();
 }
 
@@ -192,6 +193,90 @@ void UIManager::inputEvent(const InputEvent& event)
             break;
         default:
             break;
+    }
+}
+
+bool UIManager::touchBegin(const int64_t touchId, const Point& pos)
+{
+    if (!m_mouseReceiver->isVisible())
+        return false;
+
+    const auto widget = m_mouseReceiver->recursiveGetChildByPos(pos, false);
+    if (!widget || !widget->isEnabled())
+        return false;
+
+    UIWidgetPtr control;
+    for (auto w = widget; w; w = w->getParent()) {
+        if (w->isTouchControl()) {
+            control = w;
+            break;
+        }
+    }
+    if (!control)
+        return false;
+
+    m_touchedWidgets[touchId] = { widget, control, pos };
+    for (auto w = widget; w; w = w->getParent()) {
+        if (w->onMousePress(pos, Fw::MouseLeftButton) || w == control)
+            break;
+    }
+    widget->setState(Fw::PressedState, true);
+    return true;
+}
+
+bool UIManager::touchMove(const int64_t touchId, const Point& pos)
+{
+    const auto it = m_touchedWidgets.find(touchId);
+    if (it == m_touchedWidgets.end())
+        return false;
+
+    auto& touched = it->second;
+    const Point moved = pos - touched.lastPos;
+    touched.lastPos = pos;
+    for (auto w = touched.widget; w; w = w->getParent()) {
+        if (w->onMouseMove(pos, moved) || w == touched.control)
+            break;
+    }
+    return true;
+}
+
+bool UIManager::touchEnd(const int64_t touchId, const Point& pos, const bool cancelled, const bool longPress)
+{
+    const auto it = m_touchedWidgets.find(touchId);
+    if (it == m_touchedWidgets.end())
+        return false;
+
+    const auto touched = std::move(it->second);
+    m_touchedWidgets.erase(it);
+
+    const auto propagate = [&](const auto& fire) {
+        for (auto w = touched.widget; w; w = w->getParent()) {
+            if (fire(w) || w == touched.control)
+                break;
+        }
+    };
+
+    propagate([&](const UIWidgetPtr& w) { return w->onMouseRelease(pos, Fw::MouseLeftButton); });
+    touched.widget->setState(Fw::PressedState, false);
+
+    if (longPress) {
+        propagate([&](const UIWidgetPtr& w) { return w->onMousePress(pos, Fw::MouseRightButton); });
+        propagate([&](const UIWidgetPtr& w) { return w->onMouseRelease(pos, Fw::MouseRightButton); });
+    } else if (!cancelled && touched.widget->isEnabled() && touched.widget->containsPoint(pos))
+        touched.widget->onClick(pos);
+    return true;
+}
+
+void UIManager::cancelMousePress()
+{
+    if (m_draggingWidget)
+        updateDraggingWidget(nullptr);
+
+    if (m_pressedWidget) {
+        if (m_pressedWidget->isOnHtml())
+            updatePressedWidgetHTML(UIWidgetList{}, {}, false);
+        else
+            updatePressedWidget(nullptr, {}, false);
     }
 }
 

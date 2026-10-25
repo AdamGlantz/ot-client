@@ -387,6 +387,8 @@ void UIWidget::parseBaseStyle(const OTMLNodePtr& styleNode)
             setChecked(node->value<bool>());
         else if (node->tag() == "draggable")
             setDraggable(node->value<bool>());
+        else if (node->tag() == "touch-control")
+            setTouchControl(node->value<bool>());
         else if (node->tag() == "on")
             setOn(node->value<bool>());
         else if (node->tag() == "focusable")

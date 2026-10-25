@@ -23,6 +23,7 @@ UIWidget
   UIWidget
     id: shortcuts
     size: 175 150
+    touch-control: true
     anchors.bottom: parent.bottom
     anchors.right: parent.right
     phantom: false

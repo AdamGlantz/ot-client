@@ -1,0 +1,158 @@
+MobileToolbarButton < UIButton
+  size: 46 40
+  margin-left: 2
+  margin-right: 2
+  icon-size: 24 24
+  icon-align: center
+  background-color: alpha
+  border-width: 1
+  border-color: #00000000
+  $checked:
+    background-color: #ffffff22
+    border-color: #ffffff55
+  $pressed:
+    background-color: #ffffff33
+
+MobileToolbar < UIWidget
+  height: 44
+  background-color: #141414ee
+  border-width-top: 1
+  border-color-top: #3a3a3a
+
+  UIWidget
+    id: buttons
+    anchors.horizontalCenter: parent.horizontalCenter
+    anchors.verticalCenter: parent.verticalCenter
+    height: 40
+    layout:
+      type: horizontalBox
+      fit-children: true
+
+MobileStatBar < UIWidget
+  height: 16
+  background-color: #000000aa
+  border-width: 1
+  border-color: #000000
+  phantom: true
+
+  UIWidget
+    id: fill
+    anchors.left: parent.left
+    anchors.top: parent.top
+    anchors.bottom: parent.bottom
+    margin: 1
+    width: 0
+    phantom: true
+
+  Label
+    id: text
+    anchors.fill: parent
+    text-align: center
+    font: verdana-11px-rounded
+    color: #ffffff
+    phantom: true
+
+MobileStats < UIWidget
+  height: 36
+  phantom: true
+
+  MobileStatBar
+    id: health
+    anchors.top: parent.top
+    anchors.left: parent.left
+    anchors.right: parent.right
+    @onSetup: self.fill:setBackgroundColor('#2f9a2fee')
+
+  MobileStatBar
+    id: mana
+    anchors.top: health.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-top: 3
+    @onSetup: self.fill:setBackgroundColor('#2c55c8ee')
+
+MobileChatButton < UIButton
+  size: 52 52
+  image-source: /images/game/mobile/chat
+  image-color: #ffffffcc
+  background-color: #000000aa
+  border-width: 1
+  border-color: #ffffff44
+  $pressed:
+    image-color: #ffffff
+  $checked:
+    border-color: #ffffffcc
+    background-color: #ffffff33
+
+  // Unread messages while the chat is closed
+  Label
+    id: badge
+    size: 24 24
+    anchors.top: parent.top
+    anchors.right: parent.right
+    margin-top: -8
+    margin-right: -8
+    image-source: /mods/client_mobile/images/badge
+    image-color: #d23030
+    text-align: center
+    font: verdana-11px-rounded
+    color: #ffffff
+    phantom: true
+    visible: false
+
+// Edit mode: a frame over each movable piece, dragged with one finger, with
+// a resize corner
+MobileEditFrame < UIWidget
+  draggable: true
+  focusable: false
+  background-color: #2f7fd033
+  border-width: 2
+  border-color: #6fb4ff
+
+  UIWidget
+    id: resize
+    size: 24 24
+    anchors.right: parent.right
+    anchors.bottom: parent.bottom
+    margin-right: -10
+    margin-bottom: -10
+    draggable: true
+    background-color: #6fb4ff
+    border-width: 2
+    border-color: #ffffff
+
+MobileEditBar < UIWidget
+  size: 300 44
+  anchors.top: parent.top
+  anchors.horizontalCenter: parent.horizontalCenter
+  margin-top: 6
+  background-color: #141414ee
+  border-width: 1
+  border-color: #6fb4ff
+
+  Label
+    anchors.left: parent.left
+    anchors.verticalCenter: parent.verticalCenter
+    margin-left: 10
+    width: 120
+    text-wrap: true
+    text-auto-resize: true
+    !text: tr('Drag to move.\nCorner: resize.')
+    color: #dddddd
+
+  Button
+    id: reset
+    anchors.right: done.left
+    anchors.verticalCenter: parent.verticalCenter
+    margin-right: 6
+    size: 72 32
+    !text: tr('Reset')
+
+  Button
+    id: done
+    anchors.right: parent.right
+    anchors.verticalCenter: parent.verticalCenter
+    margin-right: 6
+    size: 72 32
+    !text: tr('Done')
+

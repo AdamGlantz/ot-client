@@ -633,7 +633,12 @@ function assignSpecialAction(button, mousePos)
     local menu = g_ui.createWidget('PopupMenu')
     menu:setGameMenu(true)
 
+    local group
     for _, specialAction in ipairs(ActionBarSpecialActions) do
+        if specialAction.group ~= group then
+            group = specialAction.group
+            menu:addSeparator()
+        end
         menu:addOption(specialAction.text, function()
             local barID, buttonID = string.match(button:getId(), "(.*)%.(.*)")
             ApiJson.createOrUpdateSpecialAction(tonumber(barID), tonumber(buttonID), specialAction.id)

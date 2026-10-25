@@ -44,6 +44,17 @@ public:
     void updateHoveredWidget(bool now = false);
     void updateHoveredText(bool now = false);
 
+    // Fingers on touch controls (UIWidget::setTouchControl) bypass the mouse:
+    // each one presses, moves and releases the widget it landed on, so the
+    // controls work together with the finger that acts as the mouse. Return
+    // false when the finger is not on (or not tracked by) a touch control.
+    // A long press releases without a click and then right clicks instead.
+    bool touchBegin(int64_t touchId, const Point& pos);
+    bool touchMove(int64_t touchId, const Point& pos);
+    bool touchEnd(int64_t touchId, const Point& pos, bool cancelled, bool longPress);
+    // Ends the current mouse press without a click or drop (touch long press)
+    void cancelMousePress();
+
     void clearStyles();
     bool importStyle(const std::string& fl, bool checkDeviceStyles = true);
     static std::string getDeviceStyleName(std::string_view stylePath, std::string_view deviceName);
@@ -99,6 +110,13 @@ private:
     UIWidgetPtr m_pressedWidget;
     UIWidgetList m_hoveredWidgets;
     UIWidgetList m_pressedWidgets;
+    struct TouchedWidget
+    {
+        UIWidgetPtr widget;
+        UIWidgetPtr control;
+        Point lastPos;
+    };
+    std::unordered_map<int64_t, TouchedWidget> m_touchedWidgets;
     bool m_hoverUpdateScheduled{ false };
     bool m_drawDebugBoxes{ false };
     bool m_hoverTextUpdateScheduled{ false };

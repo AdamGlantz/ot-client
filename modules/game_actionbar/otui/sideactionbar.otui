@@ -206,6 +206,7 @@ Panel
 
   ScrollablePanel
     id: tabBar
+    touch-control: true
     anchors.top: prev.bottom
     anchors.bottom: nextPanel.top
     anchors.left: parent.left

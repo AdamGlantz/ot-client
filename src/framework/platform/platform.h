@@ -56,13 +56,53 @@ public:
     Device getDevice() { return m_device; }
     void setDevice(const Device device) { m_device = device; }
     bool isDesktop() { return m_device.type == Desktop; }
+    // Browser: the touch layout is used on phones and tablets, chosen from
+    // the user agent and the device (a touch screen without a precise
+    // pointer: iPadOS Safari calls itself a Mac). The player can force it
+    // with setTouchMode. Decided once: changing it reloads the page.
     bool isMobile() {
 #ifndef __EMSCRIPTEN__
         return m_device.type == Mobile;
 #else
-        return MAIN_THREAD_EM_ASM_INT({
-            return (/iphone|ipod|ipad|android/i).test(navigator.userAgent);
+        static const bool mobile = MAIN_THREAD_EM_ASM_INT({
+            var mode = null;
+            try { mode = localStorage.getItem('otclient-touch-mode'); } catch (e) {}
+            if (mode === 'touch') return 1;
+            if (mode === 'desktop') return 0;
+            if ((/iphone|ipod|ipad|android/i).test(navigator.userAgent)) return 1;
+            var touchOnly = navigator.maxTouchPoints > 0 &&
+                window.matchMedia('(pointer: coarse)').matches &&
+                !window.matchMedia('(any-pointer: fine)').matches;
+            return touchOnly ? 1 : 0;
         }) == 1;
+        return mobile;
+#endif
+    }
+    // 0 automatic, 1 touch, 2 desktop (browser only)
+    int getTouchMode() {
+#ifndef __EMSCRIPTEN__
+        return 0;
+#else
+        return MAIN_THREAD_EM_ASM_INT({
+            var mode = null;
+            try { mode = localStorage.getItem('otclient-touch-mode'); } catch (e) {}
+            return mode === 'touch' ? 1 : mode === 'desktop' ? 2 : 0;
+        });
+#endif
+    }
+    // Stores the choice on this device and reloads the client with it
+    void setTouchMode(int mode) {
+#ifdef __EMSCRIPTEN__
+        MAIN_THREAD_ASYNC_EM_ASM({
+            try {
+                if ($0 === 1) localStorage.setItem('otclient-touch-mode', 'touch');
+                else if ($0 === 2) localStorage.setItem('otclient-touch-mode', 'desktop');
+                else localStorage.removeItem('otclient-touch-mode');
+            } catch (e) {}
+            location.reload();
+        }, mode);
+#else
+        (void)mode;
 #endif
     }
     // Browser only (always true elsewhere): navigator.onLine, and whether the
