@@ -64,6 +64,18 @@ local function removeAutoReconnectEvent() --prevent
     end
 end
 
+-- The reconnect mod handles what happens after a dropped connection
+local function isReconnecting()
+    return modules.client_reconnect and modules.client_reconnect.isReconnecting()
+end
+
+local function onGameEnd()
+    if modules.client_reconnect and modules.client_reconnect.willReconnect() then
+        return
+    end
+    CharacterList.showAgain()
+end
+
 local function resetUIReferences()
     characterList = nil
     panelSort = nil
@@ -402,6 +414,9 @@ local function tryLogin(charInfo, tries)
         end
     })
 
+    -- for reconnecting after a dropped connection
+    G.lastLogin = charInfo
+
     -- save last used character
     g_settings.set('last-used-character', charInfo.characterName)
     g_settings.set('last-used-world', charInfo.worldName)
@@ -471,6 +486,9 @@ local function resendWait()
 end
 
 local function onLoginWait(message, time)
+    if isReconnecting() then
+        return
+    end
     CharacterList.destroyLoadBox()
 
     waitingWindow = g_ui.displayUI('waitinglist')
@@ -485,6 +503,9 @@ local function onLoginWait(message, time)
 end
 
 function onGameLoginError(message)
+    if isReconnecting() then
+        return
+    end
     CharacterList.destroyLoadBox()
     errorBox = displayErrorBox(tr('Login Error'), message)
     errorBox.onOk = function()
@@ -499,6 +520,9 @@ function onGameSessionEnd(reason)
 end
 
 function onGameConnectionError(message, code)
+    if isReconnecting() then
+        return
+    end
     CharacterList.destroyLoadBox()
     local text = translateNetworkError(code, g_game.getProtocolGame() and g_game.getProtocolGame():isConnecting(),
                                        message)
@@ -603,7 +627,7 @@ function CharacterList.init()
         onLoginWait = onLoginWait
     })
     connect(g_game, {
-        onGameEnd = CharacterList.showAgain
+        onGameEnd = onGameEnd
     })
     connect(g_game, {
         onLogout = onLogout
@@ -634,7 +658,7 @@ function CharacterList.terminate()
         onLoginWait = onLoginWait
     })
     disconnect(g_game, {
-        onGameEnd = CharacterList.showAgain
+        onGameEnd = onGameEnd
     })
     disconnect(g_game, {
         onLogout = onLogout

@@ -166,6 +166,9 @@ public:
     void playRecord(const std::string_view& file);
     void cancelLogin();
     void forceLogout();
+    // Ends the game as if the connection had been lost, without telling the
+    // server (for a connection that has gone silent)
+    void dropConnection();
     void safeLogout();
 
     // walk related

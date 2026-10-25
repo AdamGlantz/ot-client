@@ -65,6 +65,22 @@ public:
         }) == 1;
 #endif
     }
+    // Browser only (always true elsewhere): navigator.onLine, and whether the
+    // page is shown (not a background tab or a minimized window)
+    bool isNetworkOnline() {
+#ifndef __EMSCRIPTEN__
+        return true;
+#else
+        return MAIN_THREAD_EM_ASM_INT({ return navigator.onLine ? 1 : 0; }) == 1;
+#endif
+    }
+    bool isPageVisible() {
+#ifndef __EMSCRIPTEN__
+        return true;
+#else
+        return MAIN_THREAD_EM_ASM_INT({ return document.visibilityState === 'visible' ? 1 : 0; }) == 1;
+#endif
+    }
     bool isBrowser() { return m_device.type == Browser; }
     bool isConsole() { return m_device.type == Console; }
     std::string getDeviceShortName(DeviceType type = DeviceUnknown);

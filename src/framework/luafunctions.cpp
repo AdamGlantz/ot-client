@@ -133,6 +133,8 @@ void Application::registerLuaFunctions()
     g_lua.bindSingletonFunction("g_platform", "getOsShortName", &Platform::getOsShortName, &g_platform);
     g_lua.bindSingletonFunction("g_platform", "isDesktop", &Platform::isDesktop, &g_platform);
     g_lua.bindSingletonFunction("g_platform", "isMobile", &Platform::isMobile, &g_platform);
+    g_lua.bindSingletonFunction("g_platform", "isNetworkOnline", &Platform::isNetworkOnline, &g_platform);
+    g_lua.bindSingletonFunction("g_platform", "isPageVisible", &Platform::isPageVisible, &g_platform);
     g_lua.bindSingletonFunction("g_platform", "isBrowser", &Platform::isBrowser, &g_platform);
     g_lua.bindSingletonFunction("g_platform", "isConsole", &Platform::isConsole, &g_platform);
     g_lua.bindSingletonFunction("g_platform", "openDir", &Platform::openDir, &g_platform);
@@ -1044,6 +1046,7 @@ void Application::registerLuaFunctions()
     g_lua.bindClassMemberFunction<Protocol>("disconnect", &Protocol::disconnect);
     g_lua.bindClassMemberFunction<Protocol>("isConnected", &Protocol::isConnected);
     g_lua.bindClassMemberFunction<Protocol>("isConnecting", &Protocol::isConnecting);
+    g_lua.bindClassMemberFunction<Protocol>("getElapsedTicksSinceLastRead", &Protocol::getElapsedTicksSinceLastRead);
     g_lua.bindClassMemberFunction<Protocol>("getConnection", &Protocol::getConnection);
     g_lua.bindClassMemberFunction<Protocol>("setConnection", &Protocol::setConnection);
     g_lua.bindClassMemberFunction<Protocol>("send", &Protocol::send);
