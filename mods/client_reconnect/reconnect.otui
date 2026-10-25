@@ -1,0 +1,38 @@
+ReconnectOverlay < UIWidget
+  anchors.fill: parent
+  background-color: #000000a0
+  phantom: false
+  focusable: false
+
+  StaticMainWindow
+    id: box
+    size: 320 140
+    anchors.centerIn: parent
+    !text: tr('Connection lost')
+
+    Label
+      id: status
+      anchors.top: parent.top
+      anchors.left: parent.left
+      anchors.right: parent.right
+      margin-top: 4
+      text-align: center
+      text-wrap: true
+      text-auto-resize: true
+      color: #dfdfdf
+
+    Button
+      id: reconnectButton
+      !text: tr('Reconnect')
+      width: 100
+      anchors.right: parent.horizontalCenter
+      anchors.bottom: parent.bottom
+      margin-right: 6
+
+    Button
+      id: loginButton
+      !text: tr('Back to login')
+      width: 100
+      anchors.left: parent.horizontalCenter
+      anchors.bottom: parent.bottom
+      margin-left: 6

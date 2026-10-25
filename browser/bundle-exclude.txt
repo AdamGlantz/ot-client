@@ -1,0 +1,42 @@
+# Files left out of the browser bundle (otclient.data), as --exclude-file
+# patterns (fnmatch, matched against paths like ../modules/game_wheel; a
+# line starting with ! keeps a file back). The files stay in the repository.
+# This server speaks protocol 7.92: modules for features of modern Tibia
+# that 7.92 does not have, and assets nothing loads, only cost download time.
+
+# Modern-only modules (removed from game_interface's load list as well)
+*/modules/game_cyclopedia/*
+# (its images are used by the minimap, quest log, skills and more)
+!*/modules/game_cyclopedia/images*
+*/modules/game_forge
+*/modules/game_highscore
+*/modules/game_imbuementtracker
+*/modules/game_imbuing
+*/modules/game_proficiency
+*/modules/game_rewardwall
+*/modules/game_soundDebug
+*/modules/game_stash
+*/modules/game_taskboard
+*/modules/game_tutorial
+*/modules/game_wheel
+
+# Their images
+*/data/images/game/wheel
+*/data/images/game/imbuing
+*/data/images/game/tutorial/*
+!*/data/images/game/tutorial/backdrop_crest.png
+# Attached effects (auras, wings) are a 12.x feature; the module stays and
+# skips effects without their image
+*/data/images/game/effects
+
+# Replaced by the classic theme's own background
+*/data/images/background.png
+
+# Fonts nothing uses
+*/data/fonts/ttf/28 Days Later.ttf
+*/data/fonts/ttf/arial.ttf
+*/data/fonts/ttf/arialb.ttf
+*/data/fonts/ttf/banita.ttf
+*/data/fonts/ttf/pixel dead.ttf
+*/data/fonts/ttf/TerminusTTF-Italic-4.49.3.ttf
+*/data/fonts/ttf/TerminusTTF-Bold-Italic-4.49.3.ttf

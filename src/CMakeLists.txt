@@ -953,6 +953,12 @@ elseif(WASM)
           --use-preload-cache
   )
 
+  # Files left out of the data package (browser/bundle-exclude.txt)
+  file(STRINGS ${CMAKE_CURRENT_SOURCE_DIR}/../browser/bundle-exclude.txt _BUNDLE_EXCLUDES REGEX "^[^#].*[^ ]")
+  foreach(_pattern IN LISTS _BUNDLE_EXCLUDES)
+    list(APPEND WASM_LINK_OPTIONS "SHELL:--exclude-file \"${_pattern}\"")
+  endforeach()
+
   if(WASM_USE_WASM_EXCEPTIONS)
     list(APPEND WASM_LINK_OPTIONS "-sDEFAULT_LIBRARY_FUNCS_TO_INCLUDE=['emscripten_longjmp']")
   endif()
