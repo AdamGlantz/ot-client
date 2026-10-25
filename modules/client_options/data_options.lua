@@ -403,6 +403,14 @@ return {
             panels.gameMapPanel:setShadowFloorIntensity(1 - (value / 100))
         end
     },
+    lowPowerMode                      = {
+        value = false,
+        action = function(value, options, controller, panels, extraWidgets)
+            if modules.client_power then
+                modules.client_power.setLowPower(value)
+            end
+        end
+    },
     optimizeFps                       = {
         value = true,
         action = function(value, options, controller, panels, extraWidgets)
