@@ -378,8 +378,36 @@ function ActionBarController:onTerminate()
     disconnecting()
 end
 
+-- Each character has its own hotkey set (action bars and hotkeys), named
+-- after it. A character's first login copies the set that was in use
+-- before characters had their own (not the last character's).
+local BASE_SET_SETTING = 'actionbar-character-sets-base'
+local function useCharacterHotkeySet()
+    local name = g_game.getCharacterName()
+    if not name or name == '' or not ApiJson or not ApiJson.setCurrentHotkeySetName then
+        return
+    end
+    ApiJson.bootstrap()
+    local base = g_settings.getString(BASE_SET_SETTING)
+    if base == '' then
+        base = ApiJson.getCurrentHotkeySetName() or ''
+        g_settings.set(BASE_SET_SETTING, base)
+    end
+    if not ApiJson.setCurrentHotkeySetName(name) then
+        if not ApiJson.createHotkeySet(name, base ~= '' and base or nil) then
+            ApiJson.createHotkeySet(name) -- the base set was removed
+        end
+        ApiJson.setCurrentHotkeySetName(name)
+    end
+    ApiJson.saveData()
+    if clearHotkeyCache then
+        clearHotkeyCache()
+    end
+end
+
 --- Handles game start event
 function ActionBarController:onGameStart()
+    useCharacterHotkeySet()
     onCreateActionBars()
     
     -- Ensure fresh cache

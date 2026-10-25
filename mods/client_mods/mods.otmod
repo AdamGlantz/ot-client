@@ -11,4 +11,6 @@ Module
     - client_textedit
     - client_classic
     - client_reconnect
+    - client_power
+    - client_install
     - client_mobile

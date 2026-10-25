@@ -1,4 +1,47 @@
+-- In the browser the client never exits (the tab is just closed), so
+-- settings are saved when a game ends (the modules store their window
+-- positions, channels and zoom then), when the page is hidden, and every
+-- 30 seconds
+local saveEvent, visibilityEvent
+local pageWasVisible = true
+
+local function saveSettingsSoon()
+    -- after every module's game end handler
+    scheduleEvent(function()
+        g_settings.save()
+    end, 200)
+end
+
+local function checkPageVisibility()
+    local visible = g_platform.isPageVisible()
+    if pageWasVisible and not visible then
+        g_settings.save()
+    end
+    pageWasVisible = visible
+end
+
+local function startBrowserSaving()
+    if not g_platform.isBrowser() then
+        return
+    end
+    connect(g_game, { onGameEnd = saveSettingsSoon })
+    saveEvent = cycleEvent(function()
+        g_settings.save()
+    end, 30000)
+    visibilityEvent = cycleEvent(checkPageVisibility, 1000)
+end
+
+local function stopBrowserSaving()
+    if saveEvent then
+        disconnect(g_game, { onGameEnd = saveSettingsSoon })
+        removeEvent(saveEvent)
+        removeEvent(visibilityEvent)
+        saveEvent, visibilityEvent = nil, nil
+    end
+end
+
 function init()
+    startBrowserSaving()
     connect(g_app, {
         onExit = exit
     })
@@ -76,6 +119,7 @@ function init()
 end
 
 function terminate()
+    stopBrowserSaving()
     disconnect(g_app, {
         onExit = exit
     })

@@ -74,6 +74,12 @@ function UIMinimap:load()
         end
         self.zoomMinimap = settings.zoom
         self.zoomFullmap = settings.zoomFull or settings.zoom
+        -- the zoom is the character's own (map marks are shared)
+        local own = settings.characters and settings.characters[g_game.getCharacterName()]
+        if own then
+            self.zoomMinimap = own.zoom
+            self.zoomFullmap = own.zoomFull or own.zoom
+        end
         self:setZoom(self.zoomMinimap)
 
     end
@@ -94,6 +100,12 @@ function UIMinimap:save()
     end
     settings.zoom = self.zoomMinimap
     settings.zoomFull = self.zoomFullmap
+    local previous = g_settings.getNode('Minimap')
+    settings.characters = previous and previous.characters or {}
+    local char = g_game.getCharacterName()
+    if char and char ~= '' then
+        settings.characters[char] = { zoom = self.zoomMinimap, zoomFull = self.zoomFullmap }
+    end
     g_settings.setNode('Minimap', settings)
 end
 

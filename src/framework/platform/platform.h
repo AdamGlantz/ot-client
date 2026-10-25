@@ -121,6 +121,36 @@ public:
         return MAIN_THREAD_EM_ASM_INT({ return document.visibilityState === 'visible' ? 1 : 0; }) == 1;
 #endif
     }
+    // Installing the web client as an app (window.otclientApp, set by the
+    // deployment's page, keeps the browser's install prompt):
+    // 0 not possible, 1 the browser can install it (installApp shows its
+    // prompt), 2 manual (iOS: Share > Add to Home Screen), 3 running as an
+    // installed app
+    int getAppInstallState() {
+#ifndef __EMSCRIPTEN__
+        return 0;
+#else
+        return MAIN_THREAD_EM_ASM_INT({
+            if (window.matchMedia('(display-mode: standalone)').matches ||
+                window.matchMedia('(display-mode: fullscreen)').matches || navigator.standalone)
+                return 3;
+            var app = window.otclientApp;
+            if (!app) return 0;
+            if (app.prompt) return 1;
+            var ios = /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+                      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            return ios ? 2 : 0;
+        });
+#endif
+    }
+    void installApp() {
+#ifdef __EMSCRIPTEN__
+        MAIN_THREAD_ASYNC_EM_ASM({
+            var app = window.otclientApp;
+            if (app && app.install) app.install();
+        });
+#endif
+    }
     bool isBrowser() { return m_device.type == Browser; }
     bool isConsole() { return m_device.type == Console; }
     // A yes/no setting from the web page (window.otclientConfig[key], set by
