@@ -982,6 +982,9 @@ void Client::registerLuaFunctions()
     g_lua.bindClassMemberFunction<AnimatedText>("getColor", &AnimatedText::getColor);
 
     g_lua.registerClass<Player, Creature>();
+    // Players keep their own vocation (getVocation and the action bars read it)
+    g_lua.bindClassMemberFunction<Player>("setVocation", &Player::setVocation);
+    g_lua.bindClassMemberFunction<Player>("getVocation", &Player::getVocation);
     g_lua.registerClass<Npc, Creature>();
     g_lua.registerClass<Monster, Creature>();
 

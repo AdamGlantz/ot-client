@@ -1,0 +1,8 @@
+Module
+  name: client_vocation
+  description: The character's vocation from the server (7.92 does not send it)
+  author: ot-client
+  sandboxed: true
+  scripts: [ vocation ]
+  @onLoad: init()
+  @onUnload: terminate()

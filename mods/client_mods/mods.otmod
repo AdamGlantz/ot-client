@@ -12,3 +12,4 @@ Module
     - client_classic
     - client_reconnect
     - client_power
+    - client_vocation
