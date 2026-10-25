@@ -12,19 +12,22 @@ local normalizeTierPriceEntries = Helpers.normalizeTierPriceEntries
 ForgeController.callbacks = {}
 
 -- scheduleEvent holds callbacks weakly; cancel every pending event before callbacks is dropped
-ForgeController.events = {}
+-- (a local reference: the module unloads itself on servers without the
+-- forge, and the global is gone when a later game start gets here)
+local forgeEvents = {}
+ForgeController.events = forgeEvents
 
 local function scheduleForgeEvent(name, callback, delay)
-    removeEvent(ForgeController.events[name])
+    removeEvent(forgeEvents[name])
     local event = scheduleEvent(callback, delay)
-    ForgeController.events[name] = event
+    forgeEvents[name] = event
     return event
 end
 
 local function removeForgeEvents()
-    for name, event in pairs(ForgeController.events) do
+    for name, event in pairs(forgeEvents) do
         removeEvent(event)
-        ForgeController.events[name] = nil
+        forgeEvents[name] = nil
     end
 end
 
