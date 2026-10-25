@@ -184,7 +184,12 @@
             display = "Loading...";
             document.getElementById("start").style.display = "block";
           } else if (text.includes("Downloading data...")) {
-            display = text;
+            // "Downloading data... (loaded/total)" in bytes
+            const progress = text.match(/\((\d+)\/(\d+)\)/);
+            display = progress
+              ? "Downloading " + (progress[1] / 1048576).toFixed(1) + " of " +
+                (progress[2] / 1048576).toFixed(1) + " MB"
+              : "Downloading...";
           }
 
           document.getElementById("title-text").innerHTML = display;
