@@ -5,7 +5,9 @@
 # that 7.92 does not have, and assets nothing loads, only cost download time.
 
 # Modern-only modules (removed from game_interface's load list as well)
-*/modules/game_cyclopedia
+*/modules/game_cyclopedia/*
+# (its images are used by the minimap, quest log, skills and more)
+!*/modules/game_cyclopedia/images*
 */modules/game_forge
 */modules/game_highscore
 */modules/game_imbuementtracker
@@ -23,7 +25,8 @@
 */data/images/game/imbuing
 */data/images/game/tutorial/*
 !*/data/images/game/tutorial/backdrop_crest.png
-# Attached effects (auras, wings) are a 12.x feature; the module stays
+# Attached effects (auras, wings) are a 12.x feature; the module stays and
+# skips effects without their image
 */data/images/game/effects
 
 # Replaced by the classic theme's own background

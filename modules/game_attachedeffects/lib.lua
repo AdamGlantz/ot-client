@@ -118,6 +118,10 @@ AttachedEffectManager = {
     register = function(id, name, thingId, thingCategory, config)
         local attachedEffect = nil
         if thingCategory == ThingExternalTexture then
+            -- the browser bundle leaves these images out (12.x feature)
+            if not g_resources.fileExists(thingId .. '.png') then
+                return
+            end
             attachedEffect = g_attachedEffects.registerByImage(id, name, thingId)
         else
             attachedEffect = g_attachedEffects.registerByThing(id, name, thingId, thingCategory)
