@@ -159,6 +159,12 @@ return {
     returnDisablesChat                = false,
     smartWalk                         = false,
     autoChaseOverride                 = true,
+    developerTools                    = {
+        value = DEVELOPER_TOOLS_DEFAULT,
+        action = function(value, options, controller, panels, extraWidgets)
+            applyDeveloperTools()
+        end
+    },
     talkOnRightClick                  = false,
     moveStack                         = false,
     showStatusMessagesInConsole       = true,

@@ -481,3 +481,40 @@ function translateVocation(id)
 	end
   return 0
 end
+
+-- Developer tools (terminal, debug info, OTUI editor): shown by default for
+-- now. A player can turn them off in Options > Misc; the deployment can force
+-- them on or off for everyone with window.otclientConfig = { developerTools:
+-- false } in the web page.
+DEVELOPER_TOOLS_DEFAULT = true
+DEVELOPER_TOOL_BUTTONS = { 'terminalButton', 'debugInfoButton', 'otuiEditorButton' }
+
+function isDeveloperToolsForced()
+    return g_platform.getBrowserConfigFlag('developerTools') ~= -1
+end
+
+function isDeveloperToolsEnabled()
+    local forced = g_platform.getBrowserConfigFlag('developerTools')
+    if forced ~= -1 then
+        return forced == 1
+    end
+    return g_settings.getBoolean('developerTools', DEVELOPER_TOOLS_DEFAULT)
+end
+
+-- Shows or hides the developer tool buttons, closing open tools when hidden
+function applyDeveloperTools()
+    local topMenu = modules.client_topmenu and modules.client_topmenu.getTopMenu()
+    if not topMenu then
+        return
+    end
+    local enabled = isDeveloperToolsEnabled()
+    for _, id in ipairs(DEVELOPER_TOOL_BUTTONS) do
+        local button = topMenu:recursiveGetChildById(id)
+        if button then
+            if not enabled and button:isOn() and button.onClick then
+                button.onClick(button)
+            end
+            button:setVisible(enabled)
+        end
+    end
+end
