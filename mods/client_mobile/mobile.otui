@@ -92,7 +92,7 @@ MobileChatButton < UIButton
     anchors.right: parent.right
     margin-top: -8
     margin-right: -8
-    image-source: /mods/client_mobile/images/slot_round
+    image-source: /mods/client_mobile/images/badge
     image-color: #d23030
     text-align: center
     font: verdana-11px-rounded

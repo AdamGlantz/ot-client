@@ -188,13 +188,19 @@ end
 -- Unread badge on the chat button: what players, NPCs and channels say
 -- while the chat is closed (not monsters, spells or the player's own words)
 local COUNTED_MODES = {}
-for _, mode in ipairs({ 'Say', 'Whisper', 'Yell', 'PrivateFrom', 'Channel', 'ChannelHighlight', 'NpcFrom',
-                        'GamemasterBroadcast', 'GamemasterChannel', 'GamemasterPrivateFrom', 'Party', 'Guild' }) do
+for _, mode in ipairs({ 'Say', 'Whisper', 'Yell', 'PrivateFrom', 'PrivateTo', 'Channel', 'ChannelHighlight', 'NpcFrom',
+                        'GamemasterBroadcast', 'GamemasterChannel', 'GamemasterPrivateFrom', 'GamemasterPrivateTo',
+                        'Party', 'Guild' }) do
     if MessageModes[mode] then
         COUNTED_MODES[MessageModes[mode]] = true
     end
 end
-local PRIVATE_MODES = { [MessageModes.PrivateFrom] = true, [MessageModes.GamemasterPrivateFrom] = true }
+-- (7.x servers use one code for private messages both ways, which the
+-- client reads as "to"; the player's own messages are skipped anyway)
+local PRIVATE_MODES = {
+    [MessageModes.PrivateFrom] = true, [MessageModes.PrivateTo] = true,
+    [MessageModes.GamemasterPrivateFrom] = true, [MessageModes.GamemasterPrivateTo] = true,
+}
 local unread, unreadPrivate = 0, false
 
 local function updateChatBadge()
