@@ -13,4 +13,5 @@ Module
     - client_reconnect
     - client_power
     - client_install
+    - client_vocation
     - client_mobile
