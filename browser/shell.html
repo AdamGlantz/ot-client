@@ -8,12 +8,16 @@
     />
     <title>Loading</title>
     <style>
+      html,
       body {
         margin: 0;
         background-color: black;
-        overscroll-behavior: contain;
+        /* no pull-to-refresh or swipe back/forward over the game */
+        overscroll-behavior: none;
       }
       .backbuffer {
+        /* touches are the game's, not the browser's (scroll, zoom, swipe) */
+        touch-action: none;
         position: absolute;
         top: 0px;
         left: 0px;
@@ -105,15 +109,15 @@
         document.addEventListener("touchstart", function (ev) {
           ev.preventDefault();
           ev.stopPropagation();
-        });
+        }, { passive: false });
         document.addEventListener("touchmove", function (ev) {
           ev.preventDefault();
           ev.stopPropagation();
-        });
+        }, { passive: false });
         document.addEventListener("touchend", function (ev) {
           ev.preventDefault();
           ev.stopPropagation();
-        });
+        }, { passive: false });
         document.addEventListener("keyup", function (ev) {
           ev.preventDefault();
           ev.stopPropagation();
