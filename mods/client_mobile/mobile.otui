@@ -83,3 +83,60 @@ MobileChatButton < UIButton
   $checked:
     border-color: #ffffffcc
     background-color: #ffffff33
+
+// Edit mode: a frame over each movable piece, dragged with one finger, with
+// a resize corner
+MobileEditFrame < UIWidget
+  draggable: true
+  focusable: false
+  background-color: #2f7fd033
+  border-width: 2
+  border-color: #6fb4ff
+
+  UIWidget
+    id: resize
+    size: 24 24
+    anchors.right: parent.right
+    anchors.bottom: parent.bottom
+    margin-right: -10
+    margin-bottom: -10
+    draggable: true
+    background-color: #6fb4ff
+    border-width: 2
+    border-color: #ffffff
+
+MobileEditBar < UIWidget
+  size: 300 44
+  anchors.top: parent.top
+  anchors.horizontalCenter: parent.horizontalCenter
+  margin-top: 6
+  background-color: #141414ee
+  border-width: 1
+  border-color: #6fb4ff
+
+  Label
+    anchors.left: parent.left
+    anchors.verticalCenter: parent.verticalCenter
+    margin-left: 10
+    width: 120
+    text-wrap: true
+    text-auto-resize: true
+    !text: tr('Drag to move.\nCorner: resize.')
+    color: #dddddd
+
+  Button
+    id: reset
+    anchors.right: done.left
+    anchors.verticalCenter: parent.verticalCenter
+    margin-right: 6
+    size: 72 32
+    !text: tr('Reset')
+
+  Button
+    id: done
+    anchors.right: parent.right
+    anchors.verticalCenter: parent.verticalCenter
+    margin-right: 6
+    size: 72 32
+    !text: tr('Done')
+

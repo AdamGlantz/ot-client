@@ -57,7 +57,7 @@ local function applyDefaultScale()
     g_settings.save()
 end
 
-local toolbar, stats, chatButton
+local toolbar, stats, chatButton, editLayoutButton
 local currentTab
 local chatVisible = false
 local menuVisible = false
@@ -424,6 +424,56 @@ local function layout()
     end
     chatButton:raise()
     toolbar:raise()
+
+    -- Positions the player chose in edit mode (edit.lua)
+    applySavedLayout()
+end
+
+function relayout()
+    layout()
+end
+
+-- The pieces edit mode can move, by name
+function getMovableWidgets()
+    local root = gameInterface().getRootPanel()
+    local widgets = { stats = stats, chat = chatButton }
+    widgets.grid = root and root:getChildById('gameBottomActionPanel')
+    widgets.joystick = modules.game_joystick and modules.game_joystick.getPanel and modules.game_joystick.getPanel()
+    widgets.shortcuts = modules.game_shortcuts and modules.game_shortcuts.getPanel and modules.game_shortcuts.getPanel()
+    return widgets
+end
+
+-- The hotbar grid at a new width (as many columns as fit)
+function resizeActionGrid(width)
+    local actionPanel = gameInterface().getRootPanel():getChildById('gameBottomActionPanel')
+    if not actionPanel then
+        return
+    end
+    actionPanel:setWidth(setActionGrid(width))
+    if modules.game_actionbar.updateVisibleWidgets then
+        modules.game_actionbar.updateVisibleWidgets()
+    end
+end
+
+function refreshStats()
+    updateStats()
+end
+
+-- Edit mode needs the pieces in view: no menu, panel or chat over them
+function onEditLayoutChange(active)
+    if editLayoutButton then
+        editLayoutButton:setOn(active)
+    end
+    if active then
+        setMenuVisible(false)
+        currentTab = nil
+        applyTab()
+        setChatVisible(false)
+    end
+end
+
+local function onGameEnd()
+    stopEditLayout()
 end
 
 local function onGameStart()
@@ -489,8 +539,12 @@ function init()
         setChatVisible(not chatVisible)
     end
 
+    -- In the menu (top menu): move and resize the pieces of this layout
+    editLayoutButton = modules.client_topmenu.addTopRightToggleButton('mobileEditLayoutButton',
+        tr('Edit layout'), '/mods/client_mobile/images/edit_layout', toggleEditLayout)
+
     connect(root, { onGeometryChange = layout })
-    connect(g_game, { onGameStart = onGameStart })
+    connect(g_game, { onGameStart = onGameStart, onGameEnd = onGameEnd })
     connect(LocalPlayer, { onHealthChange = updateStats, onManaChange = updateStats })
     connect(Container, { onOpen = onContainerOpen })
     if g_game.isOnline() then
@@ -504,7 +558,12 @@ function terminate()
     end
     local root = gameInterface().getRootPanel()
     disconnect(root, { onGeometryChange = layout })
-    disconnect(g_game, { onGameStart = onGameStart })
+    disconnect(g_game, { onGameStart = onGameStart, onGameEnd = onGameEnd })
+    stopEditLayout()
+    if editLayoutButton then
+        editLayoutButton:destroy()
+        editLayoutButton = nil
+    end
     disconnect(LocalPlayer, { onHealthChange = updateStats, onManaChange = updateStats })
     disconnect(Container, { onOpen = onContainerOpen })
     if modules.game_actionbar then
