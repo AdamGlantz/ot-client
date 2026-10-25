@@ -162,7 +162,7 @@ return {
     developerTools                    = {
         value = DEVELOPER_TOOLS_DEFAULT,
         action = function(value, options, controller, panels, extraWidgets)
-            applyDeveloperTools()
+            applyDeveloperTools(value)
         end
     },
     talkOnRightClick                  = false,

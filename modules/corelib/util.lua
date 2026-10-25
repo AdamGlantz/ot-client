@@ -493,26 +493,32 @@ function isDeveloperToolsForced()
     return g_platform.getBrowserConfigFlag('developerTools') ~= -1
 end
 
-function isDeveloperToolsEnabled()
+-- playerChoice: the player's option, when it is being changed (it is saved
+-- after its action runs)
+function isDeveloperToolsEnabled(playerChoice)
     local forced = g_platform.getBrowserConfigFlag('developerTools')
     if forced ~= -1 then
         return forced == 1
+    end
+    if playerChoice ~= nil then
+        return playerChoice
     end
     return g_settings.getBoolean('developerTools', DEVELOPER_TOOLS_DEFAULT)
 end
 
 -- Shows or hides the developer tool buttons, closing open tools when hidden
-function applyDeveloperTools()
+function applyDeveloperTools(playerChoice)
     local topMenu = modules.client_topmenu and modules.client_topmenu.getTopMenu()
     if not topMenu then
         return
     end
-    local enabled = isDeveloperToolsEnabled()
+    local enabled = isDeveloperToolsEnabled(playerChoice)
     for _, id in ipairs(DEVELOPER_TOOL_BUTTONS) do
         local button = topMenu:recursiveGetChildById(id)
         if button then
-            if not enabled and button:isOn() and button.onClick then
-                button.onClick(button)
+            -- an open tool's button is on; releasing it closes the tool
+            if not enabled and button:isOn() and button.onMouseRelease then
+                button.onMouseRelease(button, button:getPosition(), MouseLeftButton)
             end
             button:setVisible(enabled)
         end
