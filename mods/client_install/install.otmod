@@ -1,0 +1,8 @@
+Module
+  name: client_install
+  description: "Install app" button for the web client (when the browser can install it)
+  author: ot-client
+  sandboxed: true
+  scripts: [ install ]
+  @onLoad: init()
+  @onUnload: terminate()
