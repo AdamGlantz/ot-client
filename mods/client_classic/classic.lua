@@ -277,6 +277,14 @@ local function onGameStart()
     end, 100)
 end
 
+-- The browser client logs in with an account name: the server reads it as
+-- text on WebSocket connections (7.92 desktop clients send a number)
+local function onClientVersionChange()
+    if g_platform.isBrowser() then
+        g_game.enableFeature(GameAccountNames)
+    end
+end
+
 function init()
     -- The Hotkeys window pre-creates empty F1-F12 entries for new profiles,
     -- which would claim the keys before the action bar can bind them
@@ -286,14 +294,17 @@ function init()
     hideLoginExtras()
     setTopMenuWidgetsVisible(false)
     hideUnusedOptions()
-    connect(g_game, { onGameStart = onGameStart })
+    connect(g_game, { onGameStart = onGameStart, onClientVersionChange = onClientVersionChange })
+    if g_game.getClientVersion() > 0 then
+        onClientVersionChange()
+    end
     if g_game.isOnline() then
         onGameStart()
     end
 end
 
 function terminate()
-    disconnect(g_game, { onGameStart = onGameStart })
+    disconnect(g_game, { onGameStart = onGameStart, onClientVersionChange = onClientVersionChange })
     restoreLoginExtras()
     setTopMenuWidgetsVisible(true)
     setStoreButtonVisible(true)
