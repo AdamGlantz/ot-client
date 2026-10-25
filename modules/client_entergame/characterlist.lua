@@ -715,6 +715,11 @@ function CharacterList.create(characters, account, otui)
     characterList = charactersWindow:getChildById('characters')
     panelSort = charactersWindow:getChildById('characterTable')
     autoReconnectButton = charactersWindow:getChildById('autoReconnect')
+    -- replaced by the reconnect mod, which reconnects without the character
+    -- list (and not after a logout or a kick)
+    if modules.client_reconnect then
+        autoReconnectButton:hide()
+    end
     showHiddenCheckbox = charactersWindow:recursiveGetChildById('checkBoxHidden')
     showOutfitsCheckbox = charactersWindow:recursiveGetChildById('checkBoxOutfit')
     premiumBenefitsPanel = charactersWindow:getChildById('premiumBenefitsPanel')
@@ -1082,7 +1087,7 @@ function onLogout()
 end
 
 function scheduleAutoReconnect()
-    if not g_settings.getBoolean('autoReconnect') or lastLogout + 2000 > g_clock.millis() then
+    if modules.client_reconnect or not g_settings.getBoolean('autoReconnect') or lastLogout + 2000 > g_clock.millis() then
         return
     end
 

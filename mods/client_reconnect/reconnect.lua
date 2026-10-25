@@ -14,10 +14,13 @@ local SILENCE_LIMIT = 15000
 local ATTEMPT_TIMEOUT = 10000
 -- A logout asked for this recently explains the end of the game
 local LOGOUT_WINDOW = 5000
--- Login errors worth another try (the server is still busy with the old
--- connection)
+-- Server messages worth another try: the server is still busy with the old
+-- connection, or it is restarting
 local RETRYABLE_ERRORS = {
     ['You are already logged in.'] = true,
+    ['The server is shutting down.'] = true,
+    ['The game is just going down.\nPlease try again later.'] = true,
+    ['Gameworld is starting up. Please wait.'] = true,
 }
 
 local overlay
@@ -84,7 +87,6 @@ local function updateOverlay()
     elseif state == 'final' then
         status:setText(finalMessage)
     end
-    reconnectButton:setVisible(state ~= 'final')
     reconnectButton:setEnabled(state ~= 'connecting')
     reconnectButton:setText(state == 'waiting' and tr('Now') or tr('Reconnect'))
 
@@ -147,7 +149,7 @@ end
 function reconnectNow()
     if state == 'waiting' then
         nextAttemptAt = g_clock.millis()
-    elseif state == 'failed' then
+    elseif state == 'failed' or state == 'final' then
         state = 'waiting'
         attempt = 1
         nextAttemptAt = g_clock.millis()
@@ -216,10 +218,12 @@ local function restoreTargets()
     end
     local attacking = targets.attack and g_map.getCreatureById(targets.attack)
     if attacking and not g_game.getAttackingCreature() then
+        g_logger.info('Reconnect: attacking ' .. attacking:getName() .. ' again')
         g_game.attack(attacking)
     end
     local following = targets.follow and g_map.getCreatureById(targets.follow)
     if following and not g_game.getFollowingCreature() then
+        g_logger.info('Reconnect: following ' .. following:getName() .. ' again')
         g_game.follow(following)
     end
 end
@@ -240,7 +244,7 @@ local function onGameStart()
         g_logger.info('Reconnect: back in the game after ' .. attempt .. ' attempt(s)')
         stop('idle')
         -- the creatures arrive with the first map packets
-        scheduleEvent(restoreTargets, 1000)
+        scheduleEvent(restoreTargets, 300)
     end
 end
 
@@ -260,7 +264,7 @@ end
 local function onLoginError(message)
     if state == 'idle' then
         -- while playing, this is the server saying why it ends the session
-        if g_game.isOnline() then
+        if g_game.isOnline() and not RETRYABLE_ERRORS[message] then
             sessionEnded = true
         end
     elseif state == 'connecting' then
