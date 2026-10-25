@@ -1,0 +1,8 @@
+Module
+  name: client_power
+  description: Low power mode, and a low frame rate while the page is hidden
+  author: ot-client
+  sandboxed: true
+  scripts: [ power ]
+  @onLoad: init()
+  @onUnload: terminate()

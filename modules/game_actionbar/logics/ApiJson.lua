@@ -1112,6 +1112,13 @@ function ApiJson.toggleLockGroup(optionKey, rangeStart, rangeEnd)
     return newState
 end
 
+function ApiJson.getCurrentHotkeySetName()
+    ApiJson.bootstrap()
+    local options = ensureState()
+    local hotkeyOptions = options.array and options.array.hotkeyOptions
+    return options.currentHotkeySetName or (hotkeyOptions and hotkeyOptions.currentHotkeySetName)
+end
+
 function ApiJson.hasCurrentHotkeySet()
     return validateHotkeySet() ~= nil
 end
