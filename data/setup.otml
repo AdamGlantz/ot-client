@@ -29,8 +29,10 @@ game
     diagonal-walk-speed: 3
 
   render
-    invisible-ticks-per-frame: 75
-    item-ticks-per-frame: 75
+    # 7.x game files have no frame durations: items (fire, lamps, water)
+    # and invisible creatures change frame every 500 ms, as in the 7.x client
+    invisible-ticks-per-frame: 500
+    item-ticks-per-frame: 500
     effect-ticks-per-frame: 75
     missile-ticks-per-frame: 75
     animated-text-duration: 1000
@@ -42,4 +44,4 @@ font
   static-text: verdana-11px-rounded
   animated-text: verdana-11px-rounded
   creature-text: verdana-11px-rounded
-  item-count: cipsoftFont
+  item-count: Verdana Bold-11px-outline-compact

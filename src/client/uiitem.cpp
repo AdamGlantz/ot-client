@@ -62,7 +62,7 @@ void UIItem::drawSelf(const DrawPoolType drawPane)
                                : (m_item->isStackable() ? m_item->getCount() : 0);
         const bool shouldDrawCount = m_displayCount > 0 ? (displayCount >= 1) : (displayCount > 1);
         if (countFont && m_alwaysShowCount && shouldDrawCount) {
-            static constexpr Color STACK_COLOR(191, 191, 191);
+            static constexpr Color STACK_COLOR(255, 255, 255);
             std::string countText;
             if (displayCount < 1000) {
                 countText = std::to_string(displayCount);

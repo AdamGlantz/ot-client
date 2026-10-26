@@ -1,6 +1,11 @@
 consoleController = Controller:new()
 SpeakTypesSettings = {
     none = {},
+    -- spell words, which 7.x servers send as normal speech
+    spellWords = {
+        speakType = MessageModes.Say,
+        color = '#D2691E'
+    },
     say = {
         speakType = MessageModes.Say,
         color = '#FFFF00'
@@ -1831,6 +1836,12 @@ function onTalk(name, level, mode, message, channelId, creaturePos)
         channelId = violationsChannelId
     end
 
+    -- 7.x servers send spells as normal speech: show the words in orange
+    local isSpell = mode == MessageModes.Say and Spells.getSpellDataByParamWords(message) ~= nil
+    if isSpell then
+        speaktype = SpeakTypesSettings.spellWords
+    end
+
     if (mode == MessageModes.Say or mode == MessageModes.Whisper or mode == MessageModes.Yell or mode == MessageModes.Spell or
         mode == MessageModes.MonsterSay or mode == MessageModes.MonsterYell or mode == MessageModes.NpcFrom or mode ==
         MessageModes.BarkLow or mode == MessageModes.BarkLoud or mode == MessageModes.NpcFromStartBlock) and creaturePos then
@@ -1854,7 +1865,14 @@ function onTalk(name, level, mode, message, channelId, creaturePos)
             staticText:setColor(speaktype.color)
         end
 
-        staticText:addMessage(name, mode, staticMessage)
+        if isSpell then
+            -- as in 7.x: only the words, in orange (the colour is set by
+            -- addMessage, so it is changed after it)
+            staticText:addMessage(name, MessageModes.MonsterSay, staticMessage)
+            staticText:setColor(speaktype.color)
+        else
+            staticText:addMessage(name, mode, staticMessage)
+        end
         g_map.addStaticText(staticText, creaturePos)
     end
 
@@ -1865,6 +1883,10 @@ function onTalk(name, level, mode, message, channelId, creaturePos)
     end
 
     if speaktype.hideInConsole then
+        return
+    end
+
+    if isSpell and modules.client_options.getOption('hideSpellWordsInChat') then
         return
     end
 

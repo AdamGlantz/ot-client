@@ -332,6 +332,11 @@ return {
             end
         end
     },
+    hideSpellWordsInChat              = {
+        value = false,
+        -- read by game_console
+        action = function(value, options, controller, panels, extraWidgets) end
+    },
     showUnopenedCorpses               = {
         value = true,
         -- read by client_classic (corpses.lua), which shines the corpses
