@@ -9,8 +9,6 @@ local GAP = 3
 local BUTTON_HEIGHT = 18
 local ROW_HEIGHT = BUTTON_HEIGHT + 6
 local INVENTORY_HEIGHT = 172
--- the interface's smooth font, clearer than the 8 px cipsoft pixel font
-local PANEL_FONT = 'verdana-11px-antialised'
 
 -- Inventory widgets the classic panel does not use
 local HIDDEN_INVENTORY = { 'blessings', 'purseButton', 'expert',
@@ -97,7 +95,7 @@ local function setInventory(ui)
             { 'classicOptions', 'Options', function() modules.client_options.toggle() end },
             { 'classicLogout', 'Logout', function() modules.game_interface.tryLogout() end },
         }) do
-            local button = g_ui.createWidget('Button', ui)
+            local button = g_ui.createWidget('ClassicPanelButton', ui)
             button:setId(entry[1])
             button:setText(tr(entry[2]))
             button.onClick = entry[3]
@@ -106,8 +104,11 @@ local function setInventory(ui)
     local previous = 'defense'
     for _, id in ipairs({ 'stop', 'classicOptions', 'classicLogout' }) do
         local button = ui:getChildById(id)
+        if id == 'stop' then
+            button:setStyle('ClassicPanelButton')
+            button:setText(tr('Stop'))
+        end
         button:setHeight(BUTTON_HEIGHT)
-        button:setFont(PANEL_FONT)
         place(button, {
             { AnchorTop, previous, AnchorBottom },
             { AnchorLeft, 'attack', AnchorLeft },
@@ -137,11 +138,10 @@ local function setButtonRow(mainPanel, inventory)
     buttonRow:setHeight(ROW_HEIGHT)
     mainPanel:insertChild(mainPanel:getChildIndex(inventory) + 1, buttonRow)
     for _, entry in ipairs(ROW_BUTTONS) do
-        local button = g_ui.createWidget('Button', buttonRow)
+        local button = g_ui.createWidget('ClassicPanelButton', buttonRow)
         button:setId(entry.id)
         button:setText(tr(entry.text))
         button:setHeight(BUTTON_HEIGHT)
-        button:setFont(PANEL_FONT)
         button.onClick = entry.action or showMoreMenu
     end
     -- Equal widths across the row
@@ -175,8 +175,6 @@ local function mirrorButtonStates()
             local button = buttonRow:getChildById(entry.id)
             if source and button and button:isOn() ~= source:isOn() then
                 button:setOn(source:isOn())
-                -- the pressed look alone is hard to tell apart
-                button:setColor(source:isOn() and '#f0d070' or '#dfdfdf')
             end
         end
     end
@@ -186,6 +184,7 @@ function setClassicPanel()
     if g_platform.isMobile() then
         return
     end
+    g_ui.importStyle('panel')
     local inventory = modules.game_inventory and modules.game_inventory.inventoryController
         and modules.game_inventory.inventoryController.ui
     local options = modules.game_mainpanel and modules.game_mainpanel.optionsController
