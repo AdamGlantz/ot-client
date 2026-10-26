@@ -3,7 +3,7 @@ UICreatureButton = extends(UIWidget, 'UICreatureButton')
 
 local CreatureButtonColors = {
     onIdle = {
-        notHovered = '#888888',
+        notHovered = '#c8c8c8',
         hovered = '#FFFFFF'
     },
     onTargeted = {
@@ -76,6 +76,7 @@ function UICreatureButton:setup(creature, onlyOutfit)
     --local lifeBarWidget = self:getChildById('lifeBar')
 
     labelWidget:setText(creature:getName())
+    labelWidget:setColor(CreatureButtonColors.onIdle.notHovered)
     if onlyOutfit == true then
         creatureWidget:setOutfit(creature:getOutfit())
     else
@@ -155,9 +156,21 @@ function UICreatureButton:updateEmblem(emblemId)
     end
 end
 
+-- Maximum health of monsters by lower-case name, from the server (7.92
+-- only sends a percentage); filled by game_battle
+MonsterHealthMax = MonsterHealthMax or {}
+
 function UICreatureButton:setLifeBarPercent(percent)
     local lifeBarWidget = self:getChildById('lifeBar')
     lifeBarWidget:setPercent(percent)
+
+    -- "current / max" on monsters' bars, from the percentage
+    local max = self.creature and self.creature:isMonster() and MonsterHealthMax[self.creature:getName():lower()]
+    if max then
+        lifeBarWidget:setText(string.format('%d / %d', math.ceil(max * percent / 100), max))
+    else
+        lifeBarWidget:setText('')
+    end
 
     local color
     for i, v in pairs(LifeBarColors) do

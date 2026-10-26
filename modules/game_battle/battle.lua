@@ -1444,7 +1444,30 @@ function disconnecting(gameEvent)
     return true
 end
 
+-- The server sends each monster's maximum health ("name:max;..."), for the
+-- numbers on the health bars
+local MONSTER_HEALTH_OPCODE = 102
+
+local function onMonsterHealth(protocol, opcode, buffer)
+    -- filled in place: the table is gamelib's (this module is sandboxed)
+    local maxima = MonsterHealthMax
+    for name in pairs(maxima) do
+        maxima[name] = nil
+    end
+    for name, max in buffer:gmatch('([^:;]+):(%d+);') do
+        maxima[name] = tonumber(max)
+    end
+    for _, instance in pairs(BattleListManager.instances or {}) do
+        for _, button in ipairs(instance.panel and instance.panel:getChildren() or {}) do
+            if button.creature and button.setLifeBarPercent then
+                button:setLifeBarPercent(button.creature:getHealthPercent())
+            end
+        end
+    end
+end
+
 function init()
+    ProtocolGame.registerExtendedOpcode(MONSTER_HEALTH_OPCODE, onMonsterHealth)
     -- Initialize Battle Button Pool
     if not ObjectPool then
         BattleButtonPool = {
@@ -2611,6 +2634,7 @@ function toggle() -- Close/Open the battle window or Pressing Ctrl + B
 end
 
 function terminate() -- Terminating the Module (unload)
+    ProtocolGame.unregisterExtendedOpcode(MONSTER_HEALTH_OPCODE)
     -- Save battle list instances state before destroying
     BattleListManager:saveInstancesState()
     
