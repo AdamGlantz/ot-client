@@ -262,6 +262,7 @@ function BattleListManager:createWindowForInstance(instance)
     instance.hideButtons = hideButtons
     
     instance:loadHideButtonStates()
+    instance:setupSortBoxes()
     
     local contextMenuButton = newWindow:recursiveGetChildById('contextMenuButton')
     if contextMenuButton then
@@ -370,8 +371,8 @@ function BattleListManager:createWindowForInstance(instance)
     -- Set initial scrollbar position for new instances (filters visible by default)
     local scrollbar = newWindow:getChildById('miniwindowScrollBar')
     if scrollbar then
-        -- Header (16px) + filterPanel height (46px) + spacing panel (18px) + separator (2px)
-        scrollbar:setMarginTop(82) -- 16 + 46 + 18 + 2 = 82
+        -- Header (16px) + filterPanel height (22px) + sort panel (18px) + separator (2px)
+        scrollbar:setMarginTop(58) -- 16 + 22 + 18 + 2 = 58
     end
     
     if g_game.isOnline() then
@@ -793,6 +794,47 @@ function BattleListInstance:showContextMenu(widget, mousePos, mouseButton)
     return true
 end
 
+-- Sort by / order drop-downs under the filter buttons; they set the same
+-- filters as the sort entries in the menu
+local SORT_FILTER_NAMES = { name = 'Name', distance = 'Distance', age = 'DisplayTime', health = 'HitPoints' }
+
+function BattleListInstance:setupSortBoxes()
+    local typeBox = self.window and self.window:recursiveGetChildById('sortTypeBox')
+    local orderBox = self.window and self.window:recursiveGetChildById('sortOrderBox')
+    if not typeBox or not orderBox then
+        return
+    end
+    if not typeBox.ready then
+        typeBox.ready = true
+        typeBox:addOption(tr('Name'), 'name')
+        typeBox:addOption(tr('Distance'), 'distance')
+        typeBox:addOption(tr('Age'), 'age')
+        typeBox:addOption(tr('Health'), 'health')
+        orderBox:addOption(tr('Asc.'), 'A')
+        orderBox:addOption(tr('Desc.'), 'D')
+        local function apply()
+            local sortType = typeBox:getCurrentOption().data
+            local order = orderBox:getCurrentOption().data
+            local filter = (order == 'A' and 'sortAscBy' or 'sortDescBy') .. SORT_FILTER_NAMES[sortType]
+            if not self:getFilter(filter) then
+                self:setFilter(filter)
+            end
+        end
+        typeBox.onOptionChange = apply
+        orderBox.onOptionChange = apply
+    end
+    self:updateSortBoxes()
+end
+
+function BattleListInstance:updateSortBoxes()
+    local typeBox = self.window and self.window:recursiveGetChildById('sortTypeBox')
+    local orderBox = self.window and self.window:recursiveGetChildById('sortOrderBox')
+    if typeBox and orderBox and typeBox.ready then
+        typeBox:setCurrentOptionByData(self:getSortType(), true)
+        orderBox:setCurrentOptionByData(self:getSortOrder(), true)
+    end
+end
+
 function BattleListInstance:onMenuAction(actionId)
     if actionId == 'editBattleListName' then
         self:openEditNameDialog()
@@ -800,6 +842,7 @@ function BattleListInstance:onMenuAction(actionId)
         BattleListManager:createNewInstance()
     else
         self:setFilter(actionId)
+        self:updateSortBoxes()
     end
 end
 
@@ -864,8 +907,10 @@ function BattleListInstance:hideFilterPanel()
     if HorizontalSeparator then HorizontalSeparator:setVisible(false) end
     self.filterPanel:setVisible(false)
     local contentsPanel = self.window:recursiveGetChildById('contentsPanel')
-    -- Reduce margin by the full filter panel space: 46px (filter) + 18px (spacing) + 2px (separator) + 6px (margin) = 72px
+    -- The sort panel (18px) stays in place, hidden: the contents move up over it
     if contentsPanel then contentsPanel:setMarginTop(-23) end
+    local sortPanel = self.window:recursiveGetChildById('sortPanel')
+    if sortPanel then sortPanel:setVisible(false) end
     
     -- Adjust scrollbar to start at header bottom when filter is hidden
     local scrollbar = self.window:getChildById('miniwindowScrollBar')
@@ -897,7 +942,7 @@ function BattleListInstance:showFilterPanel()
     end
     -- Ensure originalHeight is set, fallback to a default height
     if not self.filterPanel.originalHeight then
-        self.filterPanel.originalHeight = 40  -- Default filter panel height
+        self.filterPanel.originalHeight = 22  -- Default filter panel height
     end
     self.filterPanel:setHeight(self.filterPanel.originalHeight)
     self:setHidingFilters(false)
@@ -906,6 +951,8 @@ function BattleListInstance:showFilterPanel()
     self.filterPanel:setVisible(true)
     local contentsPanel = self.window:recursiveGetChildById('contentsPanel')
     if contentsPanel then contentsPanel:setMarginTop(0) end
+    local sortPanel = self.window:recursiveGetChildById('sortPanel')
+    if sortPanel then sortPanel:setVisible(true) end
     
     -- Adjust scrollbar to start at filter panel bottom when filter is visible
     local scrollbar = self.window:getChildById('miniwindowScrollBar')
@@ -1497,8 +1544,8 @@ function init()
         -- Set initial scrollbar position when filters are visible
         local scrollbar = battleWindow:getChildById('miniwindowScrollBar')
         if scrollbar then
-            -- Header (16px) + filterPanel height (46px) + spacing panel (18px) + separator (2px) + margin (6px)
-            scrollbar:setMarginTop(88) -- 16 + 46 + 18 + 2 + 6 = 88
+            -- Header (16px) + filterPanel height (22px) + sort panel (18px) + separator (2px) + margin (6px)
+            scrollbar:setMarginTop(64) -- 16 + 22 + 18 + 2 + 6 = 64
         end
     end
 
@@ -1510,6 +1557,7 @@ function init()
     
     mainInstance.hideButtons = hideButtons
     mainInstance:loadHideButtonStates()
+    mainInstance:setupSortBoxes()
     mainInstance:loadLockState()
     
     -- Setup lock button
