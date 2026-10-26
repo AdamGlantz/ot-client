@@ -332,6 +332,11 @@ return {
             end
         end
     },
+    showUnopenedCorpses               = {
+        value = true,
+        -- read by client_classic (corpses.lua), which shines the corpses
+        action = function(value, options, controller, panels, extraWidgets) end
+    },
     walkTeleportDelay                 = {
         value = 50,
         action = function(value, options, controller, panels, extraWidgets)
