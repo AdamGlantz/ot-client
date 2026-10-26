@@ -181,49 +181,19 @@ MiniWindow
     margin-top: 20
     anchors.top: parent.top
     anchors.horizontalCenter: parent.horizontalCenter
-    height: 46
-    width: 130
+    height: 22
+    width: 108
     layout:
       type: grid
       flow: true
       cell-spacing: 2
-      num-columns: 6
+      num-columns: 5
       cell-size: 20 20
       fit-children: false
 
     BattlePlayers
       id: hidePlayers
       !tooltip: tr('Hide players')
-      @onClick: modules.game_battle.onFilterButtonClick(self)
-
-    BattleKnights
-      id: hideKnights
-      !tooltip: tr('Hide knights')
-      @onClick: modules.game_battle.onFilterButtonClick(self)
-
-    BattlePaladins
-      id: hidePaladins
-      !tooltip: tr('Hide paladins')
-      @onClick: modules.game_battle.onFilterButtonClick(self)
-
-    BattleDruids
-      id: hideDruids
-      !tooltip: tr('Hide druids')
-      @onClick: modules.game_battle.onFilterButtonClick(self)
-
-    BattleSorcerers
-      id: hideSorcerers
-      !tooltip: tr('Hide sorcerers')
-      @onClick: modules.game_battle.onFilterButtonClick(self)
-
-    BattleMonks
-      id: hideMonks
-      !tooltip: tr('Hide monks')
-      @onClick: modules.game_battle.onFilterButtonClick(self)
-
-    BattleSummons
-      id: hideSummons
-      !tooltip: tr('Hide summons')
       @onClick: modules.game_battle.onFilterButtonClick(self)
 
     BattleNPCs
@@ -246,17 +216,30 @@ MiniWindow
       !tooltip: tr('Hide party members')
       @onClick: modules.game_battle.onFilterButtonClick(self)
 
-    BattleMembersOwnGuild
-      id: hideMembersOwnGuild
-      !tooltip: tr('Hide own guild members')
-      @onClick: modules.game_battle.onFilterButtonClick(self)
 
   Panel
+    id: sortPanel
     height: 18
     anchors.top: filterPanel.bottom
     anchors.left: parent.left
     anchors.right: parent.right
     margin-top: 0
+
+    ComboBox
+      id: sortTypeBox
+      !tooltip: tr('Sort by')
+      anchors.top: parent.top
+      anchors.left: parent.left
+      margin-left: 8
+      size: 76 18
+
+    ComboBox
+      id: sortOrderBox
+      !tooltip: tr('Sort order')
+      anchors.top: parent.top
+      anchors.left: prev.right
+      margin-left: 4
+      size: 60 18
 
   HorizontalSeparator
     id: HorizontalSeparator

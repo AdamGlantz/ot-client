@@ -159,25 +159,23 @@ local function setClassicMinimap()
         end
     end
 
-    -- Zoom buttons move to the right edge and the map takes the freed width.
-    -- Anchor both to the panel itself: the zoom buttons are positioned from
-    -- the map's bottom, so anchoring the map to them would form a cycle.
+    -- The map takes the panel's width, with the minimap's own controls on
+    -- it: Center at the top left, floor and zoom buttons at the bottom right
     for _, id in ipairs({ 'zoomIn', 'zoomOut' }) do
         local button = ui:getChildById(id)
         if button then
-            button:addAnchor(AnchorRight, 'parent', AnchorRight)
-            button:setMarginRight(7)
+            button:setVisible(false)
         end
     end
     local border = ui:getChildById('minimapBorder')
     if border then
         border:addAnchor(AnchorRight, 'parent', AnchorRight)
-        border:setMarginRight(7 + 20 + 4) -- zoom button width and gap
+        border:setMarginRight(7)
     end
 
     local minimap = border and border:getChildById('minimap')
     if minimap then
-        for _, id in ipairs({ 'floorUpButton', 'floorDownButton' }) do
+        for _, id in ipairs({ 'floorUpButton', 'floorDownButton', 'zoomInButton', 'zoomOutButton', 'resetButton' }) do
             local button = minimap:getChildById(id)
             if button then
                 button:setVisible(true)
@@ -296,7 +294,6 @@ function init()
     setTopMenuWidgetsVisible(false)
     hideUnusedOptions()
     connect(g_game, { onGameStart = onGameStart, onClientVersionChange = onClientVersionChange })
-    connect(LocalPlayer, { onHealthChange = onClassicPanelStats, onManaChange = onClassicPanelStats })
     if g_game.getClientVersion() > 0 then
         onClientVersionChange()
     end
@@ -307,7 +304,6 @@ end
 
 function terminate()
     disconnect(g_game, { onGameStart = onGameStart, onClientVersionChange = onClientVersionChange })
-    disconnect(LocalPlayer, { onHealthChange = onClassicPanelStats, onManaChange = onClassicPanelStats })
     stopClassicPanel()
     restoreLoginExtras()
     setTopMenuWidgetsVisible(true)
