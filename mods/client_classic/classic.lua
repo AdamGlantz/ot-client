@@ -49,6 +49,14 @@ local DEFAULTS = {
         },
         apply = function() end,
     },
+    {
+        key = 'client_classic_defaults_4',
+        options = {
+            -- no square marking the tile under the mouse in 7.x
+            crosshair = 'disabled',
+        },
+        apply = function() end,
+    },
 }
 
 local ACTION_BAR_SLOTS = 12
@@ -71,6 +79,7 @@ local HIDDEN_OPTIONS = {
         'showExpiryInInvetory',    -- item expiry/charges display (modern)
         'showExpiryInContainers',
         'showExpiryOnUnusedItems',
+        'crosshair',         -- off (client_classic_defaults_4); not a 7.x thing
     },
     interfaceHUD = {
         'displayHarmony',    -- monk vocation (14.x)
