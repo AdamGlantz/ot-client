@@ -267,6 +267,11 @@ end
 
 local function onGameStart()
     setStoreButtonVisible(false)
+    -- The feature list was rebuilt for the client version since the option was applied
+    local options = modules.client_options
+    if options and options.getOption and options.getOption('blueNpcNames') then
+        g_game.enableFeature(GameBlueNpcNameColor)
+    end
     applyDefaults()
     -- The action bars and minimap set themselves up on game start as well
     scheduleEvent(function()
