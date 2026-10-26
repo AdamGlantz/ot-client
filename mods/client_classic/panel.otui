@@ -1,8 +1,8 @@
 // The right panel's text buttons (Stop, Options, Logout, Skills, Battle,
-// VIP, More..): dark with a light edge and white bold text
+// VIP, More..): dark with a light edge, in the mini windows' title font
 ClassicPanelButton < UIButton
-  font: Verdana Bold-11px-low-space
-  color: #f2f2f2
+  font: verdana-11px-monochrome
+  color: #ffffffe7
   text-offset: 0 1
   background-color: #161616
   border-width: 1
