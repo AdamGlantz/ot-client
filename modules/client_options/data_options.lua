@@ -298,6 +298,40 @@ return {
                 value))
         end
     },
+    walkFirstStepDelay                = {
+        value = 200,
+        action = function(value, options, controller, panels, extraWidgets)
+            panels.generalPanel:recursiveGetChildById('walkFirstStepDelay'):setText(string.format(
+                'Walk delay after first step: %sms',
+                value))
+            -- how long a held arrow key waits before it repeats (walks on)
+            local rootPanel = modules.game_interface and modules.game_interface.getRootPanel()
+            if rootPanel then
+                rootPanel:setAutoRepeatDelay(value)
+            end
+        end
+    },
+    walkCtrlTurnDelay                 = {
+        value = 150,
+        action = function(value, options, controller, panels, extraWidgets)
+            panels.generalPanel:recursiveGetChildById('walkCtrlTurnDelay'):setText(string.format(
+                'Walk delay after ctrl turn: %sms',
+                value))
+        end
+    },
+    blueNpcNames                      = {
+        value = false,
+        action = function(value, options, controller, panels, extraWidgets)
+            -- The engine draws NPC names blue when this game feature is on.
+            -- Features are reset per client version, so game start applies
+            -- it again (client_classic).
+            if value then
+                g_game.enableFeature(GameBlueNpcNameColor)
+            else
+                g_game.disableFeature(GameBlueNpcNameColor)
+            end
+        end
+    },
     walkTeleportDelay                 = {
         value = 50,
         action = function(value, options, controller, panels, extraWidgets)

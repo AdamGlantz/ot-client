@@ -170,6 +170,24 @@ UIWidget
       height: 22
 
       OptionScaleScroll
+        id: walkFirstStepDelay
+        !text: tr('Walk delay after first step: 200ms')
+        anchors.fill: parent
+        &minimumScrollValue: 50
+        &maximumScrollValue: 500
+        &scrollSize: 21
+        @onSetup: |
+          local value = modules.client_options.getOption('walkFirstStepDelay')
+          self:setText(tr('Walk delay after first step: %dms', value))
+
+    SmallReversedQtPanel
+      anchors.left: parent.left
+      anchors.right: parent.right
+      anchors.top: prev.bottom
+      margin-top: 7
+      height: 22
+
+      OptionScaleScroll
         id: walkTurnDelay
         !text: tr('Walk delay after turn: 50ms')
         anchors.fill: parent
@@ -188,6 +206,24 @@ UIWidget
       height: 22
 
       OptionScaleScroll
+        id: walkCtrlTurnDelay
+        !text: tr('Walk delay after ctrl turn: 150ms')
+        anchors.fill: parent
+        &minimumScrollValue: 50
+        &maximumScrollValue: 500
+        &scrollSize: 21
+        @onSetup: |
+          local value = modules.client_options.getOption('walkCtrlTurnDelay')
+          self:setText(tr('Walk delay after ctrl turn: %dms', value))
+
+    SmallReversedQtPanel
+      anchors.left: parent.left
+      anchors.right: parent.right
+      anchors.top: prev.bottom
+      margin-top: 7
+      height: 22
+
+      OptionScaleScroll
         id: walkTeleportDelay
         !text: tr('Walk delay after teleport: 200ms')
         anchors.fill: parent
@@ -196,7 +232,7 @@ UIWidget
         &scrollSize: 21
         @onSetup: |
           local value = modules.client_options.getOption('walkTeleportDelay')
-          self:setText(tr('Walk delay after turn: %dms', value))
+          self:setText(tr('Walk delay after teleport: %dms', value))
 
     SmallReversedQtPanel
       anchors.left: parent.left

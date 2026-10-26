@@ -185,7 +185,7 @@ local function turn(dir, repeated)
 
     cancelWalkEvent()
 
-    local TURN_DELAY_REPEATED = 150
+    local TURN_DELAY_REPEATED = modules.client_options.getOption('walkCtrlTurnDelay') or 150
     local TURN_DELAY_DEFAULT = 50
 
     local delay = repeated and TURN_DELAY_REPEATED or TURN_DELAY_DEFAULT
@@ -200,7 +200,7 @@ end
 
 --- Binds movement keys to their respective directions.
 local function bindKeys()
-    modules.game_interface.getRootPanel():setAutoRepeatDelay(200)
+    modules.game_interface.getRootPanel():setAutoRepeatDelay(modules.client_options.getOption('walkFirstStepDelay') or 200)
 
     for _, keyDir in ipairs(keys) do bindWalkKey(keyDir[1], keyDir[2]) end
     for _, keyDir in ipairs(turnKeys) do bindTurnKey(keyDir[1], keyDir[2]) end
