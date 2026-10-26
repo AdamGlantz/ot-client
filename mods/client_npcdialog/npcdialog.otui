@@ -1,0 +1,242 @@
+// Buttons in the classic panel's look: dark, light edge, title font
+NpcDialogButton < UIButton
+  font: verdana-11px-monochrome
+  color: #ffffffe7
+  text-offset: 0 1
+  background-color: #161616
+  border-width: 1
+  border-color: #5e5e5e
+  height: 22
+  focusable: false
+
+  $hover !disabled:
+    background-color: #262626
+    border-color: #9a9a9a
+
+  $pressed:
+    background-color: #050505
+
+  $on:
+    color: #f0d070
+    border-color: #8a7a40
+
+  $disabled:
+    color: #ffffff55
+    border-color: #3a3a3a
+
+// One offer in the shop grid: the item and its price
+NpcOfferCell < UIWidget
+  size: 44 54
+  border-width: 1
+  border-color: #3a3a3a
+  background-color: #10101080
+  focusable: false
+
+  $hover:
+    border-color: #8a8a8a
+
+  $on:
+    border-color: #f0d070
+    background-color: #2a2414
+
+  Item
+    id: item
+    size: 34 34
+    anchors.top: parent.top
+    anchors.horizontalCenter: parent.horizontalCenter
+    margin-top: 2
+    phantom: true
+    virtual: true
+
+  Label
+    id: price
+    anchors.bottom: parent.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-bottom: 2
+    text-align: center
+    font: verdana-11px-monochrome
+    color: #f0d070
+    phantom: true
+
+// One destination in the travel list
+NpcTravelRow < UIWidget
+  height: 22
+  border-width: 1
+  border-color: #3a3a3a
+  background-color: #10101080
+  focusable: false
+
+  $hover:
+    border-color: #8a8a8a
+
+  $on:
+    border-color: #f0d070
+    background-color: #2a2414
+
+  Label
+    id: name
+    anchors.left: parent.left
+    anchors.verticalCenter: parent.verticalCenter
+    margin-left: 8
+    font: verdana-11px-monochrome
+    color: #ffffffe7
+    phantom: true
+
+  Label
+    id: price
+    anchors.right: parent.right
+    anchors.verticalCenter: parent.verticalCenter
+    margin-right: 8
+    font: verdana-11px-monochrome
+    color: #f0d070
+    phantom: true
+
+NpcDialogWindow < MainWindow
+  id: npcDialog
+  width: 330
+  height: 200
+  @onEscape: modules.client_npcdialog.close()
+
+  Panel
+    id: content
+    anchors.top: parent.top
+    anchors.left: parent.left
+    anchors.right: parent.right
+    layout:
+      type: verticalBox
+      fit-children: true
+      spacing: 8
+
+    Label
+      id: answer
+      text-wrap: true
+      text-auto-resize: true
+      color: #e8e8e8
+
+    Panel
+      id: buttons
+      layout:
+        type: grid
+        cell-size: 94 22
+        cell-spacing: 4
+        flow: true
+        fit-children: true
+
+    // Shop: Buy / Sell tabs, the offers, the chosen one with an amount
+    Panel
+      id: trade
+      visible: false
+      layout:
+        type: verticalBox
+        fit-children: true
+        spacing: 6
+
+      Panel
+        id: tabs
+        height: 22
+        layout:
+          type: grid
+          cell-size: 147 22
+          cell-spacing: 4
+          flow: true
+
+        NpcDialogButton
+          id: buyTab
+          !text: tr('Buy')
+
+        NpcDialogButton
+          id: sellTab
+          !text: tr('Sell')
+
+      ScrollablePanel
+        id: offers
+        height: 174
+        vertical-scrollbar: offersScroll
+        layout:
+          type: grid
+          cell-size: 44 54
+          cell-spacing: 4
+          flow: true
+
+      VerticalScrollBar
+        id: offersScroll
+        visible: false
+        step: 28
+        pixels-scroll: true
+
+      Panel
+        id: chosen
+        height: 58
+        visible: false
+
+        Item
+          id: item
+          size: 34 34
+          anchors.top: parent.top
+          anchors.left: parent.left
+          virtual: true
+
+        Label
+          id: name
+          anchors.top: parent.top
+          anchors.left: item.right
+          anchors.right: parent.right
+          margin-left: 8
+          font: verdana-11px-monochrome
+          color: #ffffffe7
+
+        Label
+          id: each
+          anchors.top: name.bottom
+          anchors.left: name.left
+          anchors.right: parent.right
+          margin-top: 2
+          color: #b0b0b0
+
+        HorizontalScrollBar
+          id: amount
+          anchors.bottom: parent.bottom
+          anchors.left: parent.left
+          anchors.right: total.left
+          margin-right: 8
+          minimum: 1
+          maximum: 100
+          step: 1
+
+        Label
+          id: total
+          anchors.bottom: parent.bottom
+          anchors.right: parent.right
+          width: 110
+          text-align: right
+          font: verdana-11px-monochrome
+          color: #f0d070
+
+    // Travel: the destinations and their prices
+    Panel
+      id: travel
+      visible: false
+      layout:
+        type: verticalBox
+        fit-children: true
+        spacing: 3
+
+    Panel
+      id: actions
+      height: 22
+      layout:
+        type: grid
+        cell-size: 147 22
+        cell-spacing: 4
+        flow: true
+
+      NpcDialogButton
+        id: confirm
+        !text: tr('Confirm')
+        visible: false
+
+      NpcDialogButton
+        id: back
+        !text: tr('Back')
+        visible: false

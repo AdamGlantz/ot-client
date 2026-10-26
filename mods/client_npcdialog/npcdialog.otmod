@@ -1,0 +1,8 @@
+Module
+  name: client_npcdialog
+  description: Tap-to-talk NPC dialog: keyword and yes/no buttons, shop and travel windows (server extended opcode 103)
+  author: ot-client
+  sandboxed: true
+  scripts: [ npcdialog ]
+  @onLoad: init()
+  @onUnload: terminate()
