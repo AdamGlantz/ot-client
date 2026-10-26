@@ -274,6 +274,7 @@ local function onGameStart()
     scheduleEvent(function()
         setClassicMinimap()
         setClassicActionBar()
+        setClassicPanel()
     end, 100)
 end
 
@@ -295,6 +296,7 @@ function init()
     setTopMenuWidgetsVisible(false)
     hideUnusedOptions()
     connect(g_game, { onGameStart = onGameStart, onClientVersionChange = onClientVersionChange })
+    connect(LocalPlayer, { onHealthChange = onClassicPanelStats, onManaChange = onClassicPanelStats })
     if g_game.getClientVersion() > 0 then
         onClientVersionChange()
     end
@@ -305,6 +307,8 @@ end
 
 function terminate()
     disconnect(g_game, { onGameStart = onGameStart, onClientVersionChange = onClientVersionChange })
+    disconnect(LocalPlayer, { onHealthChange = onClassicPanelStats, onManaChange = onClassicPanelStats })
+    stopClassicPanel()
     restoreLoginExtras()
     setTopMenuWidgetsVisible(true)
     setStoreButtonVisible(true)
