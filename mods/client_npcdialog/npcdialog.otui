@@ -96,7 +96,20 @@ NpcDialogWindow < MainWindow
   id: npcDialog
   width: 330
   height: 200
-  @onEscape: modules.client_npcdialog.close()
+  @onEscape: modules.client_npcdialog.dismiss()
+
+  // In the title bar: ends the conversation (Escape only works when the
+  // window has focus, and the shop and travel views have no Bye)
+  NpcDialogButton
+    id: closeButton
+    anchors.top: parent.top
+    anchors.right: parent.right
+    margin-top: -26
+    margin-right: -6
+    size: 18 16
+    text: x
+    text-offset: 0 -1
+    @onClick: modules.client_npcdialog.dismiss()
 
   Panel
     id: content
@@ -203,6 +216,17 @@ NpcDialogWindow < MainWindow
           minimum: 1
           maximum: 100
           step: 1
+
+        Label
+          id: warning
+          anchors.top: each.bottom
+          anchors.left: parent.left
+          anchors.right: parent.right
+          margin-top: 6
+          text-wrap: true
+          height: 28
+          color: #e07050
+          visible: false
 
         Label
           id: total
