@@ -66,6 +66,9 @@ local function fitWindow()
     addEvent(function()
         if window then
             local content = window:getChildById('content')
+            -- children may have changed size since the last layout pass
+            window:recursiveGetChildById('trade'):getLayout():update()
+            content:getLayout():update()
             window:setHeight(content:getHeight() + window:getPaddingTop() + window:getPaddingBottom() + 4)
         end
     end)
@@ -104,7 +107,26 @@ local function updateChosen()
     local weight = selected.weight and selected.weight > 0 and string.format(', %.2f oz', selected.weight / 100) or ''
     chosen:getChildById('each'):setText(string.format('%d gold each%s', selected.price, weight))
     local amount = offerAmount()
-    chosen:getChildById('total'):setText(string.format('%s: %d gold', tr('Total'), selected.price * amount))
+    if chosen:getChildById('amount'):isVisible() then
+        chosen:getChildById('total'):setText(string.format('%d for %d gold', amount, selected.price * amount))
+    else
+        chosen:getChildById('total'):setText(string.format('%s: %d gold', tr('Total'), selected.price))
+    end
+
+    -- What does not fit the player's capacity lands at their feet
+    local warning = ''
+    local player = g_game.getLocalPlayer()
+    if tradeTab == 'buy' and player and selected.weight and selected.weight > 0 then
+        local weight = selected.weight * amount / 100
+        local free = player:getFreeCapacity()
+        if weight > free then
+            warning = string.format('Weighs %.2f oz, you can carry %d oz. The rest will be put at your feet.', weight, free)
+        end
+    end
+    chosen:getChildById('warning'):setText(warning)
+    chosen:getChildById('warning'):setVisible(warning ~= '')
+    chosen:setHeight(warning ~= '' and 88 or 58)
+    fitWindow()
 end
 
 local function confirm()
@@ -235,6 +257,14 @@ local function onDialog(protocol, opcode, buffer)
     local sameNpc = dialog and dialog.id == data.id
     dialog = data
     if not sameNpc then
+        -- Captains and other travel NPCs open on their destinations, unless
+        -- they asked something or also run a shop
+        local travelOnly = #(data.travel or {}) > 0 and #(data.buy or {}) + #(data.sell or {}) == 0
+        view = (travelOnly and not data.question) and 'travel' or 'talk'
+        selected = nil
+    elseif data.question then
+        -- a question the automatic "yes" did not answer (slow reply, or typed
+        -- words): Yes and No are in the talk view
         view = 'talk'
         selected = nil
     elseif view == 'trade' or view == 'travel' then
@@ -251,6 +281,14 @@ local function onDialog(protocol, opcode, buffer)
     render()
     window:show()
     window:raise()
+end
+
+-- The player closed the window: say goodbye so the NPC is free again
+function dismiss()
+    if dialog then
+        say('bye')
+    end
+    close()
 end
 
 function close()
