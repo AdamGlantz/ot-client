@@ -230,8 +230,9 @@ local function setClassicActionBar()
     centerActionBar(bar)
     local panel = bar:getParent()
     if panel then
-        -- Stone background like the map border on both sides of the bar
-        panel:setImageSource('/images/ui/panel_map')
+        -- The side panels' stone frame on both sides of the bar
+        panel:setImageSource('/images/ui/2pixel_up_frame_borderimage')
+        panel:setImageBorder(4)
     end
     if panel and not panel.classicCentering then
         panel.classicCentering = true
