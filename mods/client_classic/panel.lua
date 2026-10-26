@@ -9,8 +9,8 @@ local GAP = 3
 local BUTTON_HEIGHT = 18
 local ROW_HEIGHT = BUTTON_HEIGHT + 6
 local INVENTORY_HEIGHT = 172
--- clearer than the 8 px cipsoft font the panel's controls use by default
-local PANEL_FONT = 'Verdana Bold-10px'
+-- the interface's smooth font, clearer than the 8 px cipsoft pixel font
+local PANEL_FONT = 'verdana-11px-antialised'
 
 -- Inventory widgets the classic panel does not use
 local HIDDEN_INVENTORY = { 'blessings', 'purseButton', 'expert',
