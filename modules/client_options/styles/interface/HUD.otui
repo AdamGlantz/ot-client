@@ -32,6 +32,17 @@ UIWidget
       OptionCheckBox
         id: blueNpcNames
         !text: tr('Display NPC names in blue')
+
+    SmallReversedQtPanel
+      anchors.left: parent.left
+      anchors.right: parent.right
+      anchors.top: prev.bottom
+      margin-top: 7
+      height: 22
+
+      OptionCheckBox
+        id: showUnopenedCorpses
+        !text: tr('Make my unopened corpses shine')
   
     SmallReversedQtPanel
       anchors.left: parent.left
