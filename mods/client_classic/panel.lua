@@ -9,6 +9,8 @@ local GAP = 3
 local BUTTON_HEIGHT = 18
 local ROW_HEIGHT = BUTTON_HEIGHT + 6
 local INVENTORY_HEIGHT = 172
+-- clearer than the 8 px cipsoft font the panel's controls use by default
+local PANEL_FONT = 'Verdana Bold-10px'
 
 -- Inventory widgets the classic panel does not use
 local HIDDEN_INVENTORY = { 'blessings', 'purseButton', 'expert',
@@ -105,6 +107,7 @@ local function setInventory(ui)
     for _, id in ipairs({ 'stop', 'classicOptions', 'classicLogout' }) do
         local button = ui:getChildById(id)
         button:setHeight(BUTTON_HEIGHT)
+        button:setFont(PANEL_FONT)
         place(button, {
             { AnchorTop, previous, AnchorBottom },
             { AnchorLeft, 'attack', AnchorLeft },
@@ -138,6 +141,7 @@ local function setButtonRow(mainPanel, inventory)
         button:setId(entry.id)
         button:setText(tr(entry.text))
         button:setHeight(BUTTON_HEIGHT)
+        button:setFont(PANEL_FONT)
         button.onClick = entry.action or showMoreMenu
     end
     -- Equal widths across the row
