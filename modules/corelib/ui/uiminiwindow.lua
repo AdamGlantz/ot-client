@@ -222,6 +222,12 @@ function UIMiniWindow:onDragEnter(mousePos)
     if not parent then
         return false
     end
+    -- A locked window stays put, also where a module makes it draggable
+    -- again (containers switch dragging on and off with the mouse)
+    local lockButton = self:getChildById('lockButton')
+    if lockButton and lockButton:isOn() then
+        return false
+    end
 
     if parent:getClassName() == 'UIMiniWindowContainer' then
         self.oldParentDrag = parent

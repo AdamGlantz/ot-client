@@ -277,6 +277,21 @@ function displayMessage(mode, text)
             label:setColor(msgtype.color)
         end
 
+        -- Loot messages ("Loot of a rat: cheese", 7.x sends them as plain
+        -- info messages) stand out: bold, on a dark box
+        local isLoot = text:find('^Loot of ') ~= nil
+        label:setFont(isLoot and 'Verdana Bold-11px-outline' or 'verdana-11px-rounded')
+        label:setBackgroundColor(isLoot and '#000000a0' or 'alpha')
+        label:setPadding(isLoot and 3 or 0)
+        -- the box hugs the text (the panel's layout stretches labels)
+        local sideMargin = 0
+        if isLoot then
+            local panelWidth = label:getParent():getWidth()
+            sideMargin = math.max(0, math.floor((panelWidth - label:getTextSize().width - 6) / 2))
+        end
+        label:setMarginLeft(sideMargin)
+        label:setMarginRight(sideMargin)
+
         label:setVisible(true)
         removeEvent(label.hideEvent)
         label.hideEvent = scheduleEvent(function()

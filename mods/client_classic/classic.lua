@@ -274,8 +274,21 @@ local function applyDefaults()
     g_settings.save()
 end
 
+-- 7.x servers send no sounds; the client's own (button clicks, ...) stay
+-- off as well, every start (the Sound settings are hidden)
+local function muteSounds()
+    local options = modules.client_options
+    if options and options.setOption then
+        options.setOption('soundMaster', 0, true)
+    end
+    if g_sounds and g_sounds.setAudioEnabled then
+        g_sounds.setAudioEnabled(false)
+    end
+end
+
 local function onGameStart()
     setStoreButtonVisible(false)
+    muteSounds()
     -- The feature list was rebuilt for the client version since the option was applied
     local options = modules.client_options
     if options and options.getOption and options.getOption('blueNpcNames') then
@@ -305,6 +318,8 @@ function init()
         modules.game_hotkeys.setDefaultComboKeys({})
     end
     hideLoginExtras()
+    muteSounds()
+    applyClassicSpells()
     initCorpseShine()
     setTopMenuWidgetsVisible(false)
     hideUnusedOptions()
