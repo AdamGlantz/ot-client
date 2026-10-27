@@ -119,14 +119,15 @@ OtButton < UIButton
     color: $ot-text-disabled
 
 // The main action of a screen (Confirm, Buy, Proceed)
-// (the stone button tinted, so the texture does not tile)
+// Stone with a gold edge and bright gold text (a gold tint on the stone is
+// too dark to read)
 OtButtonPrimary < OtButton
-  color: $ot-gold-text
-  image-color: #f0c860
+  color: #ffe08a
+  border-width: 2
+  border-color: $ot-gold
   $pressed:
-    image-color: #d0a840
+    color: $ot-gold
 
-// Leaving or destroying (Logout, Delete, Reset)
 OtButtonDanger < OtButton
   color: $ot-danger-text
   image-color: #d05050

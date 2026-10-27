@@ -1,84 +1,99 @@
+// Built from the ot-ui styles (data/styles/50-ot-ui.otui)
 GamepadBindRow < UIWidget
-  height: 26
-  background-color: #00000030
-  border-width: 1
-  border-color: #3a3a3a
+  height: 48
+  border-width-bottom: 1
+  border-color-bottom: #ffffff14
+  // the button being pressed on the controller
   $on:
-    border-color: #f0d070
-    background-color: #3a322280
+    background-color: #e0b84c30
+    border-width: 2
+    border-color: $ot-gold
 
-  Label
+  OtLabel
     id: name
     anchors.left: parent.left
     anchors.verticalCenter: parent.verticalCenter
     margin-left: 8
-    width: 130
-    color: #e8e8e8
+    text-auto-resize: true
 
-  Button
+  OtButton
     id: slot
     anchors.right: parent.right
     anchors.verticalCenter: parent.verticalCenter
     margin-right: 4
-    size: 110 20
+    width: 140
 
-GamepadBindWindow < MainWindow
+GamepadBindWindow < OtBackdrop
   id: gamepadBindWindow
-  !text: tr('Game controller')
-  size: 330 470
   @onEscape: modules.client_gamepad.closeBindWindow()
 
-  Label
-    id: status
-    anchors.top: parent.top
-    anchors.left: parent.left
-    anchors.right: parent.right
-    text-wrap: true
-    text-auto-resize: true
-    color: #c8c8c8
+  OtPanel
+    id: panel
+    anchors.centerIn: parent
+    size: 380 500
 
-  ScrollablePanel
-    id: rows
-    anchors.top: status.bottom
-    anchors.left: parent.left
-    anchors.right: rowsScroll.left
-    anchors.bottom: buttons.top
-    margin-top: 8
-    margin-bottom: 8
-    vertical-scrollbar: rowsScroll
-    layout:
-      type: verticalBox
-      spacing: 3
+    OtTitle
+      anchors.top: parent.top
+      anchors.horizontalCenter: parent.horizontalCenter
+      margin-top: 10
+      !text: tr('Game controller')
 
-  VerticalScrollBar
-    id: rowsScroll
-    anchors.top: status.bottom
-    anchors.bottom: buttons.top
-    anchors.right: parent.right
-    margin-top: 8
-    margin-bottom: 8
-    step: 29
-    pixels-scroll: true
-
-  Panel
-    id: buttons
-    anchors.left: parent.left
-    anchors.right: parent.right
-    anchors.bottom: parent.bottom
-    height: 22
-
-    Button
-      id: reset
-      anchors.left: parent.left
-      anchors.verticalCenter: parent.verticalCenter
-      width: 110
-      !text: tr('Defaults')
-      @onClick: modules.client_gamepad.resetBindings()
-
-    Button
-      id: close
+    OtIconButton
+      id: closeX
+      anchors.top: parent.top
       anchors.right: parent.right
-      anchors.verticalCenter: parent.verticalCenter
-      width: 80
-      !text: tr('Close')
+      !text: 'X'
       @onClick: modules.client_gamepad.closeBindWindow()
+
+    OtHint
+      id: status
+      anchors.top: closeX.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+      margin-top: 8
+
+    ScrollablePanel
+      id: rows
+      anchors.top: status.bottom
+      anchors.left: parent.left
+      anchors.right: rowsScroll.left
+      anchors.bottom: buttons.top
+      margin-top: 8
+      margin-bottom: 10
+      margin-right: 4
+      vertical-scrollbar: rowsScroll
+      layout:
+        type: verticalBox
+
+    VerticalScrollBar
+      id: rowsScroll
+      anchors.top: status.bottom
+      anchors.bottom: buttons.top
+      anchors.right: parent.right
+      margin-top: 8
+      margin-bottom: 10
+      step: 48
+      pixels-scroll: true
+
+    UIWidget
+      id: buttons
+      anchors.left: parent.left
+      anchors.right: parent.right
+      anchors.bottom: parent.bottom
+      height: 40
+
+      OtButtonDanger
+        id: reset
+        anchors.left: parent.left
+        anchors.verticalCenter: parent.verticalCenter
+        width: 110
+        !text: tr('Defaults')
+        @onClick: modules.client_gamepad.resetBindings()
+
+      OtButtonPrimary
+        id: close
+        anchors.right: parent.right
+        anchors.verticalCenter: parent.verticalCenter
+        width: 100
+        !text: tr('Done')
+        @onClick: modules.client_gamepad.closeBindWindow()

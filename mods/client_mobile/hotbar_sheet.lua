@@ -394,7 +394,7 @@ function openHotbarSheet(button)
     local width = math.min(460, rootWidget:getWidth() - 16)
     local height = math.max(300, math.min(640, rootWidget:getHeight() - 16))
     panel:setSize({ width = width, height = height })
-    panel.tabs:getLayout():setCellSize({ width = math.floor((width - 20 - 18) / 4), height = 34 })
+    panel.tabs:getLayout():setCellSize({ width = math.floor((width - 24 - 18) / 4), height = 40 })
     local _, buttonId = slotIds()
     panel.title:setText(tr('Slot %s', button.hotkeyLabel and button.hotkeyLabel:getText() ~= '' and
         button.hotkeyLabel:getText() or tostring(buttonId)))

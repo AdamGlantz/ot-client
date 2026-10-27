@@ -14,6 +14,8 @@ Classic Tibia materials, nothing new to draw:
 - **Gold means "selected" or "on"**: the chosen tab, the chosen option, a
   checked box all get a gold edge and gold text. Nothing else is gold except
   section headings and the "?" marks.
+- **The main action** of a screen (Done, Confirm, Buy) is a stone button
+  with a gold edge and bright gold text.
 - **Red means leaving or destroying**: Logout, Delete, Reset. It is the
   stone button tinted red.
 - **High contrast** (a panel's `on` state): darker stone with a gold edge,
@@ -31,7 +33,7 @@ Classic Tibia materials, nothing new to draw:
 | `OtLabel` | A setting's or field's name (11 px bold) |
 | `OtText` / `OtHint` | Body text / quieter grey help text (wrap) |
 | `OtButton` | Any button, 40 px high; `checked`/`on` = selected |
-| `OtButtonPrimary` | The main action of a screen (Confirm, Buy): gold |
+| `OtButtonPrimary` | The main action of a screen (Confirm, Buy, Done): gold edge, gold text |
 | `OtButtonDanger` | Logout, Delete, Reset: red |
 | `OtIconButton` | 40×40: close X, -, +, < |
 | `OtTab` in `OtTabRow` | Tabs; the selected one is checked |
@@ -71,6 +73,8 @@ Tokens (`&ot-…` in the same file): fonts `$ot-font-title`, `$ot-font-label`,
 
 ## Status
 
-Built with ot-ui: the touch hub and settings (`mods/client_mobile/hub.*`).
-Still on older styles, to move over: hotbar sheet and hotbar settings, the
-layout editor's bars, the controller bind window, the NPC dialog.
+Built with ot-ui: the touch hub and settings, the hotbar sheet and hotbar
+settings, the layout editor's bars and frames (`mods/client_mobile`), the
+controller bind window (`mods/client_gamepad`), and the NPC dialog's
+buttons, offers and travel rows (`mods/client_npcdialog`; the dialog keeps
+the classic movable window).

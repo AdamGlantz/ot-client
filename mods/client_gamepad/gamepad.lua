@@ -106,10 +106,10 @@ local function refreshBindWindow(bits)
     if not bindWindow then
         return
     end
-    bindWindow.status:setText(bits >= 0 and
+    bindWindow.panel.status:setText(bits >= 0 and
         tr('Controller connected. Press a button to find it in the list.') or
         tr('No controller found. Connect one and press any of its buttons (browsers only report a controller after that).'))
-    for _, row in ipairs(bindWindow.rows:getChildren()) do
+    for _, row in ipairs(bindWindow.panel.rows:getChildren()) do
         row:setOn(bits >= 0 and pressed(bits, row.buttonId))
     end
 end
@@ -168,7 +168,7 @@ function openBindWindow()
     end
     bindWindow = g_ui.createWidget('GamepadBindWindow', rootWidget)
     for _, button in ipairs(BUTTONS) do
-        local row = g_ui.createWidget('GamepadBindRow', bindWindow.rows)
+        local row = g_ui.createWidget('GamepadBindRow', bindWindow.panel.rows)
         row.buttonId = button.id
         row.name:setText(tr(button.name))
         row.slot:setText(slotText(bindings[button.id]))
