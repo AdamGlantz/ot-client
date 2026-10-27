@@ -103,14 +103,14 @@ MobileChatButton < UIButton
     phantom: true
     visible: false
 
-MobileEditSizeButton < Button
-  size: 34 30
-  font: Verdana Bold-11px
+MobileEditSizeButton < OtButton
+  size: 40 40
 
 // Edit mode: - and + resize a piece, Reset puts it back where it was at
 // first (placed next to its frame)
-MobileEditSizeBar < UIWidget
-  size: 168 30
+MobileEditSizeBar < OtPanel
+  size: 196 52
+  padding: 6
   phantom: false
   layout:
     type: horizontalBox
@@ -118,13 +118,9 @@ MobileEditSizeBar < UIWidget
   MobileEditSizeButton
     id: smaller
     !text: '-'
-  Label
+  OtValue
     id: size
-    width: 42
-    text-align: center
-    font: verdana-11px-rounded
-    color: #ffffff
-    background-color: #000000aa
+    width: 52
   MobileEditSizeButton
     id: bigger
     !text: '+'
@@ -132,18 +128,19 @@ MobileEditSizeBar < UIWidget
     id: reset
     width: 52
     !text: tr('Reset')
+    color: $ot-text
 
 // Edit mode: a frame over each movable piece, dragged with one finger, with
 // a resize corner
 MobileEditFrame < UIWidget
   draggable: true
   focusable: false
-  background-color: #2f7fd033
+  background-color: #ffffff18
   border-width: 2
-  border-color: #6fb4ff
+  border-color: #ffffffaa
   $on:
-    background-color: #f0c05033
-    border-color: #f0c050
+    background-color: #e0b84c30
+    border-color: $ot-gold
 
   UIWidget
     id: resize
@@ -153,42 +150,38 @@ MobileEditFrame < UIWidget
     margin-right: -10
     margin-bottom: -10
     draggable: true
-    background-color: #6fb4ff
+    image-source: /images/ui/button-9grid-idle
+    image-border: 4
     border-width: 2
-    border-color: #ffffff
+    border-color: $ot-gold
 
-MobileEditBar < UIWidget
-  size: 350 44
+MobileEditBar < OtPanel
+  size: 400 56
   anchors.top: parent.top
   anchors.horizontalCenter: parent.horizontalCenter
   margin-top: 6
-  background-color: #141414ee
-  border-width: 1
-  border-color: #6fb4ff
+  padding: 8
 
-  Label
+  OtHint
     anchors.left: parent.left
+    anchors.right: reset.left
     anchors.verticalCenter: parent.verticalCenter
-    margin-left: 10
-    width: 170
-    text-wrap: true
+    margin-right: 6
     text-auto-resize: true
     !text: tr('Drag to move.\nTap, then - / + to resize.')
-    color: #dddddd
 
-  Button
+  OtButtonDanger
     id: reset
     anchors.right: done.left
     anchors.verticalCenter: parent.verticalCenter
     margin-right: 6
-    size: 72 32
+    width: 92
     !text: tr('Reset UI')
 
-  Button
+  OtButtonPrimary
     id: done
     anchors.right: parent.right
     anchors.verticalCenter: parent.verticalCenter
-    margin-right: 6
-    size: 72 32
+    width: 80
     !text: tr('Done')
 

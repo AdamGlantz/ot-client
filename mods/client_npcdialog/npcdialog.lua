@@ -7,7 +7,7 @@
 
 local NPC_DIALOG_OPCODE = 103
 local TEXT_COLOR = '#e8e8e8'
-local KEYWORD_COLOR = '#f0d070'
+local KEYWORD_COLOR = '#e0b84c' -- $ot-gold
 local AUTO_YES_TIMEOUT = 4000
 local AFFORD_COLOR = '#70d070'
 local SHORT_COLOR = '#e05050'

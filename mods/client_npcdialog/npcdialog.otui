@@ -1,43 +1,18 @@
-// Buttons in the classic panel's look: dark, light edge, title font
-NpcDialogButton < UIButton
-  font: verdana-11px-monochrome
-  color: #ffffffe7
-  text-offset: 0 1
-  background-color: #161616
-  border-width: 1
-  border-color: #5e5e5e
-  height: 22
-  focusable: false
-
-  $hover !disabled:
-    background-color: #262626
-    border-color: #9a9a9a
-
-  $pressed:
-    background-color: #050505
-
-  $on:
-    color: #f0d070
-    border-color: #8a7a40
-
-  $disabled:
-    color: #ffffff55
-    border-color: #3a3a3a
+// Built from the ot-ui styles (data/styles/50-ot-ui.otui)
+NpcDialogButton < OtButton
+  height: 36
 
 // One offer in the shop grid: the item and its price
 NpcOfferCell < UIWidget
   size: 44 54
-  border-width: 1
-  border-color: #3a3a3a
-  background-color: #10101080
+  image-source: /images/ui/3pixel_frame_borderimage
+  image-border: 3
   focusable: false
 
-  $hover:
-    border-color: #8a8a8a
-
   $on:
-    border-color: #f0d070
-    background-color: #2a2414
+    border-width: 2
+    border-color: $ot-gold
+    background-color: #e0b84c30
 
   Item
     id: item
@@ -55,32 +30,29 @@ NpcOfferCell < UIWidget
     anchors.right: parent.right
     margin-bottom: 2
     text-align: center
-    font: verdana-11px-monochrome
-    color: #f0d070
+    font: $ot-font-label
+    color: $ot-gold
     phantom: true
 
 // One destination in the travel list
 NpcTravelRow < UIWidget
-  height: 22
-  border-width: 1
-  border-color: #3a3a3a
-  background-color: #10101080
+  height: 36
+  image-source: /images/ui/3pixel_frame_borderimage
+  image-border: 3
   focusable: false
 
-  $hover:
-    border-color: #8a8a8a
-
   $on:
-    border-color: #f0d070
-    background-color: #2a2414
+    border-width: 2
+    border-color: $ot-gold
+    background-color: #e0b84c30
 
   Label
     id: name
     anchors.left: parent.left
     anchors.verticalCenter: parent.verticalCenter
     margin-left: 8
-    font: verdana-11px-monochrome
-    color: #ffffffe7
+    font: $ot-font-label
+    color: $ot-text
     phantom: true
 
   Label
@@ -88,8 +60,8 @@ NpcTravelRow < UIWidget
     anchors.right: parent.right
     anchors.verticalCenter: parent.verticalCenter
     margin-right: 8
-    font: verdana-11px-monochrome
-    color: #f0d070
+    font: $ot-font-label
+    color: $ot-gold
     phantom: true
 
 NpcDialogWindow < MainWindow
@@ -125,13 +97,13 @@ NpcDialogWindow < MainWindow
       id: answer
       text-wrap: true
       text-auto-resize: true
-      color: #e8e8e8
+      color: $ot-text
 
     Panel
       id: buttons
       layout:
         type: grid
-        cell-size: 94 22
+        cell-size: 94 36
         cell-spacing: 4
         flow: true
         fit-children: true
@@ -147,10 +119,10 @@ NpcDialogWindow < MainWindow
 
       Panel
         id: tabs
-        height: 22
+        height: 36
         layout:
           type: grid
-          cell-size: 147 22
+          cell-size: 147 36
           cell-spacing: 4
           flow: true
 
@@ -175,8 +147,8 @@ NpcDialogWindow < MainWindow
       Label
         id: money
         height: 14
-        font: verdana-11px-monochrome
-        color: #f0d070
+        font: $ot-font-label
+        color: $ot-gold
 
       VerticalScrollBar
         id: offersScroll
@@ -202,8 +174,8 @@ NpcDialogWindow < MainWindow
           anchors.left: item.right
           anchors.right: parent.right
           margin-left: 8
-          font: verdana-11px-monochrome
-          color: #ffffffe7
+          font: $ot-font-label
+          color: $ot-text-strong
 
         Label
           id: each
@@ -211,7 +183,7 @@ NpcDialogWindow < MainWindow
           anchors.left: name.left
           anchors.right: parent.right
           margin-top: 2
-          color: #b0b0b0
+          color: $ot-text-muted
 
         HorizontalScrollBar
           id: amount
@@ -231,7 +203,7 @@ NpcDialogWindow < MainWindow
           margin-top: 6
           text-wrap: true
           height: 28
-          color: #e07050
+          color: $ot-negative
           visible: false
 
         CheckBox
@@ -250,8 +222,8 @@ NpcDialogWindow < MainWindow
           anchors.right: parent.right
           width: 110
           text-align: right
-          font: verdana-11px-monochrome
-          color: #f0d070
+          font: $ot-font-label
+          color: $ot-gold
 
     // Travel: the destinations and their prices
     Panel
@@ -264,15 +236,16 @@ NpcDialogWindow < MainWindow
 
     Panel
       id: actions
-      height: 22
+      height: 36
       layout:
         type: grid
-        cell-size: 147 22
+        cell-size: 147 36
         cell-spacing: 4
         flow: true
 
-      NpcDialogButton
+      OtButtonPrimary
         id: confirm
+        height: 36
         !text: tr('Confirm')
         visible: false
 
