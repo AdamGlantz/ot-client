@@ -5,9 +5,6 @@ on:
   push:
     branches:
       - web-client-792
-      # Experimental branches publish to their own <branch>-latest release
-      - touch-input
-      - mobile-ui
 
 permissions:
   contents: read
