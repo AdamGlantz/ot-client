@@ -239,6 +239,8 @@ local function executeSpecialAction(specialActionId)
         modules.game_battle.attackNext(true)
     elseif specialActionId == "toggleChase" then
         modules.game_hotkeys.toggleChaseMode()
+    elseif specialActionId:find('^tap') and modules.game_shortcuts and modules.game_shortcuts.setShortcut then
+        modules.game_shortcuts.setShortcut(specialActionId:sub(4):lower())
     elseif TargetActionHandlers[specialActionId] then
         TargetActionHandlers[specialActionId]()
     end

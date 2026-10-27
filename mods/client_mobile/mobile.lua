@@ -131,6 +131,10 @@ local EQUIPMENT_GAPS = {
     left = { 'helmet', 'backpack' },
 }
 -- (3 of the 9 px the gaps free go to the soul and capacity boxes)
+local EQUIPMENT_ICONS = {
+    attack = 'fightOffensive', balanced = 'fightBalanced', defense = 'fightDefensive',
+    standPosture = 'stand', followPosture = 'chase', pvp = 'secure',
+}
 local EQUIPMENT_SAVED = 2 * 3
 local EQUIPMENT_BOX_GROWTH = 3
 local function compactEquipment()
@@ -165,6 +169,21 @@ local function compactEquipment()
     end
     if inventory.panelHeight then
         inventory.panelHeight = inventory.panelHeight - EQUIPMENT_SAVED
+    end
+    -- the fight mode, chase and secure buttons in the icon set (#28): white,
+    -- gold for the one chosen (the inventory disables the chosen mode; the
+    -- secure button is checked when on)
+    for id, icon in pairs(EQUIPMENT_ICONS) do
+        local button = slots:getChildById(id)
+        if button then
+            local path = '/images/ui/ot/icons/' .. icon
+            local chosen = { ['icon-source'] = path .. '_on', ['border-color'] = '#e0b84c' }
+            button:mergeStyle({
+                ['image-source'] = '', ['background-color'] = '#1c1c1c', ['border-width'] = 1,
+                ['border-color'] = '#555555', ['icon-source'] = path, ['icon-size'] = '16 16', ['icon-align'] = 'center',
+                ['$pressed'] = { ['image-source'] = '' }, ['$disabled'] = chosen, ['$checked'] = chosen,
+            })
+        end
     end
 end
 

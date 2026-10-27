@@ -69,6 +69,26 @@ function resetShortcuts()
   end
 end
 
+-- Arms a mode from elsewhere (a hotbar action): the next tap on the game
+-- attacks, follows, looks or uses; the same one again disarms it
+local HINTS = {
+  attack = 'Tap a creature to attack it.', follow = 'Tap a creature to follow it.',
+  look = 'Tap something to look at it.', use = 'Tap something to use it.',
+}
+function setShortcut(id)
+  local widget = shortcutIcons and shortcutIcons:getChildById(id)
+  if not widget then return end
+  local armed = widget.image:isChecked()
+  resetShortcuts()
+  if not armed then
+    widget.image:setChecked(true)
+    widget.lastClicked = g_clock.millis()
+    if modules.game_textmessage then
+      modules.game_textmessage.displayStatusMessage(tr(HINTS[id]))
+    end
+  end
+end
+
 function getShortcut()
   for _, widget in ipairs(shortcutIcons:getChildren()) do
     if widget.image:isChecked() then

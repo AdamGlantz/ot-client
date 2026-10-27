@@ -149,6 +149,16 @@ ActionBarSpecialActions = {{
 { id = "lookAtCrosshair", group = "General", text = tr("Look at crosshair") },
 { id = "contextMenuAtCrosshair", group = "General", text = tr("Context menu on crosshair") }}
 
+-- Touch screens: arm a mode so the next tap on the game attacks, follows,
+-- looks or uses (the look/use/attack/follow buttons the touch layout had)
+if g_platform.isMobile() then
+    -- (first in the list)
+    for index, mode in ipairs({ { 'tapAttack', 'Attack (then tap a creature)' }, { 'tapFollow', 'Follow (then tap a creature)' },
+        { 'tapLook', 'Look (then tap something)' }, { 'tapUse', 'Use (then tap something)' } }) do
+        table.insert(ActionBarSpecialActions, index, { id = mode[1], group = 'Tap the game', text = tr(mode[2]) })
+    end
+end
+
 -- Every special action has an icon (64 px, tools/gen_ui_icons.js; the
 -- passive abilities keep their own sheet)
 for _, specialAction in ipairs(ActionBarSpecialActions) do

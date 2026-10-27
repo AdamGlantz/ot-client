@@ -104,6 +104,8 @@ OtButton < UIButton
   image-source: /images/ui/button-9grid-idle
   image-border: 4
   focusable: false
+  // (set here too: a state's border stays when the state ends otherwise)
+  border-width: 0
   $pressed:
     image-source: /images/ui/button-9grid-pressed
     text-offset: 1 1

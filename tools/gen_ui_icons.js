@@ -18,6 +18,9 @@ const ICONS = {
     skills: 'delapouite/histogram', battle: 'lorc/crossed-swords', vip: 'delapouite/star-formation',
     containers: 'delapouite/backpack', chat: 'skoll/talk', edit: 'delapouite/pencil',
     fullscreen: 'delapouite/expand', settings: 'lorc/cog',
+    // equipment panel: fight mode, chase and secure mode
+    fightOffensive: 'delapouite/sword-brandish', fightBalanced: 'lorc/scales', fightDefensive: 'lorc/checked-shield',
+    stand: 'delapouite/person', chase: 'lorc/run', secure: 'lorc/dove',
 };
 // Hotbar special actions (modules/game_actionbar, by id): a glyph, and a
 // small badge in the bottom right corner for the variant (nearest, lowest
@@ -39,6 +42,8 @@ const ACTIONS = {
     contextMenuAtCrosshair: ['delapouite/hamburger-menu', TARGET],
     attackNext: [TARGET, 'delapouite/plain-arrow', WHITE, GOLD, -90], attackPrevious: [TARGET, 'delapouite/plain-arrow', WHITE, GOLD, 90],
     toggleChase: ['lorc/run'], toggleWasdChatMode: ['delapouite/keyboard'],
+    // touch: arm a mode, then tap the game
+    tapAttack: [TARGET], tapFollow: ['lorc/footprint'], tapLook: ['delapouite/eye-target'], tapUse: ['lorc/grab'],
 };
 
 (async () => {

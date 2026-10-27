@@ -20,6 +20,7 @@ ContainersTab < UIButton
   image-source: /images/ui/3pixel_frame_borderimage
   image-border: 3
   focusable: false
+  border-width: 0
   // the container shown
   $on:
     color: $ot-gold
