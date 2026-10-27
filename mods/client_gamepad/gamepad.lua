@@ -152,6 +152,8 @@ local function poll()
     lastButtons = bits
 end
 
+local startPolling, stopPolling
+
 -- Bind window --------------------------------------------------------------
 
 local function slotText(slot)
@@ -180,12 +182,17 @@ function openBindWindow()
     refreshBindWindow(g_platform.getGamepadButtons())
     bindWindow:raise()
     bindWindow:focus()
+    -- Read the controller while the window is open, also outside the game
+    startPolling()
 end
 
 function closeBindWindow()
     if bindWindow then
         bindWindow:destroy()
         bindWindow = nil
+    end
+    if not g_game.isOnline() then
+        stopPolling()
     end
 end
 
@@ -212,13 +219,16 @@ local function setupOptions()
     row:setVisible(true)
 end
 
-local function startPolling()
+startPolling = function()
     if not pollEvent then
         pollEvent = cycleEvent(poll, POLL_INTERVAL)
     end
 end
 
-local function stopPolling()
+stopPolling = function()
+    if bindWindow then
+        return
+    end
     if pollEvent then
         removeEvent(pollEvent)
         pollEvent = nil
