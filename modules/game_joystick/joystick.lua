@@ -1,3 +1,38 @@
+-- Movement control for touch screens. Three styles (Options > Controls >
+-- Movement, kept on this device):
+--   dpad4  arrows up, down, left and right
+--   dpad8  the same with the diagonals
+--   stick  an analog stick: the knob follows the thumb, the direction is
+--          its angle snapped to the 8 directions
+-- Every style walks like a held arrow key (game_walk), so the first step
+-- delay and the walking speed are the same as with the keyboard.
+
+local STYLE_SETTING = 'mobileMovementStyle'
+local DEFAULT_STYLE = 'stick'
+STYLES = {
+  { id = 'dpad4', name = 'D-Pad' },
+  { id = 'dpad8', name = 'D-Pad (8-way)' },
+  { id = 'stick', name = 'Analog stick' },
+}
+-- The centre that does not walk, as a share of the radius
+local DEAD_ZONE = { dpad4 = 0.22, dpad8 = 0.22, stick = 0.18 }
+local ARROWS = {
+  { id = 'n', dir = Directions.North, x = 0, y = -1 },
+  { id = 'ne', dir = Directions.NorthEast, x = 0.7071, y = -0.7071, diagonal = true },
+  { id = 'e', dir = Directions.East, x = 1, y = 0 },
+  { id = 'se', dir = Directions.SouthEast, x = 0.7071, y = 0.7071, diagonal = true },
+  { id = 's', dir = Directions.South, x = 0, y = 1 },
+  { id = 'sw', dir = Directions.SouthWest, x = -0.7071, y = 0.7071, diagonal = true },
+  { id = 'w', dir = Directions.West, x = -1, y = 0 },
+  { id = 'nw', dir = Directions.NorthWest, x = -0.7071, y = -0.7071, diagonal = true },
+}
+-- Directions by 45 degree sector, clockwise from east
+local SECTORS = { Directions.East, Directions.SouthEast, Directions.South, Directions.SouthWest,
+  Directions.West, Directions.NorthWest, Directions.North, Directions.NorthEast }
+
+local style = DEFAULT_STYLE
+local arrows = {}
+
 local overlay
 local keypad
 local keypadUpdateEvent
@@ -11,8 +46,12 @@ local moveListener
 function init()
   if not g_platform.isMobile() then return end
 
+  g_ui.importStyle('joystick_styles')
   overlay = g_ui.displayUI('joystick')
   keypad = overlay.keypad
+  keypad.onGeometryChange = placeArrows
+  setStyle(g_settings.getString(STYLE_SETTING), true)
+  setupOptions()
 
   connect(keypad, {
     onMousePress = onKeypadTouchPress,
@@ -108,6 +147,39 @@ function onKeypadTouchRelease(widget, pos, button)
   return true
 end
 
+-- The thumb's offset from the keypad's centre, -1..1 on each axis (the
+-- keypad's shorter side is the diameter)
+local function thumbOffset()
+  local radius = math.min(keypad:getWidth(), keypad:getHeight()) / 2
+  local x = (keypadMousePos.x - 0.5) * keypad:getWidth() / radius
+  local y = (keypadMousePos.y - 0.5) * keypad:getHeight() / radius
+  local length = math.sqrt(x * x + y * y)
+  if length > 1 then
+    x, y = x / length, y / length
+  end
+  return x, y
+end
+
+local function directionFor(x, y)
+  if math.sqrt(x * x + y * y) < (DEAD_ZONE[style] or 0.2) then
+    return nil
+  end
+  if style == 'dpad4' then
+    if math.abs(y) > math.abs(x) then
+      return y < 0 and Directions.North or Directions.South
+    end
+    return x < 0 and Directions.West or Directions.East
+  end
+  local sector = math.floor(math.atan2(y, x) / (math.pi / 4) + 0.5) % 8
+  return SECTORS[sector + 1]
+end
+
+local function highlight(dir)
+  for _, arrow in ipairs(arrows) do
+    arrow:setOn(arrow.dir == dir)
+  end
+end
+
 function executeWalk()
   removeEvent(keypadUpdateEvent)
   keypadUpdateEvent = nil
@@ -115,50 +187,99 @@ function executeWalk()
   if not keypadHeld then
     keypad.pointer:setMarginTop(0)
     keypad.pointer:setMarginLeft(0)
+    highlight(nil)
     return
   end
 
   keypadUpdateEvent = scheduleEvent(executeWalk, 20)
-  keypadMousePos.x = math.min(1, math.max(0, keypadMousePos.x))
-  keypadMousePos.y = math.min(1, math.max(0, keypadMousePos.y))
-  local angle = math.atan2(keypadMousePos.x - 0.5, keypadMousePos.y - 0.5)
-  local maxTop = math.abs(math.cos(angle)) * 75
-  local marginTop = math.max(-maxTop, math.min(maxTop, (keypadMousePos.y - 0.5) * 150))
-  local maxLeft = math.abs(math.sin(angle)) * 75
-  local marginLeft = math.max(-maxLeft, math.min(maxLeft, (keypadMousePos.x - 0.5) * 150))
-  keypad.pointer:setMarginTop(marginTop)
-  keypad.pointer:setMarginLeft(marginLeft)
-  local dir
-
-  if keypadMousePos.y < 0.3 and keypadMousePos.x < 0.3 then
-    dir = Directions.NorthWest     
-  elseif keypadMousePos.y < 0.3 and keypadMousePos.x > 0.7 then
-    dir = Directions.NorthEast
-  elseif keypadMousePos.y > 0.7 and keypadMousePos.x < 0.3 then
-    dir = Directions.SouthWest
-  elseif keypadMousePos.y > 0.7 and keypadMousePos.x > 0.7 then
-    dir = Directions.SouthEast
+  local x, y = thumbOffset()
+  if style == 'stick' then
+    -- The knob follows the thumb up to the edge of the pad
+    local radius = math.min(keypad:getWidth(), keypad:getHeight()) / 2
+    keypad.pointer:setMarginLeft(x * radius)
+    keypad.pointer:setMarginTop(y * radius)
   end
 
-  if not dir and (math.abs(keypadMousePos.y - 0.5) > 0.1 or math.abs(keypadMousePos.x - 0.5) > 0.1) then
-    if math.abs(keypadMousePos.y - 0.5) > math.abs(keypadMousePos.x - 0.5) then
-      if keypadMousePos.y < 0.5 then
-        dir = Directions.North
-      else
-        dir = Directions.South
-      end
-    else
-      if keypadMousePos.x < 0.5 then
-        dir = Directions.West
-      else
-        dir = Directions.East
-      end    
-    end  
-  end
-
+  local dir = directionFor(x, y)
+  highlight(dir)
   if dir and moveListener then
     moveListener(dir, firstStep)
   end
+end
+
+-- Styles ---------------------------------------------------------------------
+
+-- Puts the D-pad arrows around the centre (again when the pad is resized in
+-- the layout editor)
+function placeArrows()
+  if not keypad then
+    return
+  end
+  local radius = math.min(keypad:getWidth(), keypad:getHeight()) * 0.34
+  local arrowSize = math.floor(math.min(keypad:getWidth(), keypad:getHeight()) * 0.27)
+  for _, arrow in ipairs(arrows) do
+    arrow:setSize({ width = arrowSize, height = arrowSize })
+    arrow:setMarginLeft(math.floor(arrow.offsetX * radius))
+    arrow:setMarginTop(math.floor(arrow.offsetY * radius))
+  end
+end
+
+function getStyle()
+  return style
+end
+
+function setStyle(newStyle, initial)
+  local known = false
+  for _, entry in ipairs(STYLES) do
+    known = known or entry.id == newStyle
+  end
+  style = known and newStyle or DEFAULT_STYLE
+  if not initial then
+    g_settings.set(STYLE_SETTING, style)
+  end
+
+  for _, arrow in ipairs(arrows) do
+    arrow:destroy()
+  end
+  arrows = {}
+  local stick = style == 'stick'
+  keypad.pointer:setVisible(stick)
+  if stick then
+    keypad:setImageSource('/images/game/mobile/keypad')
+  else
+    keypad:setImageSource('/images/game/mobile/dpad')
+    for _, entry in ipairs(ARROWS) do
+      if style == 'dpad8' or not entry.diagonal then
+        local arrow = g_ui.createWidget('JoystickArrow', keypad)
+        arrow:setImageSource('/images/game/mobile/dpad_' .. entry.id)
+        arrow.dir = entry.dir
+        arrow.offsetX, arrow.offsetY = entry.x, entry.y
+        table.insert(arrows, arrow)
+      end
+    end
+    placeArrows()
+  end
+end
+
+-- The Movement choice at the top of Options > Controls (touch screens only)
+function setupOptions()
+  local options = modules.client_options
+  local panel = options and options.getPanel and options.getPanel('generalPanel')
+  local row = panel and panel:recursiveGetChildById('movementStylePanel')
+  if not row then
+    return
+  end
+  local box = row:getChildById('movementStyleBox')
+  box:clearOptions()
+  for _, entry in ipairs(STYLES) do
+    box:addOption(tr(entry.name), entry.id)
+  end
+  box:setCurrentOptionByData(style, true)
+  box.onOptionChange = function(widget, text, id)
+    setStyle(id)
+  end
+  row:setHeight(30)
+  row:setVisible(true)
 end
 
 function getPanel()

@@ -10,10 +10,57 @@ UIWidget
     anchors.bottom: parent.bottom
     vertical-scrollbar: generalScrollBar
 
+    // Touch screens: D-pad or stick, set up by the joystick module
+    // (game_joystick); no height elsewhere
     SmallReversedQtPanel
+      id: movementStylePanel
       anchors.left: parent.left
       anchors.right: parent.right
       anchors.top: parent.top
+      height: 0
+      visible: false
+
+      Label
+        anchors.left: parent.left
+        anchors.verticalCenter: parent.verticalCenter
+        margin-left: 4
+        !text: tr('Movement (touch screen)')
+        text-auto-resize: true
+
+      ComboBox
+        id: movementStyleBox
+        anchors.right: parent.right
+        anchors.verticalCenter: parent.verticalCenter
+        width: 130
+
+    // Browser: which button uses which hotbar slot, set up by the
+    // client_gamepad mod; no height elsewhere
+    SmallReversedQtPanel
+      id: gamepadPanel
+      anchors.left: parent.left
+      anchors.right: parent.right
+      anchors.top: prev.bottom
+      height: 0
+      visible: false
+
+      Label
+        anchors.left: parent.left
+        anchors.verticalCenter: parent.verticalCenter
+        margin-left: 4
+        !text: tr('Game controller')
+        text-auto-resize: true
+
+      Button
+        id: gamepadBindButton
+        anchors.right: parent.right
+        anchors.verticalCenter: parent.verticalCenter
+        width: 130
+        !text: tr('Bind...')
+
+    SmallReversedQtPanel
+      anchors.left: parent.left
+      anchors.right: parent.right
+      anchors.top: prev.bottom
       height: 22
 
       OptionCheckBoxMarked

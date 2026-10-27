@@ -253,6 +253,17 @@ function WalkController:onTerminate()
     unbindKeys()
 end
 
+--- Walking from the touch joystick or a game controller: called every few
+--- milliseconds with the direction while held (one step at a time, like a
+--- held arrow key), and with nil on release
+function controllerWalk(dir)
+    if dir then
+        walk(dir)
+    else
+        cancelWalkEvent()
+    end
+end
+
 --- Sets up game-related events for the WalkController.
 function WalkController:onGameStart()
     self:registerEvents(g_game, {
@@ -270,13 +281,7 @@ function WalkController:onGameStart()
     modules.game_interface.getRootPanel().onFocusChange = stopSmartWalk
     -- The joystick reports its direction every few milliseconds while held;
     -- walk like a held arrow key (one step at a time) and stop on release
-    modules.game_joystick.addOnJoystickMoveListener(function(dir)
-        if dir then
-            walk(dir)
-        else
-            cancelWalkEvent()
-        end
-    end)
+    modules.game_joystick.addOnJoystickMoveListener(controllerWalk)
 
     if not g_game.isOfficialTibia() then
         g_game.enableFeature(GameForceFirstAutoWalkStep)

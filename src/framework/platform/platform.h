@@ -168,6 +168,49 @@ public:
         }, key.c_str());
 #endif
     }
+    // The first connected game controller (browser Gamepad API, standard
+    // mapping): the pressed buttons as bits (bit 0 is button 0), -1 when
+    // there is none. Browsers report a controller only after one of its
+    // buttons was pressed on the page.
+    int getGamepadButtons() {
+#ifndef __EMSCRIPTEN__
+        return -1;
+#else
+        return MAIN_THREAD_EM_ASM_INT({
+            var pads = navigator.getGamepads ? navigator.getGamepads() : [];
+            for (var i = 0; i < pads.length; i++) {
+                var pad = pads[i];
+                if (!pad || !pad.connected) continue;
+                var bits = 0;
+                for (var b = 0; b < pad.buttons.length && b < 30; b++) {
+                    var button = pad.buttons[b];
+                    if (button.pressed || button.value > 0.5) bits |= (1 << b);
+                }
+                return bits;
+            }
+            return -1;
+        });
+#endif
+    }
+    // Its left stick: (x + 128) * 256 + (y + 128), each axis -127..127
+    // (right and down positive); 128 * 256 + 128 when centred or absent
+    int getGamepadStick() {
+#ifndef __EMSCRIPTEN__
+        return 128 * 256 + 128;
+#else
+        return MAIN_THREAD_EM_ASM_INT({
+            var pads = navigator.getGamepads ? navigator.getGamepads() : [];
+            for (var i = 0; i < pads.length; i++) {
+                var pad = pads[i];
+                if (!pad || !pad.connected || pad.axes.length < 2) continue;
+                var x = Math.max(-127, Math.min(127, Math.round(pad.axes[0] * 127)));
+                var y = Math.max(-127, Math.min(127, Math.round(pad.axes[1] * 127)));
+                return (x + 128) * 256 + (y + 128);
+            }
+            return 128 * 256 + 128;
+        });
+#endif
+    }
     std::string getDeviceShortName(DeviceType type = DeviceUnknown);
     std::string getOsShortName(OperatingSystem os = OsUnknown);
     std::string traceback(std::string_view where, int level = 1, int maxDepth = 32);
