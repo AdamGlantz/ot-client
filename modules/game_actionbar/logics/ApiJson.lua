@@ -651,6 +651,38 @@ function ApiJson.createOrUpdateSpecialAction(barId, buttonId, specialAction)
     }
 end
 
+-- Exchanges the slots of two bars (the touch layout keeps hotbar presets in
+-- bars that are never shown)
+function ApiJson.swapBarMappings(barA, barB)
+    barA = tonumber(barA)
+    barB = tonumber(barB)
+    if not barA or not barB or barA == barB then
+        return
+    end
+
+    for _, entry in pairs(ApiJson.getMappings()) do
+        if entry["actionBar"] == barA then
+            entry["actionBar"] = barB
+        elseif entry["actionBar"] == barB then
+            entry["actionBar"] = barA
+        end
+    end
+    ensureState().actionBarMappingsIndex = nil
+end
+
+-- Exchanges what two slots do
+function ApiJson.swapSlotMappings(barA, buttonA, barB, buttonB)
+    local entryA = ApiJson.getMapping(barA, buttonA)
+    local entryB = ApiJson.getMapping(barB, buttonB)
+    if entryA then
+        entryA["actionBar"], entryA["actionButton"] = tonumber(barB), tonumber(buttonB)
+    end
+    if entryB then
+        entryB["actionBar"], entryB["actionButton"] = tonumber(barA), tonumber(buttonA)
+    end
+    ensureState().actionBarMappingsIndex = nil
+end
+
 function ApiJson.removeAction(barId, buttonId)
     barId = tonumber(barId)
     buttonId = tonumber(buttonId)
