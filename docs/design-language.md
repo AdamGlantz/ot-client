@@ -68,7 +68,13 @@ Tokens (`&ot-…` in the same file): fonts `$ot-font-title`, `$ot-font-label`,
    are tiny (a 12 px checkbox) and turn blurry and blocky when enlarged, so a
    touch-sized control gets its own art in `data/images/ui/ot/`, made at twice
    its size (phones draw the interface at 2x).
-9. Check new screens at phone size in both orientations (1024×600 and
+9. Compact: no more space between things than the eye needs. Every gap is
+   paid for in game view, so pieces that stay open while playing (containers,
+   hotbar, bars) use tight spacing: item slots touch (their frame is the
+   separation) and padding is a few pixels, not 8 or 12. Classic item slots
+   (34 px, `Item`) show sprites at their own size, so they stay crisp; the
+   40 px touch-target rule is for buttons, not slots.
+10. Check new screens at phone size in both orientations (1024×600 and
    600×1024) and on desktop before merging.
 
 ## Status

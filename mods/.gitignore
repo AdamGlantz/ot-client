@@ -13,3 +13,5 @@
 !/client_gamepad/**
 !/client_commands/
 !/client_commands/**
+!/client_containers/
+!/client_containers/**

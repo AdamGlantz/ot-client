@@ -1,0 +1,293 @@
+// The containers window for touch screens (containers.lua), built from the
+// ot-ui styles (data/styles/50-ot-ui.otui)
+ContainersMiniButton < UIButton
+  size: 26 24
+  font: $ot-font-label
+  color: $ot-text
+  text-align: center
+  image-source: /images/ui/button-9grid-idle
+  image-border: 4
+  focusable: false
+  $pressed:
+    image-source: /images/ui/button-9grid-pressed
+
+ContainersTab < UIButton
+  height: 28
+  padding: 0 6 0 6
+  font: $ot-font-label
+  color: $ot-text-muted
+  text-align: left
+  image-source: /images/ui/3pixel_frame_borderimage
+  image-border: 3
+  focusable: false
+  // the container shown
+  $on:
+    color: $ot-gold
+    border-width: 2
+    border-color: $ot-gold
+  // a corpse or other container on the ground
+  $checked:
+    color: #e6a0a0
+    border-width: 2
+    border-color: #9a3a3a
+  // an item is dragged over it
+  $hover:
+    background-color: #e0b84c40
+
+// the classic item slot: 34 px with the item at its own 32 px (crisp)
+ContainersSlot < Item
+  virtual: false
+  draggable: true
+  $on:
+    border-width: 2
+    border-color: $ot-gold
+
+ContainersWindow < OtPanel
+  id: containersWindow
+  width: 190
+  padding: 4
+  focusable: false
+
+  UIWidget
+    id: head
+    anchors.top: parent.top
+    anchors.left: parent.left
+    anchors.right: parent.right
+    height: 24
+
+    ContainersMiniButton
+      id: minimize
+      anchors.left: parent.left
+      anchors.verticalCenter: parent.verticalCenter
+      !text: '-'
+
+    Label
+      id: title
+      anchors.left: minimize.right
+      anchors.right: list.left
+      anchors.verticalCenter: parent.verticalCenter
+      margin-left: 6
+      font: $ot-font-label
+      color: $ot-text-muted
+      !text: tr('Containers')
+
+    ContainersMiniButton
+      id: list
+      anchors.right: parent.right
+      anchors.verticalCenter: parent.verticalCenter
+      !text: 'v'
+
+  // the tabs: a clipped row that scrolls sideways
+  UIWidget
+    id: strip
+    anchors.top: head.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-top: 4
+    height: 28
+    phantom: false
+
+    UIWidget
+      id: tabs
+      anchors.top: parent.top
+      anchors.left: parent.left
+      height: 28
+      phantom: true
+      layout:
+        type: horizontalBox
+        spacing: 3
+        fit-children: true
+
+    ContainersMiniButton
+      id: more
+      anchors.right: parent.right
+      anchors.verticalCenter: parent.verticalCenter
+      width: 40
+      height: 28
+      color: $ot-gold
+      visible: false
+
+  UIWidget
+    id: grid
+    anchors.top: strip.bottom
+    anchors.left: parent.left
+    margin-top: 4
+    // the slots touch: each has its own frame (compact, see design-language)
+    layout:
+      type: grid
+      cell-size: 34 34
+      cell-spacing: 0
+      flow: true
+
+  OtHint
+    id: empty
+    anchors.top: strip.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-top: 10
+    !text: tr('No container open. Tap your backpack in Equipment.')
+    visible: false
+
+ContainersMenu < OtBackdrop
+  OtPanel
+    id: panel
+    width: 260
+    padding: 8
+
+    Label
+      id: title
+      anchors.top: parent.top
+      anchors.left: parent.left
+      anchors.right: parent.right
+      height: 28
+      font: $ot-font-title
+      color: $ot-text-strong
+
+    UIWidget
+      id: rows
+      anchors.top: title.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+      margin-top: 4
+      layout:
+        type: verticalBox
+        spacing: 4
+        fit-children: true
+
+ContainersMenuPair < UIWidget
+  height: 40
+  layout:
+    type: grid
+    cell-size: 118 40
+    cell-spacing: 4
+    flow: true
+
+ContainersMoveSheet < OtBackdrop
+  OtPanel
+    id: panel
+    width: 340
+    height: 214
+    padding: 10
+
+    Item
+      id: item
+      anchors.top: parent.top
+      anchors.left: parent.left
+      size: 40 40
+      virtual: true
+      image-source: /images/ui/3pixel_frame_borderimage
+      image-border: 3
+
+    OtTitle
+      id: title
+      anchors.left: item.right
+      anchors.verticalCenter: item.verticalCenter
+      margin-left: 10
+
+    OtIconButton
+      id: close
+      anchors.top: parent.top
+      anchors.right: parent.right
+      !text: 'X'
+
+    OtIconButton
+      id: less
+      anchors.top: item.bottom
+      anchors.left: parent.left
+      margin-top: 12
+      !text: '-'
+
+    HorizontalScrollBar
+      id: amount
+      anchors.left: less.right
+      anchors.right: more.left
+      anchors.verticalCenter: less.verticalCenter
+      margin-left: 8
+      margin-right: 8
+      minimum: 1
+      maximum: 100
+      step: 1
+
+    OtIconButton
+      id: more
+      anchors.top: less.top
+      anchors.right: count.left
+      margin-right: 6
+      !text: '+'
+
+    OtLabel
+      id: count
+      anchors.right: parent.right
+      anchors.verticalCenter: less.verticalCenter
+      width: 54
+      text-align: right
+
+    OtIconButton
+      id: prev
+      anchors.top: less.bottom
+      anchors.left: parent.left
+      margin-top: 8
+      !text: '<'
+
+    OtButton
+      id: target
+      anchors.left: prev.right
+      anchors.right: next.left
+      anchors.verticalCenter: prev.verticalCenter
+      margin-left: 6
+      margin-right: 6
+
+    OtIconButton
+      id: next
+      anchors.top: prev.top
+      anchors.right: parent.right
+      !text: '>'
+
+    OtButton
+      id: cancel
+      anchors.left: parent.left
+      anchors.bottom: parent.bottom
+      width: 150
+      !text: tr('Cancel')
+
+    OtButtonPrimary
+      id: ok
+      anchors.right: parent.right
+      anchors.bottom: parent.bottom
+      width: 150
+      !text: tr('Move')
+
+ContainersRenameSheet < OtBackdrop
+  OtPanel
+    id: panel
+    anchors.centerIn: parent
+    size: 300 150
+    padding: 10
+
+    OtTitle
+      anchors.top: parent.top
+      anchors.left: parent.left
+      !text: tr('Name this container')
+
+    TextEdit
+      id: name
+      anchors.top: prev.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+      margin-top: 10
+      height: 36
+      max-length: 12
+
+    OtButton
+      id: cancel
+      anchors.left: parent.left
+      anchors.bottom: parent.bottom
+      width: 130
+      !text: tr('Cancel')
+
+    OtButtonPrimary
+      id: ok
+      anchors.right: parent.right
+      anchors.bottom: parent.bottom
+      width: 130
+      !text: tr('Save')

@@ -25,7 +25,12 @@ local TABS = {
     { id = 'skills', icon = '/images/topbuttons/skills', tooltip = 'Skills', panel = 'right', ids = { 'skillWindow' } },
     { id = 'battle', icon = '/images/topbuttons/battle', tooltip = 'Battle', panel = 'right', prefixes = { 'battleWindow' } },
     { id = 'vip', icon = '/images/topbuttons/viplist', tooltip = 'VIP', panel = 'right', ids = { 'vipWindow' } },
-    { id = 'bag', icon = '/images/game/slots/back', tooltip = 'Containers', panel = 'right', prefixes = { 'container' } },
+    -- the containers window (client_containers)
+    { id = 'bag', icon = '/images/game/slots/back', tooltip = 'Containers', action = function()
+        if modules.client_containers and modules.client_containers.toggle then
+            modules.client_containers.toggle()
+        end
+    end },
 }
 
 -- Desktop pieces the touch layout replaces or has no room for
@@ -198,6 +203,11 @@ function showTopMenu()
 end
 
 function selectTab(id)
+    local entry = findTab(id)
+    if entry and entry.action then
+        entry.action()
+        return
+    end
     if id == 'menu' then
         -- the menu button opens the hub (hub.lua); a second tap closes the
         -- hub or the desktop menu
@@ -613,6 +623,23 @@ local function layout()
     end
     chatButton:raise()
     toolbar:raise()
+    -- the containers window (client_containers): in portrait below the game
+    -- view, on the toolbar; in landscape top left
+    local containers = modules.client_containers and modules.client_containers.getWindow()
+    if containers then
+        containers:breakAnchors()
+        if portrait then
+            -- (its parent is the whole screen: clear of the toolbar)
+            containers:addAnchor(AnchorRight, 'parent', AnchorRight)
+            containers:addAnchor(AnchorBottom, 'parent', AnchorBottom)
+            containers:setMarginRight(4)
+            containers:setMarginBottom(TOOLBAR_HEIGHT + 4)
+        else
+            containers:setMargin(0)
+            containers:setPosition({ x = 4, y = 4 })
+        end
+        containers:raise()
+    end
 
     -- Positions the player chose in edit mode (edit.lua)
     applySavedLayout()
@@ -630,6 +657,8 @@ function getMovableWidgets()
     widgets.grid = root and root:getChildById('gameBottomActionPanel')
     widgets.joystick = modules.game_joystick and modules.game_joystick.getPanel and modules.game_joystick.getPanel()
     widgets.shortcuts = modules.game_shortcuts and modules.game_shortcuts.getPanel and modules.game_shortcuts.getPanel()
+    widgets.containers = modules.client_containers and modules.client_containers.getWindow
+        and modules.client_containers.getWindow()
     -- docks of pinned panels (pins.lua)
     for index, _ in pairs(pinnedTabs()) do
         local dock = dockWidget(index)
@@ -694,15 +723,6 @@ local function onGameStart()
     scheduleEvent(layout, 800)
 end
 
-local function onContainerOpen()
-    -- Show a container as soon as it is opened
-    scheduleEvent(function()
-        if currentTab ~= 'bag' then
-            currentTab = 'bag'
-        end
-        applyTab()
-    end, 50)
-end
 
 function init()
     initTouchMode()
@@ -762,7 +782,6 @@ function init()
     connect(root, { onGeometryChange = layout })
     connect(g_game, { onGameStart = onGameStart, onGameEnd = onGameEnd, onTalk = onTalk })
     connect(LocalPlayer, { onHealthChange = updateStats, onManaChange = updateStats })
-    connect(Container, { onOpen = onContainerOpen })
     if g_game.isOnline() then
         onGameStart()
     end
@@ -782,7 +801,6 @@ function terminate()
         editLayoutButton = nil
     end
     disconnect(LocalPlayer, { onHealthChange = updateStats, onManaChange = updateStats })
-    disconnect(Container, { onOpen = onContainerOpen })
     if modules.game_actionbar then
         modules.game_actionbar.ActionBarAssignSheet = nil
     end

@@ -1,0 +1,8 @@
+Module
+  name: client_containers
+  description: Touch screens: one small window for all open containers, as tabs (ot-client#22)
+  author: ot-client
+  sandboxed: true
+  scripts: [ containers ]
+  @onLoad: init()
+  @onUnload: terminate()

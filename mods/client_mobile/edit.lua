@@ -21,6 +21,7 @@ local PIECES = {
     { key = 'grid', resize = 'width', minWidth = 52 },
     { key = 'joystick' },
     { key = 'shortcuts' },
+    { key = 'containers' },
     -- docks of pinned panels (pins.lua): a list's height (how many rows)
     -- changes, a fixed panel only moves
     { key = 'dock1', dock = 1 },
