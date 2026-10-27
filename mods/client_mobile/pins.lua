@@ -1,7 +1,7 @@
 -- Pinned panels for the touch layout (ot-client#23). A long press on a
 -- toolbar button (equipment, map, skills, battle, VIP, containers) pins its
--- panel on the screen: its windows move into a dock that stays open over the
--- game view instead of opening one at a time in the side panel. Docks are
+-- panel on the screen: its windows move into a dock that stays open beside
+-- the game view instead of opening one at a time in the side panel. Docks are
 -- pieces of the layout editor (moved, resized by the corner, - and +).
 -- Another long press unpins it; a tap on a pinned panel's button hides or
 -- shows its dock.
@@ -220,7 +220,10 @@ function applyPins(owns, sidePanel, mainPanel)
                     dock.mobilePlaced = true
                     dock:breakAnchors()
                     dock:setSize({ width = DOCK_WIDTH, height = DOCK_HEIGHT })
-                    dock:setPosition({ x = viewLeft + 8 + (index - 1) * (DOCK_WIDTH + 8), y = map.y + 8 })
+                    -- (next to the game view, not on it)
+                    local x, y = keepOffGameView(viewLeft + 8 + (index - 1) * (DOCK_WIDTH + 8), map.y + 8,
+                        DOCK_WIDTH, DOCK_HEIGHT)
+                    dock:setPosition({ x = x, y = y })
                 end
                 sizeDock(index)
                 dock:raise()

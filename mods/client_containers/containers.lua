@@ -104,8 +104,18 @@ end
 
 local render
 
+-- 4 columns in portrait, 5 in landscape, 4 when 5 do not fit the area
+-- beside the game view (client_mobile)
 local function columns()
-    return portrait() and 4 or 5
+    if portrait() then
+        return 4
+    end
+    local mobile = modules.client_mobile
+    local area = mobile and mobile.getModuleColumnWidth and mobile.getModuleColumnWidth()
+    if area and 5 * (SLOT + SPACING) + 12 > area then
+        return 4
+    end
+    return 5
 end
 
 local function fit()

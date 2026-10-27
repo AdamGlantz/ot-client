@@ -1,5 +1,5 @@
 -- Edit mode for the touch layout: the pieces around the game view (health
--- and mana bars, chat button, hotbar grid, joystick, look/use/attack/follow)
+-- and mana bars, chat button, hotbar grid, joystick, containers, docks)
 -- can be moved and sized. While editing each piece gets a frame: one finger
 -- drags it, - and + make it smaller or bigger (70% to 160%), Reset puts that
 -- piece back; some can also be stretched by the corner. Pieces snap to the
@@ -20,7 +20,6 @@ local PIECES = {
     { key = 'chat', resize = 'square', maxSize = 96 },
     { key = 'grid', resize = 'width', minWidth = 52 },
     { key = 'joystick' },
-    { key = 'shortcuts' },
     { key = 'containers' },
     -- docks of pinned panels (pins.lua): a list's height (how many rows)
     -- changes, a fixed panel only moves
@@ -96,10 +95,14 @@ local function bottomLimit()
     return r.y + r.height
 end
 
+-- A piece's size when the player has not changed it: set by the layout
+-- (a joystick in a narrow column is drawn smaller to fit it)
+pieceDefaultScales = {}
+
 -- The size of a piece (+ and -), 1 when not changed
 function getPieceScale(key)
     local entry = savedPieces()[key]
-    return entry and tonumber(entry.s) or 1
+    return entry and tonumber(entry.s) or pieceDefaultScales[key] or 1
 end
 
 -- The size a widget had before any scaling (kept on the widget)
@@ -112,6 +115,10 @@ local function base(widget)
         }
     end
     return widget.baseGeometry
+end
+
+function getPieceBaseSize(widget)
+    return base(widget)
 end
 
 local function scaleBox(widget, scale, keepWidth)
@@ -152,14 +159,16 @@ local SCALERS = {
             end
         end
     end,
+    -- (only their size: the layout places them, with margins)
     stats = function(widget, scale)
-        scaleBox(widget, scale, true)
+        widget:setHeight(math.floor(base(widget).height * scale))
         for _, bar in ipairs(widget:getChildren()) do
-            scaleBox(bar, scale, true)
+            bar:setHeight(math.floor(base(bar).height * scale))
         end
     end,
     chat = function(widget, scale)
-        scaleBox(widget, scale)
+        local b = base(widget)
+        widget:setSize({ width = math.floor(b.width * scale), height = math.floor(b.height * scale) })
     end,
 }
 -- List docks: - and + show fewer or more rows (the panels' contents cannot
@@ -200,9 +209,10 @@ local function placePiece(piece, widget, entry)
     widget:breakAnchors()
     local x = r.x + math.floor(entry.x * r.width)
     local y = r.y + math.floor(entry.y * r.height)
-    -- keep it on the screen
+    -- keep it on the screen and off the game view
     x = math.max(r.x, math.min(x, r.x + r.width - widget:getWidth()))
     y = math.max(r.y, math.min(y, bottomLimit() - widget:getHeight()))
+    x, y = keepOffGameView(x, y, widget:getWidth(), widget:getHeight())
     widget:setPosition({ x = x, y = y })
 end
 
@@ -309,10 +319,10 @@ local function changeScale(piece, widget, delta)
         local r = root():getRect()
         local bottom = bottomLimit()
         widget:breakAnchors()
-        widget:setPosition({
-            x = math.max(r.x, math.min(math.floor(centre.x - widget:getWidth() / 2), r.x + r.width - widget:getWidth())),
-            y = math.max(r.y, math.min(math.floor(centre.y - widget:getHeight() / 2), bottom - widget:getHeight())),
-        })
+        local x = math.max(r.x, math.min(math.floor(centre.x - widget:getWidth() / 2), r.x + r.width - widget:getWidth()))
+        local y = math.max(r.y, math.min(math.floor(centre.y - widget:getHeight() / 2), bottom - widget:getHeight()))
+        x, y = keepOffGameView(x, y, widget:getWidth(), widget:getHeight())
+        widget:setPosition({ x = x, y = y })
         storePiece(piece, widget)
         if piece.key == 'stats' then
             refreshStats()
@@ -389,6 +399,8 @@ local function createFrame(piece, widget)
         local y = snap(mousePos.y - self.grab.y, widget:getHeight(), ys)
         x = math.max(r.x, math.min(x, r.x + r.width - widget:getWidth()))
         y = math.max(r.y, math.min(y, bottomLimit() - widget:getHeight()))
+        -- never onto the game view: it slides along its edge instead
+        x, y = keepOffGameView(x, y, widget:getWidth(), widget:getHeight())
         widget:breakAnchors()
         widget:setPosition({ x = x, y = y })
         self:setRect(widget:getRect())
@@ -442,6 +454,10 @@ local function createFrame(piece, widget)
         return true
     end
     corner.onDragLeave = function()
+        -- grown into the game view: moved out of it
+        local x, y = keepOffGameView(widget:getX(), widget:getY(), widget:getWidth(), widget:getHeight())
+        widget:setPosition({ x = x, y = y })
+        frame:setRect(widget:getRect())
         storePiece(piece, widget)
         return true
     end

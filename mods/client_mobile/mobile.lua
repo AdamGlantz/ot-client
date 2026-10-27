@@ -326,8 +326,8 @@ local function setChatVisible(visible)
     end
     gameInterface().getBottomPanel():setVisible(visible)
     chatButton:setChecked(visible)
-    -- The joystick and look/use/attack/follow would cover the console
-    for _, name in ipairs({ 'game_joystick', 'game_shortcuts' }) do
+    -- The joystick would cover the console
+    for _, name in ipairs({ 'game_joystick' }) do
         local module = modules[name]
         if module and module.show and module.hide then
             if visible then
@@ -350,7 +350,10 @@ local function updateStats()
     end
     local function set(bar, value, max)
         local width = bar:getWidth() - 2
-        bar.fill:setWidth(max > 0 and math.floor(width * math.min(value, max) / max) or 0)
+        local filled = max > 0 and math.floor(width * math.min(value, max) / max) or 0
+        bar.fill:setWidth(filled)
+        -- (a fill narrower than its rounded ends cannot be drawn)
+        bar.fill:setVisible(filled >= 10)
         bar.text:setText(value .. ' / ' .. max)
     end
     set(stats.health, player:getHealth(), player:getMaxHealth())
@@ -487,6 +490,70 @@ local function setActionGrid(availableWidth, availableHeight)
     return gridWidth
 end
 
+-- Game view size (ot-client#26): the game view is never covered; the
+-- pieces go in the areas around it. Landscape: the view fills the height
+-- and each side column gets at least `column` of the width (the view
+-- shrinks if needed). Portrait: the view's share of the width.
+local VIEW_SIZE_SETTING = 'client_mobile_view_size'
+local moduleColumnWidth -- (getModuleColumnWidth)
+-- `panels`: the columns are at least a side panel wide (equipment, battle
+-- list), so panels open beside the view; Large lets them cover its edges
+VIEW_SIZES = {
+    { id = 'large', text = 'Large', column = 0.14, width = 1 },
+    { id = 'medium', text = 'Medium', column = 0.22, width = 1, panels = true },
+    { id = 'small', text = 'Small', column = 0.28, width = 0.85, panels = true },
+}
+local SIDE_PANEL_WIDTH = 176
+
+local function viewSize()
+    local id = g_settings.getString(VIEW_SIZE_SETTING)
+    for _, size in ipairs(VIEW_SIZES) do
+        if size.id == id then
+            return size
+        end
+    end
+    return VIEW_SIZES[2]
+end
+
+function getViewSize()
+    return viewSize().id
+end
+
+function setViewSize(id)
+    g_settings.set(VIEW_SIZE_SETTING, id)
+    g_settings.save()
+    relayout()
+end
+
+-- Where a piece of w x h at x, y may go: as it is when clear of the game
+-- view, else moved the shortest way out of it (left, right, above or below)
+-- while staying on the screen and above the toolbar. A piece too big for
+-- every area around the view stays where it is.
+function keepOffGameView(x, y, w, h)
+    local game = gameInterface().getMapPanel():getRect()
+    if x + w <= game.x or x >= game.x + game.width or y + h <= game.y or y >= game.y + game.height then
+        return x, y
+    end
+    local screen = gameInterface().getRootPanel():getRect()
+    local bottom = toolbar and toolbar:isVisible() and toolbar:getY() or screen.y + screen.height
+    local best, bestDistance
+    for _, spot in ipairs({
+        { x = game.x - w, y = y }, { x = game.x + game.width, y = y },
+        { x = x, y = game.y - h }, { x = x, y = game.y + game.height },
+    }) do
+        if spot.x >= screen.x and spot.x + w <= screen.x + screen.width and spot.y >= screen.y and spot.y + h <= bottom then
+            local distance = math.abs(spot.x - x) + math.abs(spot.y - y)
+            if not bestDistance or distance < bestDistance then
+                best, bestDistance = spot, distance
+            end
+        end
+    end
+    if best then
+        return best.x, best.y
+    end
+    return x, y
+end
+
 local function layout()
     local gi = gameInterface()
     local root = gi.getRootPanel()
@@ -507,120 +574,144 @@ local function layout()
         end
     end
 
-    -- Game view: full width, above the toolbar (landscape) or centred
-    -- vertically between the top and the toolbar (portrait), leaving room
-    -- above and below it
+    -- Game view: the whole 15x11 view, never covered (ot-client#26).
+    -- Landscape: between the two side columns. Portrait: centred
+    -- between the top and the toolbar, with the areas above and below it.
+    -- The widget is exactly the view, so its rect is the area to keep clear.
     local map = gi.getMapPanel()
+    local size = viewSize()
     map:breakAnchors()
-    map:addAnchor(AnchorLeft, 'parent', AnchorLeft)
-    map:addAnchor(AnchorRight, 'parent', AnchorRight)
+    map:addAnchor(AnchorHorizontalCenter, 'parent', AnchorHorizontalCenter)
     map:addAnchor(AnchorTop, 'parent', AnchorTop)
     map:setMargin(0)
-    -- Always the whole 15x11 view, scaled to fit (the mobile default crops it)
+    -- (the mobile default crops the view)
     map:setKeepAspectRatio(true)
     map:setLimitVisibleRange(false)
     map:setZoom(11)
     map:setVisibleDimension({ width = 15, height = 11 })
-    local mapHeight
+    local available = height - TOOLBAR_HEIGHT
+    local statsRow = stats:getHeight() + 12
+    local mapWidth, mapHeight, mapTop
     if portrait then
-        mapHeight = math.floor(width * 11 / 15)
-        map:setHeight(mapHeight)
-        map:setMarginTop(math.max(0, math.floor((height - TOOLBAR_HEIGHT - mapHeight) / 2)))
+        mapWidth = math.floor(width * size.width)
+        mapHeight = math.floor(mapWidth * 11 / 15)
+        -- the area above (containers, equipment) a little smaller than the
+        -- one below (bars, joystick, hotbar)
+        mapTop = math.max(0, math.floor((available - mapHeight - statsRow) * 0.45))
     else
-        map:addAnchor(AnchorBottom, 'mobileToolbar', AnchorTop)
-        mapHeight = height - TOOLBAR_HEIGHT
+        local column = math.floor(width * size.column)
+        if size.panels then
+            -- room for a side panel (equipment, battle list), within reason
+            column = math.max(column, math.min(SIDE_PANEL_WIDTH + 6, math.floor(width * 0.3)))
+        end
+        column = math.max(column, math.ceil((width - available * 15 / 11) / 2))
+        mapWidth = width - 2 * column
+        mapHeight = math.min(available, math.floor(mapWidth * 11 / 15))
+        mapWidth = math.floor(mapHeight * 15 / 11)
+        -- (centred when the columns, not the height, set its size)
+        mapTop = math.floor((available - mapHeight) / 2)
     end
-    -- Free space on each side of the game view in landscape
-    local side = portrait and width or math.max(0, math.floor((width - mapHeight * 15 / 11) / 2))
+    map:setMarginTop(mapTop)
+    map:setSize({ width = mapWidth, height = mapHeight })
+    -- The map is only redrawn in a new place when its size changes too
+    -- (moved alone, it stays drawn where it was): a size change and back
+    addEvent(function()
+        map:setHeight(mapHeight - 1)
+        addEvent(function()
+            map:setHeight(mapHeight)
+        end)
+    end)
+    -- The side columns in landscape
+    local side = portrait and width or math.floor((width - mapWidth) / 2)
+    moduleColumnWidth = side
 
+    -- Bottom bar: its buttons centred in portrait, on the right in landscape
+    -- with the health and mana bars on their left
+    local buttons = toolbar:getChildById('buttons')
+    buttons:breakAnchors()
+    buttons:addAnchor(AnchorVerticalCenter, 'parent', AnchorVerticalCenter)
+    if portrait then
+        buttons:addAnchor(AnchorHorizontalCenter, 'parent', AnchorHorizontalCenter)
+        buttons:setMarginRight(0)
+    else
+        buttons:addAnchor(AnchorRight, 'parent', AnchorRight)
+        buttons:setMarginRight(8)
+    end
+
+    -- Health and mana side by side: in the bottom bar (landscape) or right
+    -- under the game view (portrait)
     stats:breakAnchors()
+    stats:setMargin(0)
+    stats:addAnchor(AnchorLeft, 'parent', AnchorLeft)
+    stats:setMarginLeft(8)
     if portrait then
         stats:addAnchor(AnchorTop, 'parent', AnchorTop)
-        stats:addAnchor(AnchorLeft, 'parent', AnchorLeft)
         stats:addAnchor(AnchorRight, 'parent', AnchorRight)
-        stats:setMarginTop(8)
-        stats:setMarginLeft(8)
+        stats:setMarginTop(mapTop + mapHeight + 6)
         stats:setMarginRight(8)
     else
-        stats:addAnchor(AnchorTop, 'parent', AnchorTop)
-        stats:addAnchor(AnchorLeft, 'parent', AnchorLeft)
-        stats:setWidth(math.max(120, math.min(200, side - 12)))
-        stats:setMarginTop(6)
-        stats:setMarginLeft(6)
+        stats:addAnchor(AnchorVerticalCenter, 'mobileToolbar', AnchorVerticalCenter)
+        stats:setWidth(math.max(120, math.min(460, width - #TABS * 50 - 32)))
     end
     updateStats()
 
-    -- Joystick (bottom left) and look/use/attack/follow (bottom right) sit
-    -- above the toolbar
+    -- Joystick: bottom left, above the toolbar. Look/use/attack/follow are
+    -- not shown (ot-client#26): a tap on the game does the obvious thing and
+    -- a long press opens the menu with the rest
     local keypad = modules.game_joystick and modules.game_joystick.getPanel and modules.game_joystick.getPanel()
-    local shortcuts = modules.game_shortcuts and modules.game_shortcuts.getPanel and modules.game_shortcuts.getPanel()
     -- (anchored again each time: the layout editor moves them by position,
     -- and a reset puts them back here)
     if keypad then
+        -- as wide as its column at most (unless the player sized it)
+        local fit = (side - 8) / getPieceBaseSize(keypad).width
+        pieceDefaultScales.joystick = (not portrait and fit < 1) and math.floor(fit * 20) / 20 or nil
         keypad:breakAnchors()
         keypad:addAnchor(AnchorBottom, 'parent', AnchorBottom)
         keypad:addAnchor(AnchorLeft, 'parent', AnchorLeft)
         keypad:setMarginBottom(TOOLBAR_HEIGHT)
     end
-    if shortcuts then
-        shortcuts:breakAnchors()
-        shortcuts:addAnchor(AnchorBottom, 'parent', AnchorBottom)
-        shortcuts:addAnchor(AnchorRight, 'parent', AnchorRight)
-        shortcuts:setMarginBottom(TOOLBAR_HEIGHT)
+    if modules.game_shortcuts and modules.game_shortcuts.hide then
+        modules.game_shortcuts.hide()
     end
-    local keypadHeight = keypad and keypad:getHeight() or 150
-    local shortcutsHeight = shortcuts and shortcuts:getHeight() or 150
 
-    -- Action grid: landscape on the right above look/use/attack/follow;
-    -- portrait above the game view, beside the chat button
+    -- Hotbar: bottom right, above the bottom bar, with P (presets), the
+    -- pencil and the chat button in a row above it. Landscape: in the right
+    -- column, below the place the equipment opens in. Portrait: in the area
+    -- below the game view, right of the joystick.
     local actionPanel = root:getChildById('gameBottomActionPanel')
     if actionPanel then
-        -- Height left for it: landscape from the top of the screen down to
-        -- look/use/attack/follow, below the P and pencil buttons; portrait
-        -- between the health and mana bars and the game view
-        local gridHeight
+        local topRow = math.max(PRESET_ROW_HEIGHT, chatButton:getHeight()) + 4
+        local gridWidth, gridHeight
         if portrait then
-            local above = math.floor((height - TOOLBAR_HEIGHT - mapHeight) / 2)
-            gridHeight = above - 8 - stats:getHeight() - 8 - 4
+            local joystickWidth = keypad and keypad:isVisible() and keypad:getWidth() or 0
+            gridWidth = width - joystickWidth - 16
+            gridHeight = available - (mapTop + mapHeight + statsRow) - topRow - 6
         else
-            gridHeight = height - TOOLBAR_HEIGHT - shortcutsHeight - 6 - PRESET_ROW_HEIGHT - 8
+            local inventory = gi.getMainRightPanel():recursiveGetChildById('maininventorypanel')
+            local equipment = inventory and inventory.panelHeight or 150
+            gridWidth = side - 6
+            gridHeight = available - equipment - 4 - topRow - 6
         end
-        local gridWidth = setActionGrid(portrait and (width - 12 - 70 - 48) or (side - 6), gridHeight)
+        gridWidth = setActionGrid(gridWidth, gridHeight)
         actionPanel:breakAnchors()
         actionPanel:addAnchor(AnchorRight, 'parent', AnchorRight)
+        actionPanel:addAnchor(AnchorBottom, 'mobileToolbar', AnchorTop)
         actionPanel:setMarginRight(6)
-        if portrait then
-            actionPanel:addAnchor(AnchorTop, 'mobileStats', AnchorBottom)
-            actionPanel:setMarginTop(8)
-        else
-            actionPanel:addAnchor(AnchorBottom, 'mobileToolbar', AnchorTop)
-            actionPanel:setMarginBottom(shortcutsHeight + 6)
-        end
+        actionPanel:setMarginBottom(6)
         actionPanel:setWidth(gridWidth)
 
-        -- P (presets) and the pencil: above the hotbar in landscape, in a
-        -- column to its left in portrait
         if not presetRow then
             presetRow = createHotbarPresetRow(root, actionPanel)
         end
         presetRow:breakAnchors()
-        if portrait then
-            presetRow:setLayout(UIVerticalLayout.create(presetRow))
-            presetRow:getLayout():setSpacing(4)
-            presetRow:setSize({ width = 40, height = 64 })
-            presetRow:addAnchor(AnchorTop, actionPanel:getId(), AnchorTop)
-            presetRow:addAnchor(AnchorRight, actionPanel:getId(), AnchorLeft)
-            presetRow:setMarginRight(6)
-            presetRow:setMarginBottom(0)
-        else
-            presetRow:setLayout(UIHorizontalLayout.create(presetRow))
-            presetRow:getLayout():setSpacing(4)
-            presetRow:setSize({ width = 84, height = 30 })
-            presetRow:addAnchor(AnchorBottom, actionPanel:getId(), AnchorTop)
-            presetRow:addAnchor(AnchorRight, actionPanel:getId(), AnchorRight)
-            presetRow:setMarginBottom(4)
-            presetRow:setMarginRight(0)
-        end
+        presetRow:setLayout(UIHorizontalLayout.create(presetRow))
+        presetRow:getLayout():setSpacing(4)
+        presetRow:setSize({ width = 84, height = 30 })
+        presetRow:addAnchor(AnchorBottom, actionPanel:getId(), AnchorTop)
+        presetRow:addAnchor(AnchorLeft, actionPanel:getId(), AnchorLeft)
+        presetRow:setMarginBottom(4)
+        presetRow:setMarginRight(0)
+        presetRow:setMarginLeft(3)
         presetRow:raise()
         actionPanel:setVisible(true)
         actionPanel:raise()
@@ -629,13 +720,20 @@ local function layout()
         end
     end
 
-    -- Chat button below the health and mana bars; the console opens over the
-    -- game view
+    -- Chat button: right of P and the pencil, above the hotbar; the console
+    -- opens over the game view
     chatButton:breakAnchors()
-    chatButton:addAnchor(AnchorLeft, 'parent', AnchorLeft)
-    chatButton:addAnchor(AnchorTop, 'mobileStats', AnchorBottom)
-    chatButton:setMarginLeft(12)
-    chatButton:setMarginTop(10)
+    chatButton:setMargin(0)
+    if actionPanel then
+        chatButton:addAnchor(AnchorRight, actionPanel:getId(), AnchorRight)
+        chatButton:addAnchor(AnchorBottom, actionPanel:getId(), AnchorTop)
+        chatButton:setMarginRight(3)
+        chatButton:setMarginBottom(4)
+    else
+        chatButton:addAnchor(AnchorRight, 'parent', AnchorRight)
+        chatButton:addAnchor(AnchorBottom, 'mobileToolbar', AnchorTop)
+        chatButton:setMarginBottom(6)
+    end
 
     local console = gi.getBottomPanel()
     console:breakAnchors()
@@ -672,21 +770,16 @@ local function layout()
     end
     chatButton:raise()
     toolbar:raise()
-    -- the containers window (client_containers): in portrait below the game
-    -- view, on the toolbar; in landscape top left
+    stats:raise()
+    -- the containers window (client_containers): top left, above the game
+    -- view (portrait) or above the joystick (landscape)
     local containers = modules.client_containers and modules.client_containers.getWindow()
     if containers then
+        -- (its columns follow the area's width)
+        modules.client_containers.relayout()
         containers:breakAnchors()
-        if portrait then
-            -- (its parent is the whole screen: clear of the toolbar)
-            containers:addAnchor(AnchorRight, 'parent', AnchorRight)
-            containers:addAnchor(AnchorBottom, 'parent', AnchorBottom)
-            containers:setMarginRight(4)
-            containers:setMarginBottom(TOOLBAR_HEIGHT + 4)
-        else
-            containers:setMargin(0)
-            containers:setPosition({ x = 4, y = 4 })
-        end
+        containers:setMargin(0)
+        containers:setPosition({ x = 4, y = root:getY() + 4 })
         containers:raise()
     end
 
@@ -699,13 +792,18 @@ function relayout()
     layout()
 end
 
+-- The width of the areas beside the game view (landscape) or of the screen
+-- (portrait): pieces such as the containers window fit themselves to it
+function getModuleColumnWidth()
+    return moduleColumnWidth
+end
+
 -- The pieces edit mode can move, by name
 function getMovableWidgets()
     local root = gameInterface().getRootPanel()
     local widgets = { stats = stats, chat = chatButton }
     widgets.grid = root and root:getChildById('gameBottomActionPanel')
     widgets.joystick = modules.game_joystick and modules.game_joystick.getPanel and modules.game_joystick.getPanel()
-    widgets.shortcuts = modules.game_shortcuts and modules.game_shortcuts.getPanel and modules.game_shortcuts.getPanel()
     widgets.containers = modules.client_containers and modules.client_containers.getWindow
         and modules.client_containers.getWindow()
     -- docks of pinned panels (pins.lua)

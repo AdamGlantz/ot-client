@@ -31,11 +31,12 @@ MobileToolbar < UIWidget
       type: horizontalBox
       fit-children: true
 
+// A health or mana bar: a dark rounded trough with a glossy fill and the
+// numbers in the middle (images/bar_*.png)
 MobileStatBar < UIWidget
-  height: 16
-  background-color: #000000aa
-  border-width: 1
-  border-color: #000000
+  height: 22
+  image-source: /mods/client_mobile/images/bar_frame
+  image-border: 5
   phantom: true
 
   UIWidget
@@ -45,34 +46,38 @@ MobileStatBar < UIWidget
     anchors.bottom: parent.bottom
     margin: 1
     width: 0
+    image-border: 5
     phantom: true
 
   Label
     id: text
     anchors.fill: parent
     text-align: center
-    font: verdana-11px-rounded
-    color: #ffffff
+    font: $ot-font-label
+    color: $ot-text-strong
     phantom: true
 
+// Health and mana side by side: in the bottom bar (landscape) or under the
+// game view (portrait)
 MobileStats < UIWidget
-  height: 36
+  height: 22
   phantom: true
 
   MobileStatBar
     id: health
     anchors.top: parent.top
     anchors.left: parent.left
-    anchors.right: parent.right
-    @onSetup: self.fill:setBackgroundColor('#2f9a2fee')
+    anchors.right: parent.horizontalCenter
+    margin-right: 3
+    @onSetup: self.fill:setImageSource('/mods/client_mobile/images/bar_health')
 
   MobileStatBar
     id: mana
-    anchors.top: health.bottom
-    anchors.left: parent.left
+    anchors.top: parent.top
+    anchors.left: parent.horizontalCenter
     anchors.right: parent.right
-    margin-top: 3
-    @onSetup: self.fill:setBackgroundColor('#2c55c8ee')
+    margin-left: 3
+    @onSetup: self.fill:setImageSource('/mods/client_mobile/images/bar_mana')
 
 MobileChatButton < UIButton
   size: 52 52

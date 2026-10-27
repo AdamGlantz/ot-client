@@ -63,6 +63,8 @@ local SETTINGS = {
     },
     {
         id = 'layout', text = 'Layout', rows = {
+            { id = 'viewSize', kind = 'choice', text = 'Game view size',
+                help = 'How much of the screen the game takes. Medium and Small leave room beside it for your bag, panels and hotbar. Large makes the game bigger; on small screens panels may then cover its edges.' },
             { id = 'editLayout', kind = 'button', text = 'Move and size pieces', buttonText = 'Edit layout',
                 help = 'Drag pieces to move them. Tap one, then - and + to size it. Long press a toolbar button to pin its panel.' },
             { id = 'hotbar', kind = 'button', text = 'Hotbar presets, rows and slots', buttonText = 'Hotbar...',
@@ -135,6 +137,8 @@ local function rowValue(row)
         return modules.game_joystick and modules.game_joystick.getStyle and modules.game_joystick.getStyle()
     elseif row.id == 'layoutMode' then
         return g_platform.getTouchMode()
+    elseif row.id == 'viewSize' then
+        return getViewSize()
     end
 end
 
@@ -147,6 +151,12 @@ local function rowChoices(row)
         return list
     elseif row.id == 'layoutMode' then
         return { { 0, 'Automatic' }, { 1, 'Touch' }, { 2, 'Desktop' } }
+    elseif row.id == 'viewSize' then
+        local list = {}
+        for _, size in ipairs(VIEW_SIZES) do
+            table.insert(list, { size.id, size.text })
+        end
+        return list
     end
     return row.choices
 end
@@ -158,6 +168,8 @@ local function setRowValue(row, value)
         modules.game_joystick.setStyle(value)
     elseif row.id == 'layoutMode' then
         setTouchMode(value)
+    elseif row.id == 'viewSize' then
+        setViewSize(value)
     end
 end
 
@@ -319,16 +331,18 @@ function openHub()
         hub.onClick = close
         hub.onEscape = close
         local panel = hub.panel
-        panel:setSize({ width = math.min(520, rootWidget:getWidth() - 16),
-            height = math.max(280, math.min(600, rootWidget:getHeight() - 16)) })
         panel.close.onClick = close
         panel.contrast.onClick = function()
             g_settings.set(CONTRAST_SETTING, not g_settings.getBoolean(CONTRAST_SETTING))
             applyContrast()
         end
-        local cell = math.floor((panel:getWidth() - 20 - 12 - 18) / 5)
-        panel.tabs:getLayout():setCellSize({ width = cell, height = 36 })
     end
+    -- sized for the screen as it is now (it may have turned since)
+    local panel = hub.panel
+    panel:setSize({ width = math.min(520, rootWidget:getWidth() - 16),
+        height = math.max(280, math.min(600, rootWidget:getHeight() - 16)) })
+    local cell = math.floor((panel:getWidth() - 20 - 12 - 18) / 5)
+    panel.tabs:getLayout():setCellSize({ width = cell, height = 36 })
     applyContrast()
     hub:raise()
     hub:focus()
