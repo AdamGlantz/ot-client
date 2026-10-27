@@ -100,6 +100,36 @@ MobileChatButton < UIButton
     phantom: true
     visible: false
 
+MobileEditSizeButton < Button
+  size: 34 30
+  font: Verdana Bold-11px
+
+// Edit mode: - and + resize a piece, Reset puts it back where it was at
+// first (placed next to its frame)
+MobileEditSizeBar < UIWidget
+  size: 168 30
+  phantom: false
+  layout:
+    type: horizontalBox
+    spacing: 2
+  MobileEditSizeButton
+    id: smaller
+    !text: '-'
+  Label
+    id: size
+    width: 42
+    text-align: center
+    font: verdana-11px-rounded
+    color: #ffffff
+    background-color: #000000aa
+  MobileEditSizeButton
+    id: bigger
+    !text: '+'
+  MobileEditSizeButton
+    id: reset
+    width: 52
+    !text: tr('Reset')
+
 // Edit mode: a frame over each movable piece, dragged with one finger, with
 // a resize corner
 MobileEditFrame < UIWidget
@@ -108,6 +138,9 @@ MobileEditFrame < UIWidget
   background-color: #2f7fd033
   border-width: 2
   border-color: #6fb4ff
+  $on:
+    background-color: #f0c05033
+    border-color: #f0c050
 
   UIWidget
     id: resize
@@ -122,7 +155,7 @@ MobileEditFrame < UIWidget
     border-color: #ffffff
 
 MobileEditBar < UIWidget
-  size: 300 44
+  size: 350 44
   anchors.top: parent.top
   anchors.horizontalCenter: parent.horizontalCenter
   margin-top: 6
@@ -134,10 +167,10 @@ MobileEditBar < UIWidget
     anchors.left: parent.left
     anchors.verticalCenter: parent.verticalCenter
     margin-left: 10
-    width: 120
+    width: 170
     text-wrap: true
     text-auto-resize: true
-    !text: tr('Drag to move.\nCorner: resize.')
+    !text: tr('Drag to move.\nTap, then - / + to resize.')
     color: #dddddd
 
   Button

@@ -292,7 +292,6 @@ local function makeRound(button)
     end
 end
 
-local GRID_STEP = GRID_CELL + GRID_SPACING
 local PRESET_ROW_HEIGHT = 34
 
 -- An action bar as a grid of round buttons showing `slots` slots, `cell`
@@ -355,11 +354,14 @@ local function setActionGrid(availableWidth, availableHeight)
         return 0
     end
     local settings = hotbarSettings()
-    local columns = math.max(2, math.min(6, math.floor((availableWidth - 6 + GRID_SPACING) / GRID_STEP)))
-    local gridWidth = columns * GRID_STEP - GRID_SPACING + 6
+    -- Slot size: + and - in the layout editor
+    local cell = math.floor(GRID_CELL * getPieceScale('grid'))
+    local step = cell + GRID_SPACING
+    local columns = math.max(2, math.min(6, math.floor((availableWidth - 6 + GRID_SPACING) / step)))
+    local gridWidth = columns * step - GRID_SPACING + 6
     -- The extra rows always show their 3 slots, smaller when the grid is
     -- only two wide
-    local extraCell = math.min(GRID_CELL, math.floor((gridWidth - 6 + GRID_SPACING) / 3) - GRID_SPACING)
+    local extraCell = math.min(cell, math.floor((gridWidth - 6 + GRID_SPACING) / 3) - GRID_SPACING)
     local panel = bar:getParent()
     local used = 0
 
@@ -389,9 +391,9 @@ local function setActionGrid(availableWidth, availableHeight)
     end
     panel:moveChildToIndex(bar, #panel:getChildren())
 
-    local rowsThatFit = math.max(1, math.floor((availableHeight - used - 6 + GRID_SPACING) / GRID_STEP))
+    local rowsThatFit = math.max(1, math.floor((availableHeight - used - 6 + GRID_SPACING) / step))
     local slots = math.min(settings.slots, #bar.tabBar:getChildren(), columns * rowsThatFit)
-    gridBar(bar, columns, slots)
+    gridBar(bar, columns, slots, cell)
     return gridWidth
 end
 
@@ -462,10 +464,18 @@ local function layout()
     -- above the toolbar
     local keypad = modules.game_joystick and modules.game_joystick.getPanel and modules.game_joystick.getPanel()
     local shortcuts = modules.game_shortcuts and modules.game_shortcuts.getPanel and modules.game_shortcuts.getPanel()
+    -- (anchored again each time: the layout editor moves them by position,
+    -- and a reset puts them back here)
     if keypad then
+        keypad:breakAnchors()
+        keypad:addAnchor(AnchorBottom, 'parent', AnchorBottom)
+        keypad:addAnchor(AnchorLeft, 'parent', AnchorLeft)
         keypad:setMarginBottom(TOOLBAR_HEIGHT)
     end
     if shortcuts then
+        shortcuts:breakAnchors()
+        shortcuts:addAnchor(AnchorBottom, 'parent', AnchorBottom)
+        shortcuts:addAnchor(AnchorRight, 'parent', AnchorRight)
         shortcuts:setMarginBottom(TOOLBAR_HEIGHT)
     end
     local keypadHeight = keypad and keypad:getHeight() or 150
