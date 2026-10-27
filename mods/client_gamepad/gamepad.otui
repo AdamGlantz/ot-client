@@ -52,9 +52,11 @@ GamepadBindWindow < MainWindow
 
   VerticalScrollBar
     id: rowsScroll
-    anchors.top: rows.top
-    anchors.bottom: rows.bottom
+    anchors.top: status.bottom
+    anchors.bottom: buttons.top
     anchors.right: parent.right
+    margin-top: 8
+    margin-bottom: 8
     step: 29
     pixels-scroll: true
 
