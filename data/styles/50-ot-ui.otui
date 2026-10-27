@@ -1,0 +1,224 @@
+// ot-ui: the design language for our own windows and touch screens
+// (see docs/design-language.md). Classic Tibia materials (stone, bevelled
+// frames, shaded buttons) with gold for "selected" and "important".
+// Build new UI from these Ot* styles and the &ot- tokens; do not set colours,
+// fonts or images on single widgets.
+
+// --- Tokens -----------------------------------------------------------------
+&ot-font-title: Verdana Bold-13px
+&ot-font-label: Verdana Bold-11px
+&ot-font-text: verdana-11px-rounded
+&ot-font-small: verdana-9px-rounded
+
+&ot-text: #e8e8e8
+&ot-text-strong: #ffffff
+&ot-text-muted: #a8a8a8
+&ot-text-disabled: #e8e8e866
+&ot-gold: #e0b84c
+&ot-gold-dark: #8a6a20
+&ot-gold-text: #2a1e04
+&ot-danger-text: #ffffff
+&ot-positive: #70d070
+&ot-negative: #e05050
+&ot-backdrop: #000000a0
+
+// --- Surfaces ---------------------------------------------------------------
+
+// Full-screen dim layer under a sheet; a tap on it closes the sheet
+OtBackdrop < UIWidget
+  anchors.fill: parent
+  background-color: $ot-backdrop
+  focusable: true
+  phantom: false
+
+// A window or sheet: stone with a bevelled edge. $on: high contrast (darker
+// stone, gold edge) for sunlight
+OtPanel < UIWidget
+  image-source: /images/ui/2pixel_up_frame_borderimage
+  image-border: 4
+  padding: 12
+  phantom: false
+  $on:
+    image-source: /images/ui/2pixel_up_frame_borderimage_dark
+    border-width: 1
+    border-color: $ot-gold
+
+// A sunken area inside a panel (lists, previews)
+OtInset < UIWidget
+  image-source: /images/ui/3pixel_frame_borderimage
+  image-border: 4
+  padding: 6
+
+// --- Text -------------------------------------------------------------------
+
+OtTitle < Label
+  font: $ot-font-title
+  color: $ot-text-strong
+  text-auto-resize: true
+
+// Section heading: gold capitals over a line
+OtHeading < UIWidget
+  height: 28
+
+  Label
+    id: text
+    anchors.left: parent.left
+    anchors.verticalCenter: parent.verticalCenter
+    font: $ot-font-label
+    color: $ot-gold
+    text-auto-resize: true
+
+  UIWidget
+    anchors.left: text.right
+    anchors.right: parent.right
+    anchors.verticalCenter: parent.verticalCenter
+    margin-left: 8
+    height: 1
+    background-color: #ffffff22
+
+OtLabel < Label
+  font: $ot-font-label
+  color: $ot-text
+
+OtText < Label
+  font: $ot-font-text
+  color: $ot-text
+  text-wrap: true
+  text-auto-resize: true
+
+OtHint < Label
+  font: $ot-font-text
+  color: $ot-text-muted
+  text-wrap: true
+  text-auto-resize: true
+
+// --- Buttons ----------------------------------------------------------------
+// Touch-sized (40 high). checked/on = selected: gold edge and gold text.
+
+OtButton < UIButton
+  height: 40
+  font: $ot-font-label
+  color: $ot-text
+  text-align: center
+  text-offset: 0 0
+  image-source: /images/ui/button-9grid-idle
+  image-border: 4
+  focusable: false
+  $pressed:
+    image-source: /images/ui/button-9grid-pressed
+    text-offset: 1 1
+  $checked:
+    color: $ot-gold
+    border-width: 2
+    border-color: $ot-gold
+  $on:
+    color: $ot-gold
+    border-width: 2
+    border-color: $ot-gold
+  $disabled:
+    color: $ot-text-disabled
+
+// The main action of a screen (Confirm, Buy, Proceed)
+// (the stone button tinted, so the texture does not tile)
+OtButtonPrimary < OtButton
+  color: $ot-gold-text
+  image-color: #f0c860
+  $pressed:
+    image-color: #d0a840
+
+// Leaving or destroying (Logout, Delete, Reset)
+OtButtonDanger < OtButton
+  color: $ot-danger-text
+  image-color: #d05050
+  $pressed:
+    image-color: #a03838
+
+// Square icon/short-text button (close X, -, +, <)
+OtIconButton < OtButton
+  size: 40 40
+
+// Small round "?" that explains the setting beside it
+OtHelpButton < UIButton
+  size: 22 23
+  image-source: /images/ui/button_rounded
+  image-clip: 0 0 22 23
+  font: $ot-font-label
+  color: $ot-gold
+  text-align: center
+  !text: '?'
+  focusable: false
+  $pressed:
+    image-clip: 0 46 22 23
+    text-offset: 1 1
+
+// Tabs: one row of OtTab in an OtTabRow; the selected one is checked
+OtTab < OtButton
+  height: 36
+
+OtTabRow < UIWidget
+  height: 36
+  layout:
+    type: grid
+    cell-size: 96 36
+    cell-spacing: 4
+    flow: true
+
+// On/off: a big checkbox (the classic one, touch-sized), gold when on
+OtCheck < UICheckBox
+  size: 40 40
+  image-source: /images/ui/checkbox
+  image-clip: 0 0 12 12
+  focusable: false
+  $checked:
+    image-clip: 0 12 12 12
+    border-width: 2
+    border-color: $ot-gold
+  $disabled checked:
+    image-clip: 0 24 12 12
+
+// A value between - and + (OtStepper rows)
+OtValue < Label
+  width: 64
+  height: 40
+  font: $ot-font-label
+  color: $ot-text-strong
+  text-align: center
+  image-source: /images/ui/3pixel_frame_borderimage
+  image-border: 3
+
+// --- Rows -------------------------------------------------------------------
+
+// A setting: title (with its ? beside it) on the left, controls on the right
+OtSettingRow < UIWidget
+  height: 52
+
+  OtLabel
+    id: title
+    anchors.left: parent.left
+    anchors.verticalCenter: parent.verticalCenter
+    margin-left: 4
+    text-auto-resize: true
+
+  OtHelpButton
+    id: help
+    anchors.left: title.right
+    anchors.verticalCenter: parent.verticalCenter
+    margin-left: 8
+
+  UIWidget
+    id: controls
+    anchors.right: parent.right
+    anchors.verticalCenter: parent.verticalCenter
+    height: 40
+    width: 200
+    layout:
+      type: horizontalBox
+      spacing: 4
+      align-right: true
+
+  UIWidget
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.bottom: parent.bottom
+    height: 1
+    background-color: #ffffff14
