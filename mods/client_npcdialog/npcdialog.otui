@@ -172,6 +172,12 @@ NpcDialogWindow < MainWindow
           cell-spacing: 4
           flow: true
 
+      Label
+        id: money
+        height: 14
+        font: verdana-11px-monochrome
+        color: #f0d070
+
       VerticalScrollBar
         id: offersScroll
         visible: false
@@ -226,6 +232,16 @@ NpcDialogWindow < MainWindow
           text-wrap: true
           height: 28
           color: #e07050
+          visible: false
+
+        CheckBox
+          id: skipCapacity
+          anchors.top: warning.bottom
+          anchors.left: parent.left
+          anchors.right: parent.right
+          margin-top: 4
+          height: 16
+          !text: tr('Always buy, do not ask about capacity')
           visible: false
 
         Label

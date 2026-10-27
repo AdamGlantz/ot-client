@@ -9,6 +9,10 @@ local NPC_DIALOG_OPCODE = 103
 local TEXT_COLOR = '#e8e8e8'
 local KEYWORD_COLOR = '#f0d070'
 local AUTO_YES_TIMEOUT = 4000
+local AFFORD_COLOR = '#70d070'
+local SHORT_COLOR = '#e05050'
+-- Buy without asking when the goods weigh more than the free capacity
+local SKIP_CAPACITY_SETTING = 'npcDialogSkipCapacityCheck'
 
 local window
 local dialog -- the last message from the server
@@ -16,6 +20,7 @@ local view = 'talk' -- 'talk', 'trade' or 'travel'
 local tradeTab = 'buy'
 local selected -- the chosen offer (shop or travel)
 local autoYesUntil = 0
+local askingCapacity = false -- Confirm asked whether to buy what cannot be carried
 
 local function say(text)
     if g_game.isOnline() then
@@ -87,6 +92,7 @@ local render
 local function setView(name)
     view = name
     selected = nil
+    askingCapacity = false
     render()
 end
 
@@ -94,6 +100,21 @@ local function offerAmount()
     local chosen = window:recursiveGetChildById('chosen')
     local scroll = chosen:getChildById('amount')
     return scroll:isVisible() and scroll:getValue() or 1
+end
+
+-- Weight of the chosen amount (oz) and the player's free capacity, when it
+-- does not fit
+local function overweight()
+    local player = g_game.getLocalPlayer()
+    if view ~= 'trade' or tradeTab ~= 'buy' or not selected or not player or not selected.weight or selected.weight <= 0 then
+        return nil
+    end
+    local weight = selected.weight * offerAmount() / 100
+    local free = player:getFreeCapacity()
+    if weight > free then
+        return weight, free
+    end
+    return nil
 end
 
 local function updateChosen()
@@ -107,25 +128,41 @@ local function updateChosen()
     local weight = selected.weight and selected.weight > 0 and string.format(', %.2f oz', selected.weight / 100) or ''
     chosen:getChildById('each'):setText(string.format('%d gold each%s', selected.price, weight))
     local amount = offerAmount()
+    local cost = selected.price * amount
+    local total = chosen:getChildById('total')
     if chosen:getChildById('amount'):isVisible() then
-        chosen:getChildById('total'):setText(string.format('%d for %d gold', amount, selected.price * amount))
+        total:setText(string.format('%d for %d gold', amount, cost))
     else
-        chosen:getChildById('total'):setText(string.format('%s: %d gold', tr('Total'), selected.price))
+        total:setText(string.format('%s: %d gold', tr('Total'), cost))
+    end
+    -- Green when the gold the player carries pays for it, red when not
+    if tradeTab == 'buy' and dialog.money then
+        total:setColor(cost <= dialog.money and AFFORD_COLOR or SHORT_COLOR)
+    else
+        total:setColor(KEYWORD_COLOR)
     end
 
     -- What does not fit the player's capacity lands at their feet
-    local warning = ''
-    local player = g_game.getLocalPlayer()
-    if tradeTab == 'buy' and player and selected.weight and selected.weight > 0 then
-        local weight = selected.weight * amount / 100
-        local free = player:getFreeCapacity()
-        if weight > free then
-            warning = string.format('Weighs %.2f oz, you can carry %d oz. The rest will be put at your feet.', weight, free)
+    local warningLabel = chosen:getChildById('warning')
+    local skip = chosen:getChildById('skipCapacity')
+    local weight, free = overweight()
+    if weight then
+        local text = string.format('Weighs %.2f oz, you can carry %d oz. The rest will be put at your feet.', weight, free)
+        if askingCapacity then
+            text = 'Not enough capacity: what you cannot carry will land under you. Buy anyway?'
         end
+        warningLabel:setText(text)
+        skip:setChecked(g_settings.getBoolean(SKIP_CAPACITY_SETTING))
+    else
+        askingCapacity = false
     end
-    chosen:getChildById('warning'):setText(warning)
-    chosen:getChildById('warning'):setVisible(warning ~= '')
-    chosen:setHeight(warning ~= '' and 88 or 58)
+    warningLabel:setVisible(weight ~= nil)
+    skip:setVisible(weight ~= nil)
+    chosen:setHeight(weight and 112 or 58)
+
+    local confirmButton = window:recursiveGetChildById('confirm')
+    confirmButton:setText(askingCapacity and tr('Proceed') or tr('Confirm'))
+    window:recursiveGetChildById('back'):setText(askingCapacity and tr('Cancel') or tr('Back'))
     fitWindow()
 end
 
@@ -133,6 +170,13 @@ local function confirm()
     if not selected then
         return
     end
+    -- Too heavy: ask once before buying (unless the player said not to)
+    if not askingCapacity and overweight() and not g_settings.getBoolean(SKIP_CAPACITY_SETTING) then
+        askingCapacity = true
+        updateChosen()
+        return
+    end
+    askingCapacity = false
     local words = selected.words
     if view == 'trade' then
         local amount = offerAmount()
@@ -158,6 +202,8 @@ local function renderTrade()
     trade:recursiveGetChildById('buyTab'):setEnabled(#(dialog.buy or {}) > 0)
     trade:recursiveGetChildById('sellTab'):setOn(tradeTab == 'sell')
     trade:recursiveGetChildById('sellTab'):setEnabled(#(dialog.sell or {}) > 0)
+    trade:getChildById('money'):setText(dialog.money and string.format('%s: %d gold', tr('You carry'), dialog.money) or '')
+    trade:getChildById('money'):setVisible(dialog.money ~= nil)
     for _, offer in ipairs(list) do
         local cell = g_ui.createWidget('NpcOfferCell', offers)
         cell:getChildById('item'):setItemId(offer.item)
@@ -165,6 +211,7 @@ local function renderTrade()
         cell:setTooltip(string.format('%s: %d gold', offer.name, offer.price))
         cell:setOn(selected == offer)
         cell.onClick = function()
+            askingCapacity = false
             selected = offer
             local scroll = window:recursiveGetChildById('chosen'):getChildById('amount')
             scroll:setVisible(offer.amounts == true)
@@ -229,6 +276,8 @@ render = function()
         renderTravel()
     end
     local confirmButton = window:recursiveGetChildById('confirm')
+    confirmButton:setText(askingCapacity and tr('Proceed') or tr('Confirm'))
+    window:recursiveGetChildById('back'):setText(askingCapacity and tr('Cancel') or tr('Back'))
     confirmButton:setVisible(view ~= 'talk')
     confirmButton:setEnabled(selected ~= nil)
     window:recursiveGetChildById('back'):setVisible(view ~= 'talk')
@@ -295,6 +344,7 @@ function close()
     if window then
         window:hide()
     end
+    askingCapacity = false
     dialog = nil
     view = 'talk'
     selected = nil
@@ -308,9 +358,19 @@ function init()
     local trade = window:recursiveGetChildById('trade')
     trade:recursiveGetChildById('buyTab').onClick = function() tradeTab = 'buy'; selected = nil; render() end
     trade:recursiveGetChildById('sellTab').onClick = function() tradeTab = 'sell'; selected = nil; render() end
-    trade:recursiveGetChildById('amount').onValueChange = function() updateChosen() end
+    trade:recursiveGetChildById('amount').onValueChange = function() askingCapacity = false; updateChosen() end
+    trade:recursiveGetChildById('skipCapacity').onCheckChange = function(widget, checked)
+        g_settings.set(SKIP_CAPACITY_SETTING, checked)
+    end
     window:recursiveGetChildById('confirm').onClick = confirm
-    window:recursiveGetChildById('back').onClick = function() setView('talk') end
+    window:recursiveGetChildById('back').onClick = function()
+        if askingCapacity then
+            askingCapacity = false
+            updateChosen()
+        else
+            setView('talk')
+        end
+    end
 
     ProtocolGame.registerExtendedOpcode(NPC_DIALOG_OPCODE, onDialog)
     connect(g_game, { onGameEnd = close })
