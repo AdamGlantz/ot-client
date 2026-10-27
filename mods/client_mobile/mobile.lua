@@ -104,10 +104,16 @@ end
 -- layout shows
 local function moveLeftWindowsRight()
     local gi = gameInterface()
-    for _, panel in ipairs({ gi.getLeftPanel(), gi.getLeftExtraPanel() }) do
-        for _, child in ipairs(panel:getChildren()) do
-            if child:getClassName() == 'UIMiniWindow' then
-                child:setParent(gi.getRightPanel(), true)
+    local root = gi.getRootPanel()
+    for _, id in ipairs(DOCK_IDS) do
+        local panel = root:recursiveGetChildById(id)
+        -- (docks of pinned panels keep their windows, pins.lua)
+        if panel and not isDockInUse(id) then
+            for _, child in ipairs(panel:getChildren()) do
+                -- (pinned widgets from the top panel go back there, pins.lua)
+                if child:getClassName() == 'UIMiniWindow' and child.mobileHome ~= 'main' then
+                    child:setParent(gi.getRightPanel(), true)
+                end
             end
         end
     end
@@ -120,8 +126,16 @@ local function applyTab()
     local gi = gameInterface()
     local mainPanel = gi.getMainRightPanel()
     local rightPanel = gi.getRightPanel()
+    -- a pinned panel is shown in its dock, not in the side panel
+    if currentTab and dockOfTab(currentTab) then
+        currentTab = nil
+    end
     local tab = currentTab and findTab(currentTab)
     moveLeftWindowsRight()
+    applyPins(function(tabId, widget)
+        local pinned = findTab(tabId)
+        return pinned and tabOwns(pinned, widget) or false
+    end, rightPanel, mainPanel)
 
     local mainHeight = 0
     for _, child in ipairs(mainPanel:getChildren()) do
@@ -153,7 +167,9 @@ local function applyTab()
 
     for _, button in ipairs(toolbar.buttons:getChildren()) do
         local id = button:getId()
-        button:setChecked(id == currentTab or (id == 'menu' and menuVisible))
+        local pinned = dockOfTab(id) ~= nil
+        button:setChecked(id == currentTab or (id == 'menu' and menuVisible) or (pinned and not isDockHidden(id)))
+        button:setOn(pinned)
     end
 end
 
@@ -178,6 +194,12 @@ end
 function selectTab(id)
     if id == 'menu' then
         setMenuVisible(not menuVisible)
+        applyTab()
+        return
+    end
+    -- A pinned panel's button hides or shows its dock
+    if dockOfTab(id) then
+        toggleDock(id)
         applyTab()
         return
     end
@@ -412,7 +434,7 @@ local function layout()
 
     for _, id in ipairs(HIDDEN_WIDGETS) do
         local widget = root:getChildById(id)
-        if widget then
+        if widget and not isDockInUse(id) then
             widget:setVisible(false)
         end
     end
@@ -580,6 +602,7 @@ local function layout()
 
     -- Positions the player chose in edit mode (edit.lua)
     applySavedLayout()
+    fitDocks()
 end
 
 function relayout()
@@ -593,6 +616,13 @@ function getMovableWidgets()
     widgets.grid = root and root:getChildById('gameBottomActionPanel')
     widgets.joystick = modules.game_joystick and modules.game_joystick.getPanel and modules.game_joystick.getPanel()
     widgets.shortcuts = modules.game_shortcuts and modules.game_shortcuts.getPanel and modules.game_shortcuts.getPanel()
+    -- docks of pinned panels (pins.lua)
+    for index, _ in pairs(pinnedTabs()) do
+        local dock = dockWidget(index)
+        if dock and dock:isVisible() then
+            widgets['dock' .. index] = dock
+        end
+    end
     return widgets
 end
 
@@ -688,6 +718,16 @@ function init()
         button:setTooltip(tr(tab.tooltip))
         button.onClick = function()
             selectTab(tab.id)
+        end
+        -- A long press pins the panel on the screen (pins.lua)
+        if tab.panel then
+            button.onMouseRelease = function(widget, pos, mouseButton)
+                if mouseButton == MouseRightButton and widget:containsPoint(pos) then
+                    togglePin(tab.id)
+                    return true
+                end
+                return false
+            end
         end
     end
 

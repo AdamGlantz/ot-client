@@ -10,6 +10,9 @@ MobileToolbarButton < UIButton
   $checked:
     background-color: #ffffff22
     border-color: #ffffff55
+  // pinned on the screen (pins.lua)
+  $on:
+    border-color: #d9b45c
   $pressed:
     background-color: #ffffff33
 
