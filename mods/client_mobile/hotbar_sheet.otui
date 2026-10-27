@@ -226,3 +226,122 @@ HotbarSheet < UIWidget
         id: more
         width: 140
         !text: tr('More options')
+
+// Hotbar presets (hotbar_presets.lua): the P and pencil buttons next to the
+// hotbar, the edit mode layer over it, and the hotbar settings sheet
+MobileHotbarRoundButton < UIButton
+  size: 40 30
+  font: Verdana Bold-11px
+  color: #e8e8e8
+  text-align: center
+  background-color: #000000a0
+  border-width: 1
+  border-color: #6a6a6a
+  $pressed:
+    background-color: #444444c0
+  $on:
+    color: #f0c050
+    border-color: #d9b45c
+    background-color: #3a3222d0
+
+MobileHotbarPresetRow < UIWidget
+  size: 84 30
+  phantom: true
+  layout:
+    type: horizontalBox
+    spacing: 4
+
+  MobileHotbarRoundButton
+    id: preset
+    !text: 'P1'
+
+  MobileHotbarRoundButton
+    id: edit
+    !text: tr('Edit')
+
+MobileHotbarEditOverlay < UIWidget
+  phantom: false
+  focusable: false
+  background-color: #d9b45c22
+  border-width: 2
+  border-color: #d9b45c
+
+MobileHotbarChoiceRow < UIWidget
+  height: 34
+  layout:
+    type: grid
+    cell-size: 50 34
+    cell-spacing: 6
+    flow: true
+    fit-children: true
+
+MobileHotbarNote < Label
+  text-wrap: true
+  text-auto-resize: true
+  font: verdana-11px-rounded
+  color: #b8b8b8
+  margin-top: 3
+  margin-bottom: 4
+
+HotbarSettingsSheet < UIWidget
+  anchors.fill: parent
+  background-color: #000000aa
+  focusable: true
+  phantom: false
+
+  UIWidget
+    id: panel
+    anchors.centerIn: parent
+    size: 420 520
+    background-color: #1c1c1cf4
+    border-width: 1
+    border-color: #555555
+    padding: 10
+    phantom: false
+
+    Label
+      id: title
+      anchors.top: parent.top
+      anchors.left: parent.left
+      anchors.right: close.left
+      height: 34
+      font: Verdana Bold-13px
+      color: #ffffff
+      !text: tr('Hotbar')
+
+    HotbarSheetButton
+      id: close
+      anchors.top: parent.top
+      anchors.right: parent.right
+      size: 34 34
+      !text: 'X'
+
+    ScrollablePanel
+      id: list
+      anchors.top: title.bottom
+      anchors.left: parent.left
+      anchors.right: listScroll.left
+      anchors.bottom: parent.bottom
+      margin-top: 6
+      margin-right: 4
+      vertical-scrollbar: listScroll
+      layout:
+        type: verticalBox
+        spacing: 2
+
+    VerticalScrollBar
+      id: listScroll
+      anchors.top: title.bottom
+      anchors.bottom: parent.bottom
+      anchors.right: parent.right
+      margin-top: 6
+      step: 40
+      pixels-scroll: true
+
+MobileHotbarToggleRow < UIWidget
+  height: 34
+  layout:
+    type: grid
+    cell-size: 130 34
+    cell-spacing: 6
+    flow: true

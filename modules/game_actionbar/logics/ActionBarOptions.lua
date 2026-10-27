@@ -148,9 +148,11 @@ function updateVisibleWidgets()
             local visibleCount = math.max(1, math.floor(dimension / 36))
             local firstIndex = actionBar.firstVisibleIndex or 1
             local totalChildren = #children
-            -- Bars laid out as a grid (touch layout) show every button
+            -- Bars laid out as a grid (touch layout) show every button, or the
+            -- number of slots it asks for
             if actionBar.showAllButtons then
-                visibleCount = totalChildren
+                visibleCount = math.min(totalChildren, actionBar.gridSlots or totalChildren)
+                firstIndex = 1
             end
             
             -- If we can show all buttons, start from the beginning

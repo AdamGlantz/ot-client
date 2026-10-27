@@ -58,6 +58,7 @@ local function applyDefaultScale()
 end
 
 local toolbar, stats, chatButton, editLayoutButton
+local presetRow -- the P (hotbar preset) and pencil buttons
 local currentTab
 local chatVisible = false
 local menuVisible = false
@@ -291,17 +292,14 @@ local function makeRound(button)
     end
 end
 
--- The first action bar as a grid of round buttons beside (landscape) or
--- below (portrait) the game view, with as many columns as fit
-local function setActionGrid(availableWidth)
-    local actionBars = modules.game_actionbar and modules.game_actionbar.actionBars
-    local bar = actionBars and actionBars[1]
-    if not bar or not bar.tabBar then
-        return 0, 0
-    end
+local GRID_STEP = GRID_CELL + GRID_SPACING
+local PRESET_ROW_HEIGHT = 34
+
+-- An action bar as a grid of round buttons showing `slots` slots, `cell`
+-- pixels each (GRID_CELL by default)
+local function gridBar(bar, columns, slots, cell)
+    cell = cell or GRID_CELL
     local tabBar = bar.tabBar
-    local slots = #tabBar:getChildren()
-    local columns = math.max(2, math.min(6, slots, math.floor((availableWidth - 6 + GRID_SPACING) / (GRID_CELL + GRID_SPACING))))
     if not tabBar.mobileGrid then
         tabBar.mobileGrid = true
         bar.showAllButtons = true
@@ -321,16 +319,80 @@ local function setActionGrid(availableWidth)
         end
     end
     tabBar:getLayout():setNumColumns(columns)
+    tabBar:getLayout():setCellSize({ width = cell, height = cell })
+    bar.gridSlots = slots
+    -- Empty slots are placeholders until shown: make the shown ones real
+    -- buttons first, so they get the round look too
+    for index = 1, slots do
+        local button = tabBar:getChildByIndex(index)
+        if button and not button.item then
+            modules.game_actionbar.updateButton(button)
+        end
+    end
+    local iconSize = math.min(34, cell - 8)
     for _, button in ipairs(tabBar:getChildren()) do
-        makeRound(button)
+        if button.item then
+            makeRound(button)
+            button.item:setSize({ width = iconSize, height = iconSize })
+        end
     end
     local rows = math.max(1, math.ceil(slots / columns))
-    local width = columns * (GRID_CELL + GRID_SPACING) - GRID_SPACING + 6
-    local height = rows * (GRID_CELL + GRID_SPACING) - GRID_SPACING + 6
+    local height = rows * (cell + GRID_SPACING) - GRID_SPACING + 6
     -- The bar style sets its height whenever it is switched on
     bar:mergeStyle({ ['$on'] = { height = height } })
     bar:setHeight(height)
-    return width, height
+    return height
+end
+
+-- The hotbar beside (landscape) or below (portrait) the game view: the extra
+-- 3-slot rows on top and the main hotbar (action bar 1) below them, with as
+-- many columns as fit the width and no more rows than fit the height.
+-- Returns its width.
+local function setActionGrid(availableWidth, availableHeight)
+    local actionBars = modules.game_actionbar and modules.game_actionbar.actionBars
+    local bar = actionBars and actionBars[1]
+    if not bar or not bar.tabBar then
+        return 0
+    end
+    local settings = hotbarSettings()
+    local columns = math.max(2, math.min(6, math.floor((availableWidth - 6 + GRID_SPACING) / GRID_STEP)))
+    local gridWidth = columns * GRID_STEP - GRID_SPACING + 6
+    -- The extra rows always show their 3 slots, smaller when the grid is
+    -- only two wide
+    local extraCell = math.min(GRID_CELL, math.floor((gridWidth - 6 + GRID_SPACING) / 3) - GRID_SPACING)
+    local panel = bar:getParent()
+    local used = 0
+
+    -- Extra hotbars: bars 2 and 3, 3 slots each, above the main one
+    for index, n in ipairs({ 2, 3 }) do
+        local extra = actionBars[n]
+        local wanted = (n == 2 and settings.extra1) or (n == 3 and settings.extra2)
+        if extra and extra.tabBar then
+            if wanted then
+                if not extra.mobileShown then
+                    -- Shown here only; the desktop setting stays as it was
+                    modules.game_actionbar.setupActionBar(n)
+                    extra.mobileShown = true
+                end
+                extra:setVisible(true)
+                extra:setOn(true)
+                modules.game_actionbar.addActiveActionBar(extra)
+                used = used + gridBar(extra, 3, 3, extraCell) + 4
+                panel:moveChildToIndex(extra, index)
+            elseif extra.mobileShown then
+                extra.mobileShown = nil
+                extra:setVisible(false)
+                extra:setOn(false)
+                modules.game_actionbar.removeActiveActionBar(extra)
+            end
+        end
+    end
+    panel:moveChildToIndex(bar, #panel:getChildren())
+
+    local rowsThatFit = math.max(1, math.floor((availableHeight - used - 6 + GRID_SPACING) / GRID_STEP))
+    local slots = math.min(settings.slots, #bar.tabBar:getChildren(), columns * rowsThatFit)
+    gridBar(bar, columns, slots)
+    return gridWidth
 end
 
 local function layout()
@@ -413,7 +475,17 @@ local function layout()
     -- portrait above the game view, beside the chat button
     local actionPanel = root:getChildById('gameBottomActionPanel')
     if actionPanel then
-        local gridWidth = setActionGrid(portrait and (width - 12 - 70) or (side - 6))
+        -- Height left for it: landscape from the top of the screen down to
+        -- look/use/attack/follow, below the P and pencil buttons; portrait
+        -- between the health and mana bars and the game view
+        local gridHeight
+        if portrait then
+            local above = math.floor((height - TOOLBAR_HEIGHT - mapHeight) / 2)
+            gridHeight = above - 8 - stats:getHeight() - 8 - 4
+        else
+            gridHeight = height - TOOLBAR_HEIGHT - shortcutsHeight - 6 - PRESET_ROW_HEIGHT - 8
+        end
+        local gridWidth = setActionGrid(portrait and (width - 12 - 70 - 48) or (side - 6), gridHeight)
         actionPanel:breakAnchors()
         actionPanel:addAnchor(AnchorRight, 'parent', AnchorRight)
         actionPanel:setMarginRight(6)
@@ -425,6 +497,31 @@ local function layout()
             actionPanel:setMarginBottom(shortcutsHeight + 6)
         end
         actionPanel:setWidth(gridWidth)
+
+        -- P (presets) and the pencil: above the hotbar in landscape, in a
+        -- column to its left in portrait
+        if not presetRow then
+            presetRow = createHotbarPresetRow(root, actionPanel)
+        end
+        presetRow:breakAnchors()
+        if portrait then
+            presetRow:setLayout(UIVerticalLayout.create(presetRow))
+            presetRow:getLayout():setSpacing(4)
+            presetRow:setSize({ width = 40, height = 64 })
+            presetRow:addAnchor(AnchorTop, actionPanel:getId(), AnchorTop)
+            presetRow:addAnchor(AnchorRight, actionPanel:getId(), AnchorLeft)
+            presetRow:setMarginRight(6)
+            presetRow:setMarginBottom(0)
+        else
+            presetRow:setLayout(UIHorizontalLayout.create(presetRow))
+            presetRow:getLayout():setSpacing(4)
+            presetRow:setSize({ width = 84, height = 30 })
+            presetRow:addAnchor(AnchorBottom, actionPanel:getId(), AnchorTop)
+            presetRow:addAnchor(AnchorRight, actionPanel:getId(), AnchorRight)
+            presetRow:setMarginBottom(4)
+            presetRow:setMarginRight(0)
+        end
+        presetRow:raise()
         actionPanel:setVisible(true)
         actionPanel:raise()
         if modules.game_actionbar.updateVisibleWidgets then
@@ -520,6 +617,7 @@ end
 
 local function onGameEnd()
     stopEditLayout()
+    setHotbarEditing(false)
 end
 
 local function onGameStart()
@@ -532,6 +630,8 @@ local function onGameStart()
         modules.game_console.destroyButtonChat()
     end
     setChatVisible(false)
+    -- Presets and hotbar settings are per character
+    refreshHotbarPresetRow()
     unread, unreadPrivate = 0, false
     updateChatBadge()
     -- The other modules lay themselves out on game start as well (the
@@ -622,6 +722,8 @@ function terminate()
         modules.game_actionbar.ActionBarAssignSheet = nil
     end
     closeHotbarSheet()
+    destroyHotbarPresetRow()
+    presetRow = nil
     terminateTap()
     toolbar:destroy()
     stats:destroy()
