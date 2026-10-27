@@ -21,6 +21,10 @@ local PIECES = {
     { key = 'grid', resize = 'width', minWidth = 52 },
     { key = 'joystick' },
     { key = 'shortcuts' },
+    -- docks of pinned panels (pins.lua): width and height
+    { key = 'dock1', resize = 'both' },
+    { key = 'dock2', resize = 'both' },
+    { key = 'dock3', resize = 'both' },
 }
 
 local editing = false
@@ -141,6 +145,16 @@ local SCALERS = {
         scaleBox(widget, scale)
     end,
 }
+-- Docks: - and + set a size from the default one
+for index = 1, 3 do
+    SCALERS['dock' .. index] = function(widget, scale)
+        if widget.scaledBy ~= scale then
+            widget.scaledBy = scale
+            widget:setSize({ width = math.floor(DOCK_WIDTH * scale), height = math.floor(DOCK_HEIGHT * scale) })
+            fitDocks()
+        end
+    end
+end
 
 local function applyScale(piece, widget, scale)
     if piece.key == 'grid' then
@@ -159,6 +173,9 @@ local function placePiece(piece, widget, entry)
         else
             widget:setWidth(math.max(piece.minWidth or MIN_SIZE, math.floor(entry.w * r.width)))
         end
+    elseif entry.w and piece.resize == 'both' then
+        widget:setSize({ width = math.max(120, math.floor(entry.w * r.width)),
+            height = math.max(80, math.floor((entry.h or 0.4) * r.height)) })
     elseif entry.w and piece.resize == 'square' then
         local size = math.max(MIN_SIZE, math.min(piece.maxSize, math.floor(entry.w * r.width)))
         widget:setSize({ width = size, height = size })
@@ -243,6 +260,9 @@ local function storePiece(piece, widget)
     }
     if piece.resize then
         entry.w = widget:getWidth() / r.width
+    end
+    if piece.resize == 'both' then
+        entry.h = widget:getHeight() / r.height
     end
     savePiece(piece.key, entry)
 end
@@ -383,6 +403,11 @@ local function createFrame(piece, widget)
         local position = widget:getPosition()
         if piece.key == 'grid' then
             resizeActionGrid(width)
+        elseif piece.resize == 'both' then
+            local height = math.max(80, mousePos.y - widget:getY())
+            height = math.min(height, bottomLimit() - widget:getY())
+            widget:setSize({ width = math.max(120, width), height = height })
+            fitDocks()
         elseif piece.resize == 'square' then
             local size = math.min(piece.maxSize, math.max(MIN_SIZE, width))
             widget:setSize({ width = size, height = size })
