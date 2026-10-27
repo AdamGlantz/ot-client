@@ -182,7 +182,7 @@ MobileEditBar < UIWidget
     anchors.verticalCenter: parent.verticalCenter
     margin-right: 6
     size: 72 32
-    !text: tr('Reset')
+    !text: tr('Reset UI')
 
   Button
     id: done

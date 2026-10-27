@@ -17,6 +17,31 @@ DOCK_WIDTH, DOCK_HEIGHT = 176, 220
 
 local hiddenDocks = {} -- dock index -> true while hidden with its button
 
+-- Panels drawn to a fixed design (equipment, map, skills) keep their own
+-- size in a dock: it can be moved, not sized. Lists (battle, VIP,
+-- containers) keep their width; their height (how many rows) can change.
+local FIXED_TABS = { equipment = true, map = true, skills = true }
+
+function dockKind(index)
+    local tab = pinnedTabs()[index]
+    if not tab then
+        return nil
+    end
+    return FIXED_TABS[tab] and 'fixed' or 'list'
+end
+
+-- The size a fixed panel's dock needs: its widgets as they are drawn
+local function contentSize(dock)
+    local width, height = DOCK_WIDTH, dock:getPaddingTop() + dock:getPaddingBottom()
+    for _, child in ipairs(dock:getChildren()) do
+        if child:isVisible() then
+            width = math.max(width, child.mobileWidth or child:getWidth())
+            height = height + child:getHeight() + child:getMarginTop() + child:getMarginBottom()
+        end
+    end
+    return width, height
+end
+
 local function rootPanel()
     return modules.game_interface.getRootPanel()
 end
@@ -168,6 +193,8 @@ function applyPins(owns, sidePanel, mainPanel)
                 for _, panel in ipairs({ sidePanel, mainPanel }) do
                     for index2, child in ipairs(panel:getChildren()) do
                         if owns(tab, child) then
+                            -- (its own width, before the dock's layout sets it)
+                            child.mobileWidth = child.mobileWidth or child:getWidth()
                             if panel == mainPanel then
                                 child.mobileHome = 'main'
                                 child.mobileHomeIndex = index2
@@ -195,6 +222,7 @@ function applyPins(owns, sidePanel, mainPanel)
                     dock:setSize({ width = DOCK_WIDTH, height = DOCK_HEIGHT })
                     dock:setPosition({ x = viewLeft + 8 + (index - 1) * (DOCK_WIDTH + 8), y = map.y + 8 })
                 end
+                sizeDock(index)
                 dock:raise()
             else
                 dock.mobilePlaced = nil
@@ -205,14 +233,46 @@ function applyPins(owns, sidePanel, mainPanel)
     end
 end
 
+-- A dock's size from what it holds: a fixed panel's own size, or a list's
+-- width with the chosen height (- and + and the corner, edit.lua)
+function sizeDock(index)
+    local dock = dockWidget(index)
+    local kind = dockKind(index)
+    if not dock or not kind then
+        return
+    end
+    if kind == 'fixed' then
+        local width, height = contentSize(dock)
+        dock:setSize({ width = width, height = height })
+    else
+        local width = contentSize(dock)
+        dock:setWidth(width)
+    end
+end
+
 -- After the docks got their final size
 function fitDocks()
     for index, _ in pairs(pinnedTabs()) do
         local dock = dockWidget(index)
         if dock and dock:isVisible() then
-            shareHeight(dock)
+            -- (a saved size may have been applied over it)
+            sizeDock(index)
+            if dockKind(index) == 'list' then
+                shareHeight(dock)
+            end
         end
     end
+end
+
+-- Reset UI: nothing pinned (edit.lua)
+function resetPins()
+    local all = g_settings.getNode(PINS_SETTING) or {}
+    local name = g_game.getCharacterName()
+    if name and name ~= '' then
+        all[name] = nil
+        g_settings.setNode(PINS_SETTING, all)
+    end
+    hiddenDocks = {}
 end
 
 function resetHiddenDocks()
