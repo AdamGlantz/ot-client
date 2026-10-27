@@ -163,18 +163,18 @@ OtTabRow < UIWidget
     cell-spacing: 4
     flow: true
 
-// On/off: a big checkbox (the classic one, touch-sized), gold when on
+// On/off: a 28 px box (ot/checkbox.png, drawn for this size) in a 40 px
+// touch area; a gold tick when on
 OtCheck < UICheckBox
   size: 40 40
-  image-source: /images/ui/checkbox
-  image-clip: 0 0 12 12
+  image-source: /images/ui/ot/checkbox
+  image-clip: 0 0 56 56
+  image-rect: 6 6 28 28
   focusable: false
   $checked:
-    image-clip: 0 12 12 12
-    border-width: 2
-    border-color: $ot-gold
+    image-clip: 0 56 56 56
   $disabled checked:
-    image-clip: 0 24 12 12
+    image-clip: 0 112 56 56
 
 // A value between - and + (OtStepper rows)
 OtValue < Label
