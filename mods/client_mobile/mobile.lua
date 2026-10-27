@@ -191,9 +191,23 @@ local function setMenuVisible(visible)
     end
 end
 
+-- The desktop top menu with every option (the hub's "All options")
+function showTopMenu()
+    setMenuVisible(true)
+    applyTab()
+end
+
 function selectTab(id)
     if id == 'menu' then
-        setMenuVisible(not menuVisible)
+        -- the menu button opens the hub (hub.lua); a second tap closes the
+        -- hub or the desktop menu
+        if menuVisible then
+            setMenuVisible(false)
+        elseif isHubOpen() then
+            closeHub()
+        else
+            openHub()
+        end
         applyTab()
         return
     end
@@ -698,6 +712,7 @@ function init()
     applyDefaultScale()
     g_ui.importStyle('mobile')
     g_ui.importStyle('hotbar_sheet')
+    g_ui.importStyle('hub')
     initTap()
     -- Long press on a hotbar slot opens the touch sheet instead of the menu
     if modules.game_actionbar then
@@ -772,6 +787,7 @@ function terminate()
         modules.game_actionbar.ActionBarAssignSheet = nil
     end
     closeHotbarSheet()
+    closeHub()
     destroyHotbarPresetRow()
     presetRow = nil
     terminateTap()
