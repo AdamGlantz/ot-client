@@ -124,6 +124,37 @@ local function moveLeftWindowsRight()
     end
 end
 
+-- The equipment slots touch, like the containers window (compact, see
+-- docs/design-language.md): the stock inventory spaces them 3 px apart
+local EQUIPMENT_GAPS = {
+    top = { 'sword', 'ring', 'soulPanel', 'armor', 'legs', 'boots', 'shield', 'tools', 'capacityPanel' },
+    left = { 'helmet', 'backpack' },
+}
+local EQUIPMENT_SAVED = 3 * 3
+local function compactEquipment()
+    local inventory = gameInterface().getMainRightPanel():recursiveGetChildById('maininventorypanel')
+    local slots = inventory and inventory:getChildById('onPanel')
+    if not slots or inventory.compact then
+        return
+    end
+    inventory.compact = true
+    for _, id in ipairs(EQUIPMENT_GAPS.top) do
+        local widget = slots:getChildById(id)
+        if widget then
+            widget:setMarginTop(0)
+        end
+    end
+    for _, id in ipairs(EQUIPMENT_GAPS.left) do
+        local widget = slots:getChildById(id)
+        if widget then
+            widget:setMarginLeft(0)
+        end
+    end
+    if inventory.panelHeight then
+        inventory.panelHeight = inventory.panelHeight - EQUIPMENT_SAVED
+    end
+end
+
 -- Shows the side panel widgets of the selected tab and hides the other tab
 -- widgets. Windows that belong to no tab (trade, spell list...) are left as
 -- they are, and keep the right panel visible while they are open.
@@ -614,6 +645,11 @@ local function layout()
     rightPanel:addAnchor(AnchorRight, 'parent', AnchorRight)
     rightPanel:addAnchor(AnchorBottom, 'mobileToolbar', AnchorTop)
     rightPanel:setMargin(0)
+    -- solid: the view mode draws side panels see-through, and these open
+    -- over the game and the hotbar
+    mainPanel:setImageColor('white')
+    rightPanel:setImageColor('white')
+    compactEquipment()
 
     applyTab()
     mainPanel:raise()
