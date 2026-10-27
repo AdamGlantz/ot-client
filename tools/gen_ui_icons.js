@@ -21,6 +21,8 @@ const ICONS = {
     // equipment panel: fight mode, chase and secure mode
     fightOffensive: 'delapouite/sword-brandish', fightBalanced: 'lorc/scales', fightDefensive: 'lorc/checked-shield',
     stand: 'delapouite/person', chase: 'lorc/run', secure: 'lorc/dove',
+    // UI setup (setup.lua)
+    check: 'delapouite/check-mark',
 };
 // Hotbar special actions (modules/game_actionbar, by id): a glyph, and a
 // small badge in the bottom right corner for the variant (nearest, lowest

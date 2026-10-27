@@ -560,3 +560,65 @@ function toggleEditLayout()
         startEditLayout()
     end
 end
+
+-- One piece at a time, for the first-login setup (setup.lua): the piece
+-- gets its frame (drag, - and +, Reset) and nothing else does
+local function findPiece(key)
+    for _, piece in ipairs(PIECES) do
+        if piece.key == key then
+            return piece
+        end
+    end
+end
+
+function startPlacingPiece(key)
+    stopPlacingPiece()
+    local widget = getMovableWidgets()[key]
+    local piece = findPiece(key)
+    if not widget or not piece then
+        return false
+    end
+    editing = true
+    selected = key
+    frames[key] = createFrame(piece, widget)
+    updateFrames()
+    return true
+end
+
+function stopPlacingPiece()
+    -- (the full editor has its own bar and is stopped with it)
+    if editBar then
+        return
+    end
+    for key, frame in pairs(frames) do
+        frame.sizeBar:destroy()
+        frame:destroy()
+        frames[key] = nil
+    end
+    editing = false
+    selected = nil
+end
+
+-- Keeps a piece where the player put it (moved off the game view if it is
+-- still on it)
+function confirmPlacedPiece(key)
+    local widget = getMovableWidgets()[key]
+    local piece = findPiece(key)
+    if not widget or not piece then
+        return
+    end
+    local x, y = keepOffGameView(widget:getX(), widget:getY(), widget:getWidth(), widget:getHeight())
+    widget:breakAnchors()
+    widget:setPosition({ x = x, y = y })
+    storePiece(piece, widget)
+end
+
+-- Forgets a piece's place: back to its default
+function forgetPiece(key)
+    savePiece(key, nil)
+end
+
+-- Whether the player has placed or sized anything in this orientation
+function hasSavedLayout()
+    return next(savedPieces()) ~= nil
+end

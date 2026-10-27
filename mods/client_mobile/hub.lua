@@ -67,6 +67,8 @@ local SETTINGS = {
                 help = 'How much of the screen the game takes. Medium and Small leave room beside it for your bag, panels and hotbar. Large makes the game bigger; on small screens panels may then cover its edges.' },
             { id = 'editLayout', kind = 'button', text = 'Move and size pieces', buttonText = 'Edit layout',
                 help = 'Drag pieces to move them. Tap one, then - and + to size it. Long press a toolbar button to pin its panel.' },
+            { id = 'setupUi', kind = 'button', text = 'Place pieces one by one', buttonText = 'UI setup',
+                help = 'Places the movement control, hotbar, bars, backpack and chat one at a time, like on your first login.' },
             { id = 'hotbar', kind = 'button', text = 'Hotbar presets, rows and slots', buttonText = 'Hotbar...',
                 help = 'Number of presets (P button), extra rows and how many slots the hotbar shows.' },
             { id = 'resetUi', kind = 'button', text = 'Back to the default layout', buttonText = 'Reset UI',
@@ -183,6 +185,9 @@ local function rowAction(row)
     elseif row.id == 'hotbar' then
         close()
         openHotbarSettings()
+    elseif row.id == 'setupUi' then
+        close()
+        startUiSetup()
     elseif row.id == 'resetUi' then
         close()
         confirmResetLayout()

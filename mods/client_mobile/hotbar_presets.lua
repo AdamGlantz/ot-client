@@ -314,6 +314,7 @@ end
 -- Creates the preset and edit buttons next to the hotbar
 function createHotbarPresetRow(root, actionPanel)
     presetRow = g_ui.createWidget('MobileHotbarPresetRow', root)
+    presetRow:setId('mobileHotbarPresets')
     presetRow.preset.onMouseRelease = function(widget, pos, button)
         if not widget:containsPoint(pos) then
             return false
@@ -343,6 +344,11 @@ function createHotbarPresetRow(root, actionPanel)
     end
     createEditOverlay(actionPanel)
     updatePresetButton()
+    return presetRow
+end
+
+-- The P and pencil buttons (the UI setup hides them with the hotbar)
+function getHotbarPresetRow()
     return presetRow
 end
 

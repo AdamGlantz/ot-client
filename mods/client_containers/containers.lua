@@ -128,7 +128,7 @@ local function fit()
     local gridWidth = cols * (SLOT + SPACING) - SPACING
     grid:setSize({ width = gridWidth, height = rows * (SLOT + SPACING) - SPACING })
     window:setWidth(gridWidth + window:getPaddingLeft() + window:getPaddingRight())
-    local height = 24 + 4 + 28 + 4 + (tab and grid:getHeight() or 40)
+    local height = 24 + 4 + 28 + 4 + (tab and grid:getHeight() or 56)
     if window.minimized then
         height = 24 + 4 + 28
     end

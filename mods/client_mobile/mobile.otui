@@ -193,3 +193,85 @@ MobileEditBar < OtPanel
     width: 80
     !text: tr('Done')
 
+
+// First-login UI setup (setup.lua): the start and end sheet
+MobileSetupSheet < OtBackdrop
+  OtPanel
+    id: panel
+    anchors.centerIn: parent
+    width: 380
+    height: 180
+
+    OtTitle
+      id: title
+      anchors.top: parent.top
+      anchors.horizontalCenter: parent.horizontalCenter
+
+    OtText
+      id: text
+      anchors.top: title.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+      margin-top: 12
+      // (the wrapped lines run a little past the width otherwise)
+      margin-right: 14
+
+    OtButton
+      id: skip
+      anchors.bottom: parent.bottom
+      anchors.left: parent.left
+      anchors.right: parent.horizontalCenter
+      margin-right: 4
+
+    OtButtonPrimary
+      id: start
+      anchors.bottom: parent.bottom
+      anchors.left: parent.horizontalCenter
+      anchors.right: parent.right
+      margin-left: 4
+
+// The bar while placing a piece: what it is, then back, skip and the tick
+MobileSetupBar < OtPanel
+  height: 104
+  padding: 8
+
+  OtLabel
+    id: title
+    anchors.top: parent.top
+    anchors.left: parent.left
+    anchors.right: parent.right
+    color: $ot-gold
+    text-auto-resize: true
+
+  OtHint
+    id: text
+    anchors.top: title.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-top: 2
+
+  OtIconButton
+    id: back
+    anchors.left: parent.left
+    anchors.bottom: parent.bottom
+    !text: '<'
+
+  OtButton
+    id: skip
+    anchors.right: ok.left
+    anchors.bottom: parent.bottom
+    margin-right: 6
+    width: 64
+    !text: tr('Skip')
+
+  OtButtonPrimary
+    id: ok
+    anchors.right: parent.right
+    anchors.bottom: parent.bottom
+    size: 64 40
+
+    UIWidget
+      anchors.centerIn: parent
+      size: 24 24
+      image-source: /images/ui/ot/icons/check_on
+      phantom: true

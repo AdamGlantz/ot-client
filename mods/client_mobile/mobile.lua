@@ -460,7 +460,11 @@ end
 -- 3-slot rows on top and the main hotbar (action bar 1) below them, with as
 -- many columns as fit the width and no more rows than fit the height.
 -- Returns its width.
+local lastGridHeight = 1000 -- (the height the layout gave the hotbar last)
 local function setActionGrid(availableWidth, availableHeight)
+    -- a new width only (the editor's corner, a saved width): the same height
+    availableHeight = availableHeight or lastGridHeight
+    lastGridHeight = availableHeight
     local actionBars = modules.game_actionbar and modules.game_actionbar.actionBars
     local bar = actionBars and actionBars[1]
     if not bar or not bar.tabBar then
@@ -514,6 +518,7 @@ end
 -- pieces go in the areas around it. Landscape: the view fills the height
 -- and each side column gets at least `column` of the width (the view
 -- shrinks if needed). Portrait: the view's share of the width.
+local setupOfferReady = false -- (the UI setup may be offered: logged in a while)
 local VIEW_SIZE_SETTING = 'client_mobile_view_size'
 local moduleColumnWidth -- (getModuleColumnWidth)
 -- `panels`: the columns are at least a side panel wide (equipment, battle
@@ -648,6 +653,12 @@ local function layout()
     -- Bottom bar: its buttons centred in portrait, on the right in landscape
     -- with the health and mana bars on their left
     local buttons = toolbar:getChildById('buttons')
+    -- narrower buttons when they do not all fit (portrait at a big
+    -- interface size)
+    local buttonWidth = math.min(46, math.floor((width - 8) / #TABS) - 4)
+    for _, button in ipairs(buttons:getChildren()) do
+        button:setWidth(buttonWidth)
+    end
     buttons:breakAnchors()
     buttons:addAnchor(AnchorVerticalCenter, 'parent', AnchorVerticalCenter)
     if portrait then
@@ -705,7 +716,7 @@ local function layout()
         if portrait then
             local joystickWidth = keypad and keypad:isVisible() and keypad:getWidth() or 0
             gridWidth = width - joystickWidth - 16
-            gridHeight = available - (mapTop + mapHeight + statsRow) - topRow - 6
+            gridHeight = available - (mapTop + mapHeight + statsRow) - topRow - chatButton:getHeight() - 10
         else
             local inventory = gi.getMainRightPanel():recursiveGetChildById('maininventorypanel')
             local equipment = inventory and inventory.panelHeight or 150
@@ -744,10 +755,18 @@ local function layout()
     -- opens over the game view
     chatButton:breakAnchors()
     chatButton:setMargin(0)
-    if actionPanel then
-        chatButton:addAnchor(AnchorRight, actionPanel:getId(), AnchorRight)
+    if actionPanel and presetRow and portrait then
+        -- (above P and the pencil, at the right edge: a narrow hotbar has
+        -- no room beside them)
+        chatButton:addAnchor(AnchorRight, 'parent', AnchorRight)
+        chatButton:addAnchor(AnchorBottom, presetRow:getId(), AnchorTop)
+        chatButton:setMarginRight(8)
+        chatButton:setMarginBottom(4)
+    elseif actionPanel and presetRow then
+        -- (beside the pencil, so a narrow hotbar cannot put it on top of it)
+        chatButton:addAnchor(AnchorLeft, presetRow:getId(), AnchorRight)
         chatButton:addAnchor(AnchorBottom, actionPanel:getId(), AnchorTop)
-        chatButton:setMarginRight(3)
+        chatButton:setMarginLeft(6)
         chatButton:setMarginBottom(4)
     else
         chatButton:addAnchor(AnchorRight, 'parent', AnchorRight)
@@ -806,6 +825,12 @@ local function layout()
     -- Positions the player chose in edit mode (edit.lua)
     applySavedLayout()
     fitDocks()
+    -- the first-login setup (setup.lua): pieces still to place stay hidden,
+    -- and a new orientation is offered the setup
+    applySetupVisibility()
+    if setupOfferReady then
+        addEvent(offerUiSetup)
+    end
 end
 
 function relayout()
@@ -866,6 +891,8 @@ function onEditLayoutChange(active)
 end
 
 local function onGameEnd()
+    setupOfferReady = false
+    stopUiSetup()
     stopEditLayout()
     setHotbarEditing(false)
 end
@@ -888,6 +915,12 @@ local function onGameStart()
     -- action bar rebuilds its buttons a little later)
     scheduleEvent(layout, 200)
     scheduleEvent(layout, 800)
+    -- once the pieces are in place: the UI setup, the first time
+    setupOfferReady = false
+    scheduleEvent(function()
+        setupOfferReady = true
+        offerUiSetup()
+    end, 1500)
 end
 
 
