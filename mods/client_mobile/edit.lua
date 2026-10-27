@@ -169,6 +169,10 @@ local SCALERS = {
     chat = function(widget, scale)
         local b = base(widget)
         widget:setSize({ width = math.floor(b.width * scale), height = math.floor(b.height * scale) })
+        if widget.icon then
+            local size = math.floor(28 * scale)
+            widget.icon:setSize({ width = size, height = size })
+        end
     end,
 }
 -- List docks: - and + show fewer or more rows (the panels' contents cannot

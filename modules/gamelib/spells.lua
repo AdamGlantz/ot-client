@@ -596,6 +596,13 @@ function Spells.getImageClip(indexClip, profile)
     return indexClip * SpelllistSettings[profile].iconSize.width .. " 0 " .. SpelllistSettings[profile].iconSize.width .. " " .. SpelllistSettings[profile].iconSize.height
 end
 
+-- The spell icons cut to circles, 64 px each in rows of 16
+-- (tools/gen_ui_icons.js), for round hotbar slots
+Spells.ROUND_ICONS = '/images/ui/ot/icons/spell-icons-round-64x64'
+function Spells.getRoundImageClip(indexClip)
+    return (indexClip % 16) * 64 .. ' ' .. math.floor(indexClip / 16) * 64 .. ' 64 64'
+end
+
 function Spells.getImageClipCooldown(indexClip, profile)
     if profile == nil then
         profile = "Default"

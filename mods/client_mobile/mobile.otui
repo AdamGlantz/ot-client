@@ -1,8 +1,9 @@
+// (icons: data/images/ui/ot/icons, gold while its panel is open)
 MobileToolbarButton < UIButton
   size: 46 40
   margin-left: 2
   margin-right: 2
-  icon-size: 24 24
+  icon-size: 26 26
   icon-align: center
   background-color: alpha
   border-width: 1
@@ -79,18 +80,20 @@ MobileStats < UIWidget
     margin-left: 3
     @onSetup: self.fill:setImageSource('/mods/client_mobile/images/bar_mana')
 
+// Round like the hotbar slots, with the chat icon (gold while open)
 MobileChatButton < UIButton
-  size: 52 52
-  image-source: /images/game/mobile/chat
-  image-color: #ffffffcc
-  background-color: #000000aa
-  border-width: 1
-  border-color: #ffffff44
+  size: 48 48
+  image-source: /mods/client_mobile/images/slot_round
   $pressed:
-    image-color: #ffffff
-  $checked:
-    border-color: #ffffffcc
-    background-color: #ffffff33
+    image-source: /mods/client_mobile/images/slot_round_pressed
+
+  // (a child, so it stays centred when the button is sized)
+  UIWidget
+    id: icon
+    anchors.centerIn: parent
+    size: 28 28
+    image-source: /images/ui/ot/icons/chat
+    phantom: true
 
   // Unread messages while the chat is closed
   Label

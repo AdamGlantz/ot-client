@@ -366,6 +366,8 @@ function openHub()
             button.onClick = entry.action
         end
     end
+    -- (the icons' license asks for this)
+    g_ui.createWidget('OtHint', panel.list):setText(tr('Icons by the game-icons.net artists (CC BY 3.0).'))
 end
 
 function closeHub()

@@ -19,14 +19,14 @@ local ROUND_SLOT_PRESSED = '/mods/client_mobile/images/slot_round_pressed'
 -- Toolbar entries, left to right. A panel entry shows the widgets of one side
 -- panel whose id is listed (or starts with a listed prefix).
 local TABS = {
-    { id = 'menu', icon = '/images/topbuttons/options', tooltip = 'Menu' },
-    { id = 'equipment', icon = '/images/game/slots/body', tooltip = 'Equipment', panel = 'main', ids = { 'maininventorypanel' } },
-    { id = 'map', icon = '/images/topbuttons/minimap', tooltip = 'Map', panel = 'main', ids = { 'mainmappanel' } },
-    { id = 'skills', icon = '/images/topbuttons/skills', tooltip = 'Skills', panel = 'right', ids = { 'skillWindow' } },
-    { id = 'battle', icon = '/images/topbuttons/battle', tooltip = 'Battle', panel = 'right', prefixes = { 'battleWindow' } },
-    { id = 'vip', icon = '/images/topbuttons/viplist', tooltip = 'VIP', panel = 'right', ids = { 'vipWindow' } },
+    { id = 'menu', icon = 'menu', tooltip = 'Menu' },
+    { id = 'equipment', icon = 'equipment', tooltip = 'Equipment', panel = 'main', ids = { 'maininventorypanel' } },
+    { id = 'map', icon = 'map', tooltip = 'Map', panel = 'main', ids = { 'mainmappanel' } },
+    { id = 'skills', icon = 'skills', tooltip = 'Skills', panel = 'right', ids = { 'skillWindow' } },
+    { id = 'battle', icon = 'battle', tooltip = 'Battle', panel = 'right', prefixes = { 'battleWindow' } },
+    { id = 'vip', icon = 'vip', tooltip = 'VIP', panel = 'right', ids = { 'vipWindow' } },
     -- the containers window (client_containers)
-    { id = 'bag', icon = '/images/game/slots/back', tooltip = 'Containers', action = function()
+    { id = 'bag', icon = 'containers', tooltip = 'Containers', action = function()
         if modules.client_containers and modules.client_containers.toggle then
             modules.client_containers.toggle()
         end
@@ -326,6 +326,7 @@ local function setChatVisible(visible)
     end
     gameInterface().getBottomPanel():setVisible(visible)
     chatButton:setChecked(visible)
+    chatButton.icon:setImageSource(visible and '/images/ui/ot/icons/chat_on' or '/images/ui/ot/icons/chat')
     -- The joystick would cover the console
     for _, name in ipairs({ 'game_joystick' }) do
         local module = modules[name]
@@ -385,7 +386,7 @@ local function makeRound(button)
     end
 end
 
-local PRESET_ROW_HEIGHT = 34
+local PRESET_ROW_HEIGHT = 40
 
 -- An action bar as a grid of round buttons showing `slots` slots, `cell`
 -- pixels each (GRID_CELL by default)
@@ -706,7 +707,7 @@ local function layout()
         presetRow:breakAnchors()
         presetRow:setLayout(UIHorizontalLayout.create(presetRow))
         presetRow:getLayout():setSpacing(4)
-        presetRow:setSize({ width = 84, height = 30 })
+        presetRow:setSize({ width = 84, height = 40 })
         presetRow:addAnchor(AnchorBottom, actionPanel:getId(), AnchorTop)
         presetRow:addAnchor(AnchorLeft, actionPanel:getId(), AnchorLeft)
         presetRow:setMarginBottom(4)
@@ -896,7 +897,11 @@ function init()
     for _, tab in ipairs(TABS) do
         local button = g_ui.createWidget('MobileToolbarButton', toolbar.buttons)
         button:setId(tab.id)
-        button:setIcon(tab.icon)
+        -- (white, gold while its panel is open or pinned)
+        local icon = '/images/ui/ot/icons/' .. tab.icon
+        button:setIcon(icon)
+        button:mergeStyle({ ['$checked'] = { ['icon-source'] = icon .. '_on' },
+            ['$on'] = { ['icon-source'] = icon .. '_on' } })
         button:setTooltip(tr(tab.tooltip))
         button.onClick = function()
             selectTab(tab.id)

@@ -3,7 +3,6 @@
 -- Tabs: items you carry (with how to use them), 7.92 spells from the server
 -- data (Data792), chat text, and the action bar's special actions.
 
-local SPELL_ICONS = '/images/game/spells/spell-icons-32x32'
 local DRAG_THRESHOLD = 8
 
 local TABS = {
@@ -226,8 +225,8 @@ end
 local function setSpellIcon(row, words)
     local data = Spells.getSpellDataByWords(words)
     if data and data.clientId then
-        row.icon:setImageSource(SPELL_ICONS)
-        row.icon:setImageClip(Spells.getImageClip(data.clientId, 'Default'))
+        row.icon:setImageSource(Spells.ROUND_ICONS)
+        row.icon:setImageClip(Spells.getRoundImageClip(data.clientId))
         row.icon:setVisible(true)
     end
 end

@@ -149,10 +149,12 @@ ActionBarSpecialActions = {{
 { id = "lookAtCrosshair", group = "General", text = tr("Look at crosshair") },
 { id = "contextMenuAtCrosshair", group = "General", text = tr("Context menu on crosshair") }}
 
--- Targeting and general actions have icons (tools/gen_action_icons.py)
+-- Every special action has an icon (64 px, tools/gen_ui_icons.js; the
+-- passive abilities keep their own sheet)
 for _, specialAction in ipairs(ActionBarSpecialActions) do
-    if specialAction.group then
-        specialAction.icon = '/images/game/actionbar/actions/' .. specialAction.id
+    if not specialAction.icon then
+        specialAction.icon = '/images/ui/ot/icons/actions/' .. specialAction.id
+        specialAction.clip = '0 0 64 64'
     end
 end
 

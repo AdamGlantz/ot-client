@@ -1102,6 +1102,10 @@ function updateButton(button)
             end
             local source = SpelllistSettings['Default'].iconFile
             local clip = Spells.getImageClip(spellId, 'Default')
+            -- round slots on touch screens: the round spell sheet
+            if g_platform.isMobile() then
+                source, clip = Spells.ROUND_ICONS, Spells.getRoundImageClip(spellId)
+            end
 
             button.item.text:setImageSource(source)
             button.item.text:setImageClip(clip)
@@ -1145,7 +1149,7 @@ function updateButton(button)
         local specialActionData = getActionBarSpecialAction(specialAction)
         if specialActionData and specialActionData.icon then
             button.item.text:setImageSource(specialActionData.icon)
-            button.item.text:setImageClip("0 0 32 32")
+            button.item.text:setImageClip(specialActionData.clip or "0 0 32 32")
             button.item.text:setText('')
         else
             button.item.text:setText(short_text(specialActionData and specialActionData.text or specialAction, 15))

@@ -206,11 +206,23 @@ HotbarSheet < OtBackdrop
 
 // Hotbar presets (hotbar_presets.lua): the P and pencil buttons next to the
 // hotbar, the edit mode layer over it, and the hotbar settings sheet
-MobileHotbarRoundButton < OtButton
-  size: 40 30
+// A round button like the hotbar slots: text (P1) or an icon (the pencil),
+// gold when on
+MobileHotbarRoundButton < UIButton
+  size: 40 40
+  image-source: /mods/client_mobile/images/slot_round
+  font: $ot-font-label
+  color: $ot-text
+  icon-size: 22 22
+  icon-align: center
+  focusable: false
+  $pressed:
+    image-source: /mods/client_mobile/images/slot_round_pressed
+  $on:
+    color: $ot-gold
 
 MobileHotbarPresetRow < UIWidget
-  size: 84 30
+  size: 84 40
   phantom: true
   layout:
     type: horizontalBox
@@ -222,7 +234,10 @@ MobileHotbarPresetRow < UIWidget
 
   MobileHotbarRoundButton
     id: edit
-    !text: tr('Edit')
+    !tooltip: tr('Edit hotbar')
+    icon-source: /images/ui/ot/icons/edit
+    $on:
+      icon-source: /images/ui/ot/icons/edit_on
 
 MobileHotbarEditOverlay < UIWidget
   phantom: false
