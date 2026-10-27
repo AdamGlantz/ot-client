@@ -35,7 +35,7 @@ Classic Tibia materials, nothing new to draw:
 | `OtButtonDanger` | Logout, Delete, Reset: red |
 | `OtIconButton` | 40×40: close X, -, +, < |
 | `OtTab` in `OtTabRow` | Tabs; the selected one is checked |
-| `OtCheck` | On/off, 40×40 |
+| `OtCheck` | On/off: a 28 px box with a gold tick, in a 40×40 touch area |
 | `OtValue` | A value between - and + |
 | `OtHelpButton` | The "?" beside a setting; opens a short explanation |
 | `OtSettingRow` | Title + "?" on the left, controls on the right (`controls` takes `OtButton`s, an `OtCheck`, or `-` `OtValue` `+`) |
@@ -62,7 +62,11 @@ Tokens (`&ot-…` in the same file): fonts `$ot-font-title`, `$ot-font-label`,
 7. Pieces keep their proportions: scale whole pieces (- and +), never stretch
    art. A box may only grow where its content fills it (more rows in a list,
    more columns in a grid).
-8. Check new screens at phone size in both orientations (1024×600 and
+8. Images are drawn for the size they are shown at. The classic UI images
+   are tiny (a 12 px checkbox) and turn blurry and blocky when enlarged, so a
+   touch-sized control gets its own art in `data/images/ui/ot/`, made at twice
+   its size (phones draw the interface at 2x).
+9. Check new screens at phone size in both orientations (1024×600 and
    600×1024) and on desktop before merging.
 
 ## Status
