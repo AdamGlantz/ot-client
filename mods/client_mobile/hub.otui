@@ -1,140 +1,60 @@
-// The hub (hub.lua): menu buttons, settings tabs and rows, help popup
-HubBigButton < HotbarSheetButton
-  height: 52
-  font: Verdana Bold-11px
-
-// the hub's front page: big buttons in two columns
+// The hub (hub.lua), built from the ot-ui styles (data/styles/50-ot-ui.otui)
 HubGrid < UIWidget
   layout:
     type: grid
-    cell-size: 200 52
+    cell-size: 200 56
     cell-spacing: 8
     flow: true
     fit-children: true
 
-HubLogout < UIButton
-  height: 40
-  margin-top: 10
-  font: Verdana Bold-11px
-  color: #ffffff
-  text-align: center
+HubBigButton < OtButton
+  height: 56
+
+HubLogout < OtButtonDanger
+  height: 44
+  margin-top: 12
   !text: tr('Logout')
-  background-color: #5a1a1a
-  border-width: 1
-  border-color: #a03030
-  $pressed:
-    background-color: #7a2a2a
 
-HubValue < Label
-  width: 64
-  height: 34
-  text-align: center
-  font: Verdana Bold-11px
-  color: #ffffff
-  background-color: #000000aa
-
-HubRow < UIWidget
-  height: 46
-  border-width-bottom: 1
-  border-color-bottom: #ffffff14
-
-  Label
-    id: title
-    anchors.left: parent.left
-    anchors.right: help.left
-    anchors.verticalCenter: parent.verticalCenter
-    margin-left: 4
-    margin-right: 6
-    font: Verdana Bold-11px
-    color: #ffffff
-    text-wrap: true
-    text-auto-resize: true
-
-  HotbarSheetButton
-    id: help
-    anchors.right: controls.left
-    anchors.verticalCenter: parent.verticalCenter
-    margin-right: 8
-    size: 30 30
-    !text: '?'
-    color: #d9b45c
-
-  UIWidget
-    id: controls
-    anchors.right: parent.right
-    anchors.verticalCenter: parent.verticalCenter
-    height: 34
-    width: 230
-    layout:
-      type: horizontalBox
-      spacing: 4
-      align-right: true
-
-HubSheet < UIWidget
-  anchors.fill: parent
-  background-color: #000000aa
-  focusable: true
-  phantom: false
-
-  UIWidget
+HubSheet < OtBackdrop
+  OtPanel
     id: panel
     anchors.centerIn: parent
     size: 500 560
-    background-color: #1c1c1cf4
-    border-width: 1
-    border-color: #555555
-    padding: 10
-    phantom: false
-    // higher contrast (the half circle button), for sunlight
-    $on:
-      background-color: #000000
-      border-color: #ffffff
 
-    HotbarSheetButton
+    OtIconButton
       id: back
       anchors.top: parent.top
       anchors.left: parent.left
-      size: 90 34
+      width: 90
       visible: false
 
-    Label
+    OtTitle
       id: title
       anchors.top: parent.top
       anchors.horizontalCenter: parent.horizontalCenter
-      height: 34
-      font: Verdana Bold-13px
-      color: #ffffff
-      text-auto-resize: true
+      margin-top: 10
 
-    HotbarSheetButton
+    OtIconButton
       id: close
       anchors.top: parent.top
       anchors.right: parent.right
-      size: 34 34
       !text: 'X'
 
-    HotbarSheetButton
+    OtButton
       id: contrast
       anchors.top: parent.top
       anchors.right: close.left
       margin-right: 6
-      size: 64 34
+      width: 84
       !text: tr('Contrast')
 
-    UIWidget
+    OtTabRow
       id: tabs
       anchors.top: close.bottom
       anchors.left: parent.left
       anchors.right: parent.right
-      margin-top: 8
-      height: 34
+      margin-top: 10
       visible: false
-      layout:
-        type: grid
-        cell-size: 90 34
-        cell-spacing: 3
-        num-columns: 5
-        flow: true
 
     ScrollablePanel
       id: list
@@ -142,8 +62,8 @@ HubSheet < UIWidget
       anchors.left: parent.left
       anchors.right: listScroll.left
       anchors.bottom: parent.bottom
-      margin-top: 8
-      margin-right: 4
+      margin-top: 10
+      margin-right: 6
       vertical-scrollbar: listScroll
       layout:
         type: verticalBox
@@ -153,30 +73,27 @@ HubSheet < UIWidget
       anchors.top: tabs.bottom
       anchors.bottom: parent.bottom
       anchors.right: parent.right
-      margin-top: 8
-      step: 46
+      margin-top: 10
+      step: 52
       pixels-scroll: true
 
-HubHelp < UIButton
-  anchors.fill: parent
-  background-color: #00000088
-  focusable: true
-
-  UIWidget
+HubHelp < OtBackdrop
+  OtPanel
     id: box
     anchors.centerIn: parent
-    width: 340
-    height: 120
-    background-color: #2a2a2aff
-    border-width: 1
-    border-color: #d9b45c
-    padding: 12
+    width: 360
+    height: 130
     phantom: true
 
-    Label
+    OtText
       id: text
-      anchors.fill: parent
-      text-wrap: true
-      font: verdana-11px-rounded
-      color: #ffffff
+      anchors.top: parent.top
+      anchors.left: parent.left
+      anchors.right: parent.right
+      phantom: true
+
+    OtHint
+      anchors.bottom: parent.bottom
+      anchors.right: parent.right
+      !text: tr('Tap to close')
       phantom: true

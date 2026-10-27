@@ -111,6 +111,7 @@ local function showHelp(text)
     end
     helpBox = g_ui.createWidget('HubHelp', rootWidget)
     helpBox.box.text:setText(tr(text))
+    helpBox.box:setOn(g_settings.getBoolean(CONTRAST_SETTING))
     helpBox:raise()
     helpBox.onClick = function()
         helpBox:destroy()
@@ -120,7 +121,9 @@ end
 
 local function applyContrast()
     if hub then
-        hub.panel:setOn(g_settings.getBoolean(CONTRAST_SETTING))
+        local on = g_settings.getBoolean(CONTRAST_SETTING)
+        hub.panel:setOn(on)
+        hub.panel.contrast:setChecked(on)
     end
 end
 
@@ -190,7 +193,7 @@ end
 local showSettings
 
 local function addRow(list, row)
-    local widget = g_ui.createWidget('HubRow', list)
+    local widget = g_ui.createWidget('OtSettingRow', list)
     widget.title:setText(tr(row.text))
     widget.help.onClick = function()
         showHelp(row.help)
@@ -199,17 +202,14 @@ local function addRow(list, row)
     local value = rowValue(row)
 
     if row.kind == 'toggle' then
-        local button = g_ui.createWidget('HotbarSheetButton', controls)
-        button:setWidth(70)
-        button:setText(value and tr('On') or tr('Off'))
-        button:setChecked(value and true or false)
-        button.onClick = function()
-            setRowValue(row, not rowValue(row))
-            showSettings(currentPage)
+        local check = g_ui.createWidget('OtCheck', controls)
+        check:setChecked(value and true or false)
+        check.onCheckChange = function(widget, checked)
+            setRowValue(row, checked)
         end
     elseif row.kind == 'choice' then
         for _, choice in ipairs(rowChoices(row)) do
-            local button = g_ui.createWidget('HotbarSheetButton', controls)
+            local button = g_ui.createWidget('OtButton', controls)
             button:setText(tr(choice[2]))
             button:setWidth(math.max(44, 16 + #choice[2] * 9))
             button:setChecked(choice[1] == value)
@@ -225,18 +225,16 @@ local function addRow(list, row)
             setRowValue(row, new)
             showSettings(currentPage)
         end
-        local minus = g_ui.createWidget('HotbarSheetButton', controls)
+        local minus = g_ui.createWidget('OtIconButton', controls)
         minus:setText('-')
-        minus:setWidth(40)
         minus.onClick = function() step(-row.step) end
-        local label = g_ui.createWidget('HubValue', controls)
+        local label = g_ui.createWidget('OtValue', controls)
         label:setText(tostring(value) .. (row.unit or ''))
-        local plus = g_ui.createWidget('HotbarSheetButton', controls)
+        local plus = g_ui.createWidget('OtIconButton', controls)
         plus:setText('+')
-        plus:setWidth(40)
         plus.onClick = function() step(row.step) end
     elseif row.kind == 'button' then
-        local button = g_ui.createWidget('HotbarSheetButton', controls)
+        local button = g_ui.createWidget('OtButton', controls)
         button:setText(tr(row.buttonText))
         button:setWidth(110)
         button.onClick = function()
@@ -266,9 +264,9 @@ showSettings = function(pageId)
     end
     panel.tabs:destroyChildren()
     panel.tabs:setVisible(true)
-    panel.tabs:setHeight(34)
+    panel.tabs:setHeight(36)
     for _, page in ipairs(SETTINGS) do
-        local tab = g_ui.createWidget('HotbarSheetButton', panel.tabs)
+        local tab = g_ui.createWidget('OtTab', panel.tabs)
         tab:setText(tr(page.text))
         tab:setChecked(page.id == pageId)
         tab.onClick = function()
@@ -329,7 +327,7 @@ function openHub()
             applyContrast()
         end
         local cell = math.floor((panel:getWidth() - 20 - 12 - 18) / 5)
-        panel.tabs:getLayout():setCellSize({ width = cell, height = 34 })
+        panel.tabs:getLayout():setCellSize({ width = cell, height = 36 })
     end
     applyContrast()
     hub:raise()
@@ -343,7 +341,7 @@ function openHub()
     panel.list:destroyChildren()
     local grid = g_ui.createWidget('HubGrid', panel.list)
     local cell = math.floor((panel.list:getWidth() - 8) / 2)
-    grid:getLayout():setCellSize({ width = cell, height = 52 })
+    grid:getLayout():setCellSize({ width = cell, height = 56 })
     for _, entry in ipairs(HUB_BUTTONS) do
         if entry.danger then
             local button = g_ui.createWidget('HubLogout', panel.list)

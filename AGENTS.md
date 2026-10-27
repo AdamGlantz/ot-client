@@ -31,3 +31,9 @@ Any change touching client-assets auto-installation must preserve the runtime co
    - Explicitly state tested install paths and expected runtime load behavior.
 
 Reference: `docs/client-assets-auto-install.md`
+
+## UI Design Gate
+
+New or changed windows and touch screens use the ot-ui styles
+(`data/styles/50-ot-ui.otui`): build from `Ot*` styles and `&ot-` tokens, no
+one-off colours, fonts or images. Reference: `docs/design-language.md`
