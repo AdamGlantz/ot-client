@@ -21,11 +21,27 @@ local PIECES = {
     { key = 'grid', resize = 'width', minWidth = 52 },
     { key = 'joystick' },
     { key = 'shortcuts' },
-    -- docks of pinned panels (pins.lua): width and height
-    { key = 'dock1', resize = 'both' },
-    { key = 'dock2', resize = 'both' },
-    { key = 'dock3', resize = 'both' },
+    -- docks of pinned panels (pins.lua): a list's height (how many rows)
+    -- changes, a fixed panel only moves
+    { key = 'dock1', dock = 1 },
+    { key = 'dock2', dock = 2 },
+    { key = 'dock3', dock = 3 },
 }
+
+-- How a piece can be resized: by the corner (nil: not at all), and whether
+-- - and + apply. Pieces are never stretched out of their shape: the bars and
+-- the hotbar take more width, the chat button stays square, a list panel
+-- shows more rows.
+local function resizeMode(piece)
+    if piece.dock then
+        return dockKind(piece.dock) == 'list' and 'height' or nil
+    end
+    return piece.resize
+end
+
+local function canScale(piece)
+    return not piece.dock or dockKind(piece.dock) == 'list'
+end
 
 local editing = false
 local frames = {}
@@ -145,12 +161,13 @@ local SCALERS = {
         scaleBox(widget, scale)
     end,
 }
--- Docks: - and + set a size from the default one
+-- List docks: - and + show fewer or more rows (the panels' contents cannot
+-- be drawn bigger, so their width stays)
 for index = 1, 3 do
     SCALERS['dock' .. index] = function(widget, scale)
-        if widget.scaledBy ~= scale then
+        if dockKind(index) == 'list' and widget.scaledBy ~= scale then
             widget.scaledBy = scale
-            widget:setSize({ width = math.floor(DOCK_WIDTH * scale), height = math.floor(DOCK_HEIGHT * scale) })
+            widget:setHeight(math.floor(DOCK_HEIGHT * scale))
             fitDocks()
         end
     end
@@ -173,9 +190,8 @@ local function placePiece(piece, widget, entry)
         else
             widget:setWidth(math.max(piece.minWidth or MIN_SIZE, math.floor(entry.w * r.width)))
         end
-    elseif entry.w and piece.resize == 'both' then
-        widget:setSize({ width = math.max(120, math.floor(entry.w * r.width)),
-            height = math.max(80, math.floor((entry.h or 0.4) * r.height)) })
+    elseif entry.h and resizeMode(piece) == 'height' then
+        widget:setHeight(math.max(80, math.floor(entry.h * r.height)))
     elseif entry.w and piece.resize == 'square' then
         local size = math.max(MIN_SIZE, math.min(piece.maxSize, math.floor(entry.w * r.width)))
         widget:setSize({ width = size, height = size })
@@ -261,7 +277,7 @@ local function storePiece(piece, widget)
     if piece.resize then
         entry.w = widget:getWidth() / r.width
     end
-    if piece.resize == 'both' then
+    if resizeMode(piece) == 'height' then
         entry.h = widget:getHeight() / r.height
     end
     savePiece(piece.key, entry)
@@ -322,6 +338,11 @@ function placeSizeBar(frame, piece)
     end
     bar:setPosition({ x = x, y = y })
     bar:getChildById('size'):setText(math.floor(getPieceScale(piece.key) * 100 + 0.5) .. '%')
+    -- a fixed panel only moves: just Reset
+    local scalable = canScale(piece)
+    for _, id in ipairs({ 'smaller', 'size', 'bigger' }) do
+        bar:getChildById(id):setVisible(scalable)
+    end
 end
 
 function updateFrames()
@@ -392,7 +413,7 @@ local function createFrame(piece, widget)
 
     -- The corner resizes
     local corner = frame:getChildById('resize')
-    corner:setVisible(piece.resize ~= nil)
+    corner:setVisible(resizeMode(piece) ~= nil)
     corner.onDragEnter = function()
         return true
     end
@@ -403,10 +424,9 @@ local function createFrame(piece, widget)
         local position = widget:getPosition()
         if piece.key == 'grid' then
             resizeActionGrid(width)
-        elseif piece.resize == 'both' then
+        elseif resizeMode(piece) == 'height' then
             local height = math.max(80, mousePos.y - widget:getY())
-            height = math.min(height, bottomLimit() - widget:getY())
-            widget:setSize({ width = math.max(120, width), height = height })
+            widget:setHeight(math.min(height, bottomLimit() - widget:getY()))
             fitDocks()
         elseif piece.resize == 'square' then
             local size = math.min(piece.maxSize, math.max(MIN_SIZE, width))
@@ -456,13 +476,40 @@ function stopEditLayout()
     end
 end
 
+-- Reset UI: every piece back to its default place and size, in both
+-- orientations, and no panels pinned (hotbar slots and presets stay)
+local resetBox
+
 function resetLayout()
     local all, layouts = characterLayouts()
     if all then
-        layouts[orientation()] = nil
+        local name = g_game.getCharacterName()
+        all[name] = nil
         g_settings.setNode(SETTINGS_NODE, all)
     end
+    resetPins()
+    g_settings.save()
+    if editing then
+        stopEditLayout()
+        startEditLayout()
+    end
     relayout()
+end
+
+function confirmResetLayout()
+    if resetBox or not g_game.isOnline() then
+        return
+    end
+    local function done()
+        if resetBox then
+            resetBox:destroy()
+            resetBox = nil
+        end
+    end
+    resetBox = displayGeneralBox(tr('Reset UI'), tr('Do you want to reset the UI to default values?'), {
+        { text = tr('Yes'), callback = function() done(); resetLayout() end },
+        { text = tr('No'), callback = done },
+    }, function() done(); resetLayout() end, done)
 end
 
 function startEditLayout()
@@ -477,7 +524,7 @@ function startEditLayout()
         end
     end
     editBar = g_ui.createWidget('MobileEditBar', rootWidget)
-    editBar:getChildById('reset').onClick = resetLayout
+    editBar:getChildById('reset').onClick = confirmResetLayout
     editBar:getChildById('done').onClick = stopEditLayout
     updateFrames()
     if onEditLayoutChange then

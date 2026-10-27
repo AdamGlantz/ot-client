@@ -84,3 +84,16 @@ UIWidget
         if modules.client_mobile and modules.client_mobile.startEditLayout then
           modules.client_mobile.startEditLayout()
         end
+
+    Button
+      id: resetTouchLayout
+      anchors.left: prev.right
+      anchors.verticalCenter: parent.verticalCenter
+      margin-left: 8
+      width: 100
+      !text: tr('Reset UI')
+      @onClick: |
+        modules.client_options.hide()
+        if modules.client_mobile and modules.client_mobile.confirmResetLayout then
+          modules.client_mobile.confirmResetLayout()
+        end
