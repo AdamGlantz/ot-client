@@ -130,7 +130,9 @@ local EQUIPMENT_GAPS = {
     top = { 'sword', 'ring', 'soulPanel', 'armor', 'legs', 'boots', 'shield', 'tools', 'capacityPanel' },
     left = { 'helmet', 'backpack' },
 }
-local EQUIPMENT_SAVED = 3 * 3
+-- (3 of the 9 px the gaps free go to the soul and capacity boxes)
+local EQUIPMENT_SAVED = 2 * 3
+local EQUIPMENT_BOX_GROWTH = 3
 local function compactEquipment()
     local inventory = gameInterface().getMainRightPanel():recursiveGetChildById('maininventorypanel')
     local slots = inventory and inventory:getChildById('onPanel')
@@ -148,6 +150,17 @@ local function compactEquipment()
         local widget = slots:getChildById(id)
         if widget then
             widget:setMarginLeft(0)
+        end
+    end
+    -- the soul and capacity boxes grow down so their title is not cut off
+    for _, id in ipairs({ 'soulPanel', 'capacityPanel' }) do
+        local box = slots:getChildById(id)
+        if box then
+            box:setMarginBottom(-EQUIPMENT_BOX_GROWTH)
+            local title = box:getChildren()[1]
+            if title then
+                title:setMarginTop(3)
+            end
         end
     end
     if inventory.panelHeight then
