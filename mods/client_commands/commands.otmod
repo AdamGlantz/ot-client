@@ -1,0 +1,8 @@
+Module
+  name: client_commands
+  description: Suggestions for / and ! chat commands the character may use, with parameter hints (server extended opcode 104)
+  author: ot-client
+  sandboxed: true
+  scripts: [ commands ]
+  @onLoad: init()
+  @onUnload: terminate()

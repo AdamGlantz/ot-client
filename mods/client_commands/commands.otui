@@ -1,0 +1,76 @@
+// Built from the ot-ui styles (data/styles/50-ot-ui.otui)
+CommandRow < UIButton
+  height: 46
+  padding: 4 8 4 8
+  focusable: false
+  border-width-bottom: 1
+  border-color-bottom: #ffffff14
+  $on:
+    background-color: #e0b84c30
+    border-width: 2
+    border-color: $ot-gold
+
+  Label
+    id: words
+    anchors.top: parent.top
+    anchors.left: parent.left
+    font: $ot-font-label
+    color: $ot-gold
+    text-auto-resize: true
+    phantom: true
+
+  // the parameters; the one being typed is drawn white (coloured text)
+  Label
+    id: params
+    anchors.top: parent.top
+    anchors.left: words.right
+    anchors.right: parent.right
+    margin-left: 8
+    font: $ot-font-text
+    color: $ot-text-muted
+    phantom: true
+
+  Label
+    id: text
+    anchors.top: words.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-top: 4
+    font: $ot-font-text
+    color: $ot-text
+    phantom: true
+
+CommandList < OtPanel
+  width: 460
+  padding: 6
+  focusable: false
+  phantom: false
+
+  ScrollablePanel
+    id: rows
+    anchors.top: parent.top
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.bottom: keys.top
+    margin-right: 14
+    margin-bottom: 4
+    vertical-scrollbar: rowsScroll
+    layout:
+      type: verticalBox
+
+  VerticalScrollBar
+    id: rowsScroll
+    anchors.top: parent.top
+    anchors.bottom: keys.top
+    margin-bottom: 4
+    anchors.right: parent.right
+    step: 46
+    pixels-scroll: true
+
+  OtHint
+    id: keys
+    anchors.left: parent.left
+    anchors.bottom: parent.bottom
+    height: 14
+    text-auto-resize: true
+    !text: tr('Tab: complete   Up/Down: choose   Esc: close')
