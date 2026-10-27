@@ -1,0 +1,82 @@
+GamepadBindRow < UIWidget
+  height: 26
+  background-color: #00000030
+  border-width: 1
+  border-color: #3a3a3a
+  $on:
+    border-color: #f0d070
+    background-color: #3a322280
+
+  Label
+    id: name
+    anchors.left: parent.left
+    anchors.verticalCenter: parent.verticalCenter
+    margin-left: 8
+    width: 130
+    color: #e8e8e8
+
+  Button
+    id: slot
+    anchors.right: parent.right
+    anchors.verticalCenter: parent.verticalCenter
+    margin-right: 4
+    size: 110 20
+
+GamepadBindWindow < MainWindow
+  id: gamepadBindWindow
+  !text: tr('Game controller')
+  size: 330 470
+  @onEscape: modules.client_gamepad.closeBindWindow()
+
+  Label
+    id: status
+    anchors.top: parent.top
+    anchors.left: parent.left
+    anchors.right: parent.right
+    text-wrap: true
+    text-auto-resize: true
+    color: #c8c8c8
+
+  ScrollablePanel
+    id: rows
+    anchors.top: status.bottom
+    anchors.left: parent.left
+    anchors.right: rowsScroll.left
+    anchors.bottom: buttons.top
+    margin-top: 8
+    margin-bottom: 8
+    vertical-scrollbar: rowsScroll
+    layout:
+      type: verticalBox
+      spacing: 3
+
+  VerticalScrollBar
+    id: rowsScroll
+    anchors.top: rows.top
+    anchors.bottom: rows.bottom
+    anchors.right: parent.right
+    step: 29
+    pixels-scroll: true
+
+  Panel
+    id: buttons
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.bottom: parent.bottom
+    height: 22
+
+    Button
+      id: reset
+      anchors.left: parent.left
+      anchors.verticalCenter: parent.verticalCenter
+      width: 110
+      !text: tr('Defaults')
+      @onClick: modules.client_gamepad.resetBindings()
+
+    Button
+      id: close
+      anchors.right: parent.right
+      anchors.verticalCenter: parent.verticalCenter
+      width: 80
+      !text: tr('Close')
+      @onClick: modules.client_gamepad.closeBindWindow()

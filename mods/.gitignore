@@ -9,3 +9,5 @@
 !/client_mobile/**
 !/client_npcdialog/
 !/client_npcdialog/**
+!/client_gamepad/
+!/client_gamepad/**

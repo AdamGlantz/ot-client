@@ -1,0 +1,8 @@
+Module
+  name: client_gamepad
+  description: Game controller in the browser: walk with the left stick or D-pad, buttons use hotbar slots (Options > Controls > Game controller)
+  author: ot-client
+  sandboxed: true
+  scripts: [ gamepad ]
+  @onLoad: init()
+  @onUnload: terminate()

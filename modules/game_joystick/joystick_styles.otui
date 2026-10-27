@@ -1,0 +1,8 @@
+JoystickArrow < UIWidget
+  size: 40 40
+  anchors.horizontalCenter: parent.horizontalCenter
+  anchors.verticalCenter: parent.verticalCenter
+  phantom: true
+  image-color: #ffffffd0
+  $on:
+    image-color: #f0c050

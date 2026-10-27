@@ -140,6 +140,8 @@ void Application::registerLuaFunctions()
     g_lua.bindSingletonFunction("g_platform", "isBrowser", &Platform::isBrowser, &g_platform);
     g_lua.bindSingletonFunction("g_platform", "isConsole", &Platform::isConsole, &g_platform);
     g_lua.bindSingletonFunction("g_platform", "getBrowserConfigFlag", &Platform::getBrowserConfigFlag, &g_platform);
+    g_lua.bindSingletonFunction("g_platform", "getGamepadButtons", &Platform::getGamepadButtons, &g_platform);
+    g_lua.bindSingletonFunction("g_platform", "getGamepadStick", &Platform::getGamepadStick, &g_platform);
     g_lua.bindSingletonFunction("g_platform", "getAppInstallState", &Platform::getAppInstallState, &g_platform);
     g_lua.bindSingletonFunction("g_platform", "installApp", &Platform::installApp, &g_platform);
     g_lua.bindSingletonFunction("g_platform", "openDir", &Platform::openDir, &g_platform);

@@ -12,6 +12,7 @@ Module
     - client_classic
     - client_reconnect
     - client_npcdialog
+    - client_gamepad
     - client_power
     - client_install
     - client_vocation
