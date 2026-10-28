@@ -156,7 +156,7 @@ void UIProgressRect::drawSelf(const DrawPoolType drawPane)
 }
 
 // A clockwise slice of the circle that fits the padding rect, 0% at the top
-void UIProgressRect::drawPie(const float fromPercent, const float toPercent, const Color& color) const
+void UIProgressRect::drawPie(const float fromPercent, const float toPercent, const Color& color)
 {
     if (toPercent <= fromPercent)
         return;

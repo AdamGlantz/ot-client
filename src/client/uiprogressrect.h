@@ -64,7 +64,7 @@ private:
     void scheduleNextUpdate();
     void updateProgress();
     void updateProgressText(uint32_t remainingTimeMs);
-    void drawPie(float fromPercent, float toPercent, const Color& color) const;
+    void drawPie(float fromPercent, float toPercent, const Color& color);
     void scheduleFlashRepaint();
 
     float m_percent{ 0 };
