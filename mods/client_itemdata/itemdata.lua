@@ -201,8 +201,10 @@ function fillCard(card, id, fluid)
         end, 2)))
     end
     if entry.drop then
-        line('drops', tr('Dropped by: %s', names(entry.drop, creatureName, function(name, percent)
-            return name .. ' (' .. percent .. '%)'
+        -- (the data gives a rarity, never the drop chance)
+        line('drops', tr('Dropped by: %s', names(entry.drop, creatureName, function(name, tier)
+            local rarity = data.rarities and data.rarities[tier + 1]
+            return rarity and (name .. ' (' .. rarity:lower() .. ')') or name
         end, 3)), '#a8a8a8')
     end
     -- the lines wrap at the card's width: their height once laid out
