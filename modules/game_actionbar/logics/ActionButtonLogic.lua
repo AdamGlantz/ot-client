@@ -1163,6 +1163,7 @@ function updateButton(button)
 
     button.item:setDraggable(true)
     setupButtonTooltip(button, false)
+    applyServerExhaust(button)
 
     local parentButton = button:getParent()
     if parentButton then

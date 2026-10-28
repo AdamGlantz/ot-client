@@ -178,7 +178,8 @@ local function findNextAvailableAction(multiActions)
                 firstValidAction = firstValidAction or data
                 local spellCooldownRemaining = getSpellCooldownRemaining(spellData.id)
                 local groupCooldownRemaining = getSpellGroupCooldownRemaining(spellData)
-                local totalCooldownRemaining = math.max(spellCooldownRemaining, groupCooldownRemaining)
+                local totalCooldownRemaining = math.max(spellCooldownRemaining, groupCooldownRemaining,
+                    getServerExhaustRemaining(data))
 
                 if totalCooldownRemaining <= 0 then
                     bestAction = bestAction or data
@@ -196,20 +197,18 @@ local function findNextAvailableAction(multiActions)
             local itemCount = player and player:getInventoryCount(itemId, upgradeTier) or 0
             firstValidAction = firstValidAction or data
 
+            local totalCooldownRemaining = getServerExhaustRemaining(data)
             local runeSpellData = Spells.getRuneSpellByItem(itemId)
             if runeSpellData then
-                local spellCooldownRemaining = getSpellCooldownRemaining(runeSpellData.id)
-                local groupCooldownRemaining = getSpellGroupCooldownRemaining(runeSpellData)
-                local totalCooldownRemaining = math.max(spellCooldownRemaining, groupCooldownRemaining)
+                totalCooldownRemaining = math.max(totalCooldownRemaining, getSpellCooldownRemaining(runeSpellData.id),
+                    getSpellGroupCooldownRemaining(runeSpellData))
+            end
 
-                if totalCooldownRemaining <= 0 and itemCount > 0 then
-                    bestAction = bestAction or data
-                elseif itemCount > 0 and totalCooldownRemaining < closestCooldownTime then
-                    closestCooldownTime = totalCooldownRemaining
-                    closestCooldownAction = data
-                end
-            elseif itemCount > 0 then
+            if totalCooldownRemaining <= 0 and itemCount > 0 then
                 bestAction = bestAction or data
+            elseif itemCount > 0 and totalCooldownRemaining < closestCooldownTime then
+                closestCooldownTime = totalCooldownRemaining
+                closestCooldownAction = data
             end
         end
 
@@ -314,6 +313,7 @@ local function renderSlotOnWidget(widget, slotData, isMainButton)
     end
 
     setupButtonTooltip(widget, false)
+    applyServerExhaust(widget)
 end
 
 function updateMultiButtonState(button)

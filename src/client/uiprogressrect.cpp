@@ -31,11 +31,17 @@
 namespace
 {
     constexpr int PROGRESS_UPDATE_INTERVAL = 100; // milliseconds
+    constexpr int FLASH_UPDATE_INTERVAL = 30; // milliseconds
+    constexpr float PIE_STEP_PERCENT = 2.5f; // one triangle per 9 degrees at most
 }
 
 UIProgressRect::~UIProgressRect()
 {
     stop();
+    if (m_flashEvent) {
+        m_flashEvent->cancel();
+        m_flashEvent = nullptr;
+    }
 }
 
 void UIProgressRect::drawSelf(const DrawPoolType drawPane)
@@ -47,7 +53,13 @@ void UIProgressRect::drawSelf(const DrawPoolType drawPane)
     // todo: add smooth
     const auto& drawRect = getPaddingRect();
 
-    if (m_showProgress) {
+    if (m_showProgress && m_round) {
+        // the dark part is what is left (reversed: what is done)
+        if (m_percentReverse)
+            drawPie(0.f, m_percent, m_backgroundColor);
+        else
+            drawPie(m_percent, 100.f, m_backgroundColor);
+    } else if (m_showProgress) {
         if (m_percentReverse) {
             // Sector 1: 0% - 12.5% (12.5)
             if (m_percent >= 12.5) {
@@ -126,10 +138,77 @@ void UIProgressRect::drawSelf(const DrawPoolType drawPane)
         }
     }
 
+    if (m_flashDuration > 0) {
+        const auto elapsed = g_clock.millis() - m_flashStart;
+        if (elapsed < static_cast<ticks_t>(m_flashDuration)) {
+            const Color color(m_flashColor, m_flashColor.aF() * (1.f - static_cast<float>(elapsed) / m_flashDuration));
+            if (m_round)
+                drawPie(0.f, 100.f, color);
+            else
+                g_drawPool.addFilledRect(drawRect, color);
+        }
+    }
+
     drawImage(m_rect);
     drawBorder(m_rect);
     drawIcon(m_rect);
     drawText(m_rect);
+}
+
+// A clockwise slice of the circle that fits the padding rect, 0% at the top
+void UIProgressRect::drawPie(const float fromPercent, const float toPercent, const Color& color) const
+{
+    if (toPercent <= fromPercent)
+        return;
+
+    const auto& rect = getPaddingRect();
+    const float cx = rect.left() + rect.width() / 2.f;
+    const float cy = rect.top() + rect.height() / 2.f;
+    const float radius = std::min(rect.width(), rect.height()) / 2.f;
+    const auto pointAt = [&](const float percent) {
+        const float angle = percent * 2.f * Fw::pi / 100.f;
+        return Point(std::lround(cx + radius * std::sin(angle)), std::lround(cy - radius * std::cos(angle)));
+    };
+
+    const Point center(std::lround(cx), std::lround(cy));
+    const int steps = std::max<int>(1, std::ceil((toPercent - fromPercent) / PIE_STEP_PERCENT));
+    Point previous = pointAt(fromPercent);
+    for (int i = 1; i <= steps; ++i) {
+        const Point next = pointAt(fromPercent + (toPercent - fromPercent) * i / steps);
+        g_drawPool.addFilledTriangle(center, previous, next, color);
+        previous = next;
+    }
+}
+
+void UIProgressRect::setRound(const bool round)
+{
+    if (m_round == round)
+        return;
+
+    m_round = round;
+    repaint();
+}
+
+void UIProgressRect::flash(const uint32_t duration)
+{
+    m_flashStart = g_clock.millis();
+    m_flashDuration = duration;
+    if (!m_flashEvent)
+        scheduleFlashRepaint();
+    repaint();
+}
+
+void UIProgressRect::scheduleFlashRepaint()
+{
+    auto self = static_self_cast<UIProgressRect>();
+    m_flashEvent = g_dispatcher.scheduleEvent([self] {
+        self->m_flashEvent = nullptr;
+        self->repaint();
+        if (g_clock.millis() - self->m_flashStart < static_cast<ticks_t>(self->m_flashDuration))
+            self->scheduleFlashRepaint();
+        else
+            self->m_flashDuration = 0;
+    }, FLASH_UPDATE_INTERVAL);
 }
 
 void UIProgressRect::setPercent(float percent)
@@ -239,6 +318,10 @@ void UIProgressRect::onStyleApply(const std::string_view styleName, const OTMLNo
             showProgress(node->value<bool>());
         else if (node->tag() == "percent-reverse")
             setPercentReverse(node->value<bool>());
+        else if (node->tag() == "round")
+            setRound(node->value<bool>());
+        else if (node->tag() == "flash-color")
+            setFlashColor(node->value<Color>());
     }
 }
 

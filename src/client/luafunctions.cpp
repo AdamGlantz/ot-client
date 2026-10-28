@@ -1285,6 +1285,10 @@ void Client::registerLuaFunctions()
     g_lua.bindClassMemberFunction<UIProgressRect>("getDuration", &UIProgressRect::getDuration);
     g_lua.bindClassMemberFunction<UIProgressRect>("setPercentReverse", &UIProgressRect::setPercentReverse);
     g_lua.bindClassMemberFunction<UIProgressRect>("isPercentReverse", &UIProgressRect::isPercentReverse);
+    g_lua.bindClassMemberFunction<UIProgressRect>("setRound", &UIProgressRect::setRound);
+    g_lua.bindClassMemberFunction<UIProgressRect>("isRound", &UIProgressRect::isRound);
+    g_lua.bindClassMemberFunction<UIProgressRect>("flash", &UIProgressRect::flash);
+    g_lua.bindClassMemberFunction<UIProgressRect>("setFlashColor", &UIProgressRect::setFlashColor);
 
     g_lua.registerClass<UIGraph, UIWidget>();
     g_lua.bindClassStaticFunction<UIGraph>("create", [] { return std::make_shared<UIGraph>(); });

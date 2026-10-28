@@ -82,6 +82,7 @@ SideActionButton < UIButton
     font: verdana-11px-rounded
     color: white
     border-color: #9fa0a0
+    flash-color: $ot-ready-flash
   Panel
     id: activeSpell
     anchors.fill: parent

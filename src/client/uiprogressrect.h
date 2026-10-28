@@ -47,6 +47,16 @@ public:
     void setPercentReverse(bool percentReverse);
     bool isPercentReverse() const { return m_percentReverse; }
 
+    // Round: the progress is a pie in the circle that fits the widget (round
+    // slots), not the whole rect
+    void setRound(bool round);
+    bool isRound() const { return m_round; }
+
+    // Fills the shape with the flash colour and fades it out over `duration`
+    // ms (a cooldown that is over)
+    void flash(uint32_t duration);
+    void setFlashColor(const Color& color) { m_flashColor = color; }
+
 protected:
     void onStyleApply(std::string_view styleName, const OTMLNodePtr& styleNode) override;
 
@@ -54,6 +64,8 @@ private:
     void scheduleNextUpdate();
     void updateProgress();
     void updateProgressText(uint32_t remainingTimeMs);
+    void drawPie(float fromPercent, float toPercent, const Color& color) const;
+    void scheduleFlashRepaint();
 
     float m_percent{ 0 };
     ScheduledEventPtr m_updateEvent{ nullptr };
@@ -64,4 +76,10 @@ private:
     bool m_showProgress{ true };
     bool m_running{ false };
     bool m_percentReverse{ false };
+    bool m_round{ false };
+
+    Color m_flashColor{ Color::white };
+    ScheduledEventPtr m_flashEvent{ nullptr };
+    ticks_t m_flashStart{ 0 };
+    uint32_t m_flashDuration{ 0 };
 };

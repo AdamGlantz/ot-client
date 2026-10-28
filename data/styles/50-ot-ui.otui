@@ -17,6 +17,8 @@
 &ot-gold: #e0b84c
 &ot-gold-dark: #8a6a20
 &ot-gold-text: #2a1e04
+// A hotbar slot that is ready again (its cooldown just ended) flashes gold
+&ot-ready-flash: #e0b84c99
 &ot-danger-text: #ffffff
 &ot-positive: #70d070
 &ot-negative: #e05050

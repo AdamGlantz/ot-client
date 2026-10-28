@@ -345,11 +345,13 @@ function ActionBarController:onInit()
     mouseGrabberWidget:setVisible(false)
     mouseGrabberWidget:setFocusable(false)
     mouseGrabberWidget.onMouseRelease = onDropActionButton
+    registerServerExhaust()
 end
 
 --- Handles termination event
 function ActionBarController:onTerminate()
     ApiJson.saveData()
+    unregisterServerExhaust()
     cleanupMultiActionState()
     terminateTargetActions()
     for _, actionbar in pairs(actionBars) do
@@ -436,6 +438,7 @@ function ActionBarController:onGameEnd()
     isLoaded = false
     cleanupMultiActionState()
     spellGroupCooldownCache = {}
+    resetServerExhaust()
     for _, actionbar in pairs(activeActionBars) do
         unbindActionBarEvent(actionbar)
     end

@@ -433,6 +433,11 @@ local function makeRound(button)
         item:addAnchor(AnchorVerticalCenter, 'parent', AnchorVerticalCenter)
         item:setSize({ width = 34, height = 34 })
     end
+    -- Cooldowns sweep inside the circle
+    local cooldown = button.cooldown or button:getChildById('cooldown')
+    if cooldown then
+        cooldown:setRound(true)
+    end
 end
 
 local PRESET_ROW_HEIGHT = 40
