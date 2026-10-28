@@ -25,6 +25,8 @@ local TABS = {
     { id = 'skills', icon = 'skills', tooltip = 'Skills', panel = 'right', ids = { 'skillWindow' } },
     { id = 'battle', icon = 'battle', tooltip = 'Battle', panel = 'right', prefixes = { 'battleWindow' } },
     { id = 'vip', icon = 'vip', tooltip = 'VIP', panel = 'right', ids = { 'vipWindow' } },
+    -- the hunt analyzer (client_hunt)
+    { id = 'hunt', icon = 'hunt', tooltip = 'Hunt analyzer', panel = 'right', ids = { 'huntAnalyzer' } },
     -- the containers window (client_containers)
     { id = 'bag', icon = 'containers', tooltip = 'Containers', action = function()
         if modules.client_containers and modules.client_containers.toggle then
@@ -293,6 +295,10 @@ function selectTab(id)
     -- Tapping the open panel's button closes it
     currentTab = currentTab ~= id and id or nil
     applyTab()
+    -- (a panel opens over the console; the chat button stays on top)
+    if chatVisible and chatButton then
+        chatButton:raise()
+    end
 end
 
 -- Unread badge on the chat button: what players, NPCs and channels say
@@ -324,7 +330,20 @@ local function updateChatBadge()
     badge:setImageColor(unreadPrivate and '#9b3fd6' or '#d23030')
 end
 
+-- The console raises itself when a message arrives or is sent; the chat
+-- button sits over it and has to stay on top (it closes the chat)
+local function keepChatButtonOnTop()
+    if chatVisible and chatButton then
+        addEvent(function()
+            if chatButton then
+                chatButton:raise()
+            end
+        end)
+    end
+end
+
 local function onTalk(name, level, mode)
+    keepChatButtonOnTop()
     if chatVisible or not COUNTED_MODES[mode] then
         return
     end
@@ -358,8 +377,19 @@ local function setChatVisible(visible)
         end
     end
     if visible then
-        gameInterface().getBottomPanel():raise()
+        local console = gameInterface().getBottomPanel()
+        console:raise()
         chatButton:raise()
+        -- a window raises itself when it takes the focus (a tap in the
+        -- chat): the chat button goes back on top
+        if not console.mobileKeepsChatButton then
+            console.mobileKeepsChatButton = true
+            connect(console, { onFocusChange = function(widget, focused)
+                if focused then
+                    keepChatButtonOnTop()
+                end
+            end })
+        end
     end
 end
 

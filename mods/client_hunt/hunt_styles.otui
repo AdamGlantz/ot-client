@@ -1,0 +1,171 @@
+// Hunt analyzer (hunt.lua), from the ot-ui styles
+// A label and a value on one line
+HuntRow < UIWidget
+  height: 18
+
+  Label
+    id: label
+    anchors.left: parent.left
+    anchors.verticalCenter: parent.verticalCenter
+    font: $ot-font-text
+    color: $ot-text-muted
+    text-auto-resize: true
+
+  Label
+    id: value
+    anchors.right: parent.right
+    anchors.verticalCenter: parent.verticalCenter
+    font: $ot-font-label
+    color: $ot-text
+    text-auto-resize: true
+
+HuntSmallButton < OtButton
+  height: 24
+  font: $ot-font-text
+
+// The full report
+HuntReport < OtBackdrop
+  OtPanel
+    id: panel
+    anchors.centerIn: parent
+    size: 440 360
+
+    OtTitle
+      id: title
+      anchors.top: parent.top
+      anchors.left: parent.left
+
+    OtIconButton
+      id: close
+      anchors.top: parent.top
+      anchors.right: parent.right
+      size: 36 30
+      !text: 'X'
+
+    OtTabRow
+      id: tabs
+      anchors.top: close.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+      margin-top: 6
+
+    OtLabel
+      id: summary
+      anchors.top: tabs.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+      margin-top: 8
+      text-auto-resize: true
+
+    OtCheck
+      id: onlyLooted
+      anchors.top: tabs.bottom
+      anchors.right: parent.right
+      margin-top: -4
+      visible: false
+
+    OtHint
+      id: onlyLootedText
+      anchors.verticalCenter: onlyLooted.verticalCenter
+      anchors.right: onlyLooted.left
+      !text: tr('Only looted')
+      visible: false
+
+    OtInset
+      id: listFrame
+      anchors.top: summary.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+      anchors.bottom: parent.bottom
+      margin-top: 6
+
+      ScrollablePanel
+        id: list
+        anchors.fill: parent
+        margin-right: 14
+        vertical-scrollbar: listScroll
+        layout: verticalBox
+
+      VerticalScrollBar
+        id: listScroll
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.right: parent.right
+        step: 24
+        pixels-scroll: true
+
+// One line of the report: name, count and value; tap to set a price
+HuntReportRow < UIWidget
+  height: 26
+  phantom: false
+  focusable: false
+
+  UIItem
+    id: item
+    anchors.left: parent.left
+    anchors.verticalCenter: parent.verticalCenter
+    size: 22 22
+    virtual: true
+    phantom: true
+
+  Label
+    id: name
+    anchors.left: item.right
+    anchors.right: count.left
+    anchors.verticalCenter: parent.verticalCenter
+    margin-left: 4
+    font: $ot-font-label
+    color: $ot-text
+    text-auto-resize: false
+
+  Label
+    id: count
+    anchors.right: value.left
+    anchors.verticalCenter: parent.verticalCenter
+    margin-right: 8
+    font: $ot-font-label
+    color: $ot-text-strong
+    text-auto-resize: true
+
+  Label
+    id: value
+    anchors.right: parent.right
+    anchors.verticalCenter: parent.verticalCenter
+    width: 90
+    font: $ot-font-text
+    color: $ot-text-muted
+    text-align: right
+
+  UIWidget
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.bottom: parent.bottom
+    height: 1
+    background-color: #ffffff14
+
+// Setting one item's price, under its row
+HuntPriceRow < UIWidget
+  height: 44
+
+  TextEdit
+    id: price
+    anchors.left: parent.left
+    anchors.verticalCenter: parent.verticalCenter
+    size: 110 32
+    margin-left: 26
+
+  OtButton
+    id: set
+    anchors.left: price.right
+    anchors.verticalCenter: parent.verticalCenter
+    margin-left: 6
+    width: 70
+    !text: tr('Set')
+
+  OtButton
+    id: default
+    anchors.left: set.right
+    anchors.verticalCenter: parent.verticalCenter
+    margin-left: 6
+    width: 80
+    !text: tr('Default')

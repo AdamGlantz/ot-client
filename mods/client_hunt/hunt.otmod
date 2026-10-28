@@ -1,0 +1,8 @@
+Module
+  name: client_hunt
+  description: Hunt analyzer: kills, experience, loot, supplies and profit per hunt (ot-client#29; prices from server extended opcode 105)
+  author: ot-client
+  sandboxed: true
+  scripts: [ tracker, hunt ]
+  @onLoad: init()
+  @onUnload: terminate()

@@ -214,7 +214,7 @@ MobileSetupSheet < OtBackdrop
       anchors.right: parent.right
       margin-top: 12
       // (the wrapped lines run a little past the width otherwise)
-      margin-right: 14
+      margin-right: 26
 
     OtButton
       id: skip

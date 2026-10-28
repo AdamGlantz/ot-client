@@ -1,0 +1,69 @@
+// The hunt analyzer's compact panel (hunt.lua); its styles are in
+// hunt_styles.otui
+// The compact panel: a side panel window (desktop), or a toolbar panel
+// on touch screens (client_mobile)
+MiniWindow
+  id: huntAnalyzer
+  height: 260
+  &save: true
+
+  Label
+    id: miniwindowTitle
+    anchors.top: miniwindowHeader.top
+    anchors.left: miniwindowHeader.left
+    anchors.right: miniwindowHeader.right
+    margin-top: 2
+    margin-left: 6
+    margin-right: 50
+    font: verdana-11px-monochrome
+    height: 13
+    !text: tr('Hunt Analyzer')
+    color: #9d9d9dff
+
+  MiniWindowContents
+    padding: 4
+    layout: verticalBox
+
+    UIWidget
+      id: rows
+      layout:
+        type: verticalBox
+        fit-children: true
+
+    UIWidget
+      id: buttons
+      height: 26
+      margin-top: 4
+      layout:
+        type: grid
+        cell-size: 56 24
+        cell-spacing: 3
+        num-columns: 3
+
+      HuntSmallButton
+        id: pause
+        !text: tr('Pause')
+
+      HuntSmallButton
+        id: reset
+        !text: tr('Reset')
+
+      OtButtonPrimary
+        id: report
+        height: 24
+        font: $ot-font-text
+        !text: tr('Report')
+
+    Label
+      id: topTitle
+      margin-top: 4
+      font: $ot-font-text
+      color: $ot-gold
+      !text: tr('TOP LOOT')
+
+    UIWidget
+      id: topLoot
+      layout:
+        type: verticalBox
+        fit-children: true
+
