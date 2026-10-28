@@ -351,6 +351,23 @@ openMenu = function(item, tab)
     addEvent(function()
         if menu then
             placeNear(panel, g_window.getMousePosition())
+            -- what the item is and who buys it (client_itemdata), above the
+            -- menu, or below it when there is no room
+            local itemData = modules.client_itemdata
+            if item and itemData and itemData.isReady() then
+                local card = g_ui.createWidget('ItemCard', menu)
+                local fluid = item:isFluidContainer() and item:getSubType() > 0 and item:getSubType() or nil
+                if itemData.fillCard(card, item:getId(), fluid) then
+                    card:setWidth(panel:getWidth())
+                    local y = panel:getY() - card:getHeight() - 4
+                    if y < 4 then
+                        y = panel:getY() + panel:getHeight() + 4
+                    end
+                    card:setPosition({ x = panel:getX(), y = y })
+                else
+                    card:destroy()
+                end
+            end
         end
     end)
 end

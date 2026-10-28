@@ -113,6 +113,7 @@ private:
     static EM_BOOL onWebSocketClose(int eventType, const EmscriptenWebSocketCloseEvent* event, void* userData);
 
     void completeFetch(FetchContext* context, emscripten_fetch_t* fetch, std::string error);
+    void startFetch(std::unique_ptr<FetchContext> context, emscripten_fetch_attr_t attr, const std::string& url);
     void cleanupWebSocket(WebSocketContext* context, const std::string& closeMessage, bool dispatchClose);
 #else
     std::string describeHttpError(const ix::HttpResponsePtr& response, bool canceled);

@@ -15,5 +15,7 @@
 !/client_commands/**
 !/client_containers/
 !/client_containers/**
+!/client_itemdata/
+!/client_itemdata/**
 !/client_hunt/
 !/client_hunt/**

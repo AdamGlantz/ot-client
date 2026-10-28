@@ -1,0 +1,8 @@
+Module
+  name: client_itemdata
+  description: Item data from the website (stats, NPC buyers and sellers, drops), downloaded when its version changes (ot-client#31)
+  author: ot-client
+  sandboxed: true
+  scripts: [ itemdata ]
+  @onLoad: init()
+  @onUnload: terminate()

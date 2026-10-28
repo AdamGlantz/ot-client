@@ -23,6 +23,8 @@ const ICONS = {
     stand: 'delapouite/person', chase: 'lorc/run', secure: 'lorc/dove',
     // UI setup (setup.lua)
     check: 'delapouite/check-mark', hunt: 'lorc/hunting-horn',
+    // item card (client_itemdata)
+    coins: 'delapouite/two-coins', drops: 'lorc/skull-crossed-bones',
 };
 // Hotbar special actions (modules/game_actionbar, by id): a glyph, and a
 // small badge in the bottom right corner for the variant (nearest, lowest

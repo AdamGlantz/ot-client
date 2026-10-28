@@ -1,0 +1,71 @@
+// The item card (itemdata.lua): what an item is, who buys and sells it and
+// what drops it. On hover (desktop) and above the item menu (touch).
+ItemCardLine < UIWidget
+  height: 18
+
+  UIWidget
+    id: icon
+    anchors.left: parent.left
+    anchors.verticalCenter: parent.verticalCenter
+    size: 14 14
+    phantom: true
+
+  Label
+    id: text
+    anchors.left: icon.right
+    anchors.right: parent.right
+    anchors.verticalCenter: parent.verticalCenter
+    margin-left: 6
+    font: $ot-font-text
+    color: $ot-text
+    text-auto-resize: false
+    phantom: true
+
+ItemCard < OtPanel
+  width: 230
+  padding: 8
+  phantom: true
+  focusable: false
+
+  UIItem
+    id: item
+    anchors.top: parent.top
+    anchors.left: parent.left
+    size: 34 34
+    virtual: true
+    phantom: true
+
+  Label
+    id: name
+    anchors.top: parent.top
+    anchors.left: item.right
+    anchors.right: parent.right
+    margin-left: 8
+    margin-top: 1
+    font: $ot-font-label
+    color: $ot-gold
+    text-align: right
+    phantom: true
+
+  Label
+    id: weight
+    anchors.top: name.bottom
+    anchors.left: item.right
+    anchors.right: parent.right
+    margin-left: 8
+    margin-top: 2
+    font: $ot-font-text
+    color: $ot-text-muted
+    text-align: right
+    phantom: true
+
+  UIWidget
+    id: lines
+    anchors.top: item.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-top: 6
+    phantom: true
+    layout:
+      type: verticalBox
+      fit-children: true

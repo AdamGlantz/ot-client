@@ -9,14 +9,12 @@
 --   supplies    rune charges and fluids used up in carried containers, and
 --               ammunition used from the ammo slot (not moves: an item that
 --               turns up elsewhere in the player's containers soon after)
--- Prices come from the server (opcode 105: what NPCs pay and ask) and the
--- player's own prices.
+-- Prices come from the item data (client_itemdata: what NPCs pay and ask)
+-- and the player's own prices.
 
-local PRICES_OPCODE = 105
 local CUSTOM_PRICES = 'client_hunt_prices'
 local MOVE_WINDOW = 1500 -- ms in which a removal and an addition are one move
 
-prices = { items = {}, byName = {}, fluids = {} }
 session = nil
 
 local pendingFromGround = {} -- items taken from a corpse, not yet arrived
@@ -52,69 +50,71 @@ function hasCustomPrice(key)
     return customPrices()[key] ~= nil
 end
 
--- What one is worth: the player's price, else what an NPC pays (loot) or
--- asks (supplies)
+local function itemData()
+    return modules.client_itemdata
+end
+
+-- The id and the fluid of a key ("2874:10")
+local function splitKey(key)
+    local id, fluid = key:match('^(%d+):(%d+)$')
+    if id then
+        return tonumber(id), tonumber(fluid)
+    end
+    return tonumber(key), nil
+end
+
+-- What one is worth: the player's price, else the most an NPC pays (loot)
+-- or the least one asks (supplies)
 function itemPrice(key, supply)
     local custom = customPrices()[key]
     if custom then
         return tonumber(custom) or 0
     end
-    local entry = prices.items[key] or prices.fluids[key]
+    local lib = itemData()
+    local id, fluid = splitKey(key)
+    if not lib or not id then
+        return 0
+    end
+    local entry = fluid and lib.getFluid(id, fluid) or lib.getItem(id)
     if not entry then
         return 0
     end
-    return (supply and entry.buy > 0 and entry.buy) or entry.sell
-end
-
-function itemName(key)
-    local entry = prices.items[key]
-    if entry then
-        return entry.name
-    end
-    local id = tonumber(key:match('^(%d+)'))
-    local base = id and prices.items[tostring(id)]
-    if base then
-        return base.name .. ' (' .. (FLUID_NAMES[tonumber(key:match(':(%d+)'))] or tr('fluid')) .. ')'
-    end
-    return key:match('^name:(.+)') or tr('item %s', key)
+    local best = supply and entry.buy and entry.buy[1] or entry.sell and entry.sell[1]
+    return best and best[2] or 0
 end
 
 FLUID_NAMES = { [1] = 'water', [2] = 'blood', [3] = 'beer', [4] = 'slime', [5] = 'lemonade', [6] = 'milk',
     [7] = 'manafluid', [10] = 'manafluid', [11] = 'lifefluid', [13] = 'urine', [15] = 'wine', [19] = 'mud',
     [21] = 'oil', [26] = 'rum', [27] = 'fruit juice', [28] = 'coconut milk' }
 
-local function onPrices(protocol, opcode, buffer)
-    local ok, data = pcall(json.decode, buffer)
-    if not ok or type(data) ~= 'table' then
+function itemName(key)
+    local name = key:match('^name:(.+)')
+    if name then
+        return name
+    end
+    local id, fluid = splitKey(key)
+    local entry = id and itemData() and itemData().getItem(id)
+    if not entry then
+        return tr('item %s', key)
+    end
+    if fluid then
+        return entry.n .. ' (' .. (FLUID_NAMES[fluid] or tr('fluid')) .. ')'
+    end
+    return entry.n
+end
+
+-- Loot counted by name before the item data arrived
+local function resolveNames()
+    if not session or not itemData() then
         return
     end
-    -- in parts (the protocol's strings are short): the first starts over
-    if data.part == 1 then
-        prices = { items = {}, byName = {}, fluids = {} }
-    end
-    for _, entry in ipairs(data.items or {}) do
-        local key = tostring(entry[1])
-        prices.items[key] = { name = entry[2], plural = entry[3], sell = entry[4] or 0, buy = entry[5] or 0 }
-        prices.byName[entry[2]:lower()] = key
-        if entry[3] and entry[3] ~= '' then
-            prices.byName[entry[3]:lower()] = key
-        end
-    end
-    for key, pair in pairs(data.fluids or {}) do
-        prices.fluids[key] = { sell = pair[1] or 0, buy = pair[2] or 0 }
-    end
-    if not data.last then
-        return
-    end
-    -- loot counted by name before the prices arrived
-    if session then
-        for _, map in ipairs({ session.dropped, session.looted }) do
-            for key, count in pairs(map) do
-                local name = key:match('^name:(.+)')
-                if name and prices.byName[name] then
-                    map[key] = nil
-                    add(map, prices.byName[name], count)
-                end
+    for _, map in ipairs({ session.dropped, session.looted }) do
+        for key, count in pairs(map) do
+            local name = key:match('^name:(.+)')
+            local id = name and itemData().findByName(name)
+            if id then
+                map[key] = nil
+                add(map, tostring(id), count)
             end
         end
     end
@@ -225,13 +225,11 @@ end
 local function parseLootItem(text)
     local count, name = text:match('^(%d+) (.+)$')
     if not count then
-        name = text:match('^an? (.+)$') or text
+        name = text
         count = 1
     end
-    name = name:lower()
-    -- (not every item has its plural written down: "worms")
-    local key = prices.byName[name] or prices.byName[name:gsub('es$', '')] or prices.byName[name:gsub('s$', '')]
-    return key or ('name:' .. name), tonumber(count)
+    local id = itemData() and itemData().findByName(name)
+    return id and tostring(id) or ('name:' .. name:lower():gsub('^an? ', '')), tonumber(count)
 end
 
 local function onTextMessage(mode, text)
@@ -446,14 +444,15 @@ function trackerGameEnd()
 end
 
 function initTracker()
-    ProtocolGame.registerExtendedOpcode(PRICES_OPCODE, onPrices)
+    if itemData() then
+        itemData().onReady(resolveNames)
+    end
     connect(LocalPlayer, { onExperienceChange = onExperienceChange, onInventoryChange = onInventoryChange })
     connect(g_game, { onTextMessage = onTextMessage })
     connect(Container, { onAddItem = onAddItem, onRemoveItem = onRemoveItem, onUpdateItem = onUpdateItem })
 end
 
 function terminateTracker()
-    ProtocolGame.unregisterExtendedOpcode(PRICES_OPCODE)
     disconnect(LocalPlayer, { onExperienceChange = onExperienceChange, onInventoryChange = onInventoryChange })
     disconnect(g_game, { onTextMessage = onTextMessage })
     disconnect(Container, { onAddItem = onAddItem, onRemoveItem = onRemoveItem, onUpdateItem = onUpdateItem })

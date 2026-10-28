@@ -22,6 +22,7 @@
 
 #include "protocolhttp.h"
 
+#include "framework/core/asyncdispatcher.h"
 #include "framework/core/eventdispatcher.h"
 #include "framework/util/crypt.h"
 
@@ -206,6 +207,28 @@ void Http::onFetchProgress(emscripten_fetch_t* fetch)
     });
 }
 
+// The game runs on a worker thread (PROXY_TO_PTHREAD) that never returns to
+// the browser's event loop, so an asynchronous fetch would never report
+// back. Like the HTTP login, each request is a synchronous fetch on a
+// background thread, and its result goes to the dispatcher as before.
+void Http::startFetch(std::unique_ptr<FetchContext> context, emscripten_fetch_attr_t attr, const std::string& url)
+{
+    attr.attributes |= EMSCRIPTEN_FETCH_SYNCHRONOUS;
+    attr.onsuccess = nullptr;
+    attr.onerror = nullptr;
+    attr.onprogress = nullptr;
+    auto* rawContext = context.release();
+    g_asyncDispatcher->detach_task([this, rawContext, attr, url]() mutable {
+        attr.requestHeaders = rawContext->headerPointers.data();
+        if (!rawContext->body.empty()) {
+            attr.requestData = rawContext->body.data();
+            attr.requestDataSize = rawContext->body.size();
+        }
+        emscripten_fetch_t* fetch = emscripten_fetch(&attr, url.c_str());
+        completeFetch(rawContext, fetch, fetch ? "" : "http_error::queue");
+    });
+}
+
 void Http::completeFetch(FetchContext* rawContext, emscripten_fetch_t* fetch, std::string error)
 {
     std::unique_ptr<FetchContext> context(rawContext);
@@ -313,11 +336,7 @@ int Http::get(const std::string& url, int timeout)
     attr.onerror = &Http::onFetchError;
     attr.onprogress = &Http::onFetchProgress;
 
-    if (!emscripten_fetch(&attr, url.c_str())) {
-        completeFetch(context.release(), nullptr, "http_error::queue");
-    } else {
-        context.release();
-    }
+    startFetch(std::move(context), attr, url);
 
     return operationId;
 }
@@ -372,11 +391,7 @@ int Http::post(const std::string& url, const std::string& data, int timeout, boo
     attr.onerror = &Http::onFetchError;
     attr.onprogress = &Http::onFetchProgress;
 
-    if (!emscripten_fetch(&attr, url.c_str())) {
-        completeFetch(context.release(), nullptr, "http_error::queue");
-    } else {
-        context.release();
-    }
+    startFetch(std::move(context), attr, url);
 
     return operationId;
 }
@@ -421,11 +436,7 @@ int Http::download(const std::string& url, const std::string& path, int timeout)
     attr.onerror = &Http::onFetchError;
     attr.onprogress = &Http::onFetchProgress;
 
-    if (!emscripten_fetch(&attr, url.c_str())) {
-        completeFetch(context.release(), nullptr, "http_error::queue");
-    } else {
-        context.release();
-    }
+    startFetch(std::move(context), attr, url);
 
     return operationId;
 }
