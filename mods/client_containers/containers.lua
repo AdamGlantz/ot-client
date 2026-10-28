@@ -307,6 +307,11 @@ openMenu = function(item, tab)
     if item then
         local count = item:getCount() > 1 and (' x' .. item:getCount()) or ''
         local name = item.getName and item:getName() or ''
+        -- (7.92 items have no names in the client: from the item data)
+        local entry = name == '' and modules.client_itemdata and modules.client_itemdata.getItem(item:getId())
+        if entry then
+            name = entry.n:gsub('^%l', string.upper)
+        end
         panel:getChildById('title'):setText((name ~= '' and name or tr('Item')) .. count)
         addMenuButton(rows, 'Look', function() g_game.look(item) end)
         if item:isContainer() then
@@ -358,12 +363,22 @@ openMenu = function(item, tab)
                 local card = g_ui.createWidget('ItemCard', menu)
                 local fluid = item:isFluidContainer() and item:getSubType() > 0 and item:getSubType() or nil
                 if itemData.fillCard(card, item:getId(), fluid) then
+                    -- above the menu, below it, or beside it: wherever it fits
+                    local screen = rootWidget:getRect()
+                    local x, y = panel:getX(), panel:getY() - card:getHeight() - 4
                     card:setWidth(panel:getWidth())
-                    local y = panel:getY() - card:getHeight() - 4
                     if y < 4 then
                         y = panel:getY() + panel:getHeight() + 4
                     end
-                    card:setPosition({ x = panel:getX(), y = y })
+                    if y + card:getHeight() > screen.height - 4 then
+                        card:setWidth(230)
+                        y = math.max(4, math.min(panel:getY(), screen.height - card:getHeight() - 4))
+                        x = panel:getX() + panel:getWidth() + 4
+                        if x + card:getWidth() > screen.width - 4 then
+                            x = panel:getX() - card:getWidth() - 4
+                        end
+                    end
+                    card:setPosition({ x = math.max(4, x), y = y })
                 else
                     card:destroy()
                 end

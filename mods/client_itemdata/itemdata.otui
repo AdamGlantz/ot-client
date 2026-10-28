@@ -6,19 +6,23 @@ ItemCardLine < UIWidget
   UIWidget
     id: icon
     anchors.left: parent.left
-    anchors.verticalCenter: parent.verticalCenter
+    anchors.top: parent.top
+    margin-top: 2
     size: 14 14
     phantom: true
 
+  // (wraps: "Sell to" can list several NPCs)
   Label
     id: text
     anchors.left: icon.right
     anchors.right: parent.right
-    anchors.verticalCenter: parent.verticalCenter
+    anchors.top: parent.top
     margin-left: 6
+    margin-right: 10
     font: $ot-font-text
     color: $ot-text
-    text-auto-resize: false
+    text-wrap: true
+    text-auto-resize: true
     phantom: true
 
 ItemCard < OtPanel

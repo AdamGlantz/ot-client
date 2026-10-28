@@ -205,7 +205,21 @@ function fillCard(card, id, fluid)
             return name .. ' (' .. percent .. '%)'
         end, 3)), '#a8a8a8')
     end
-    card:setHeight(8 + 34 + 6 + #card.lines:getChildren() * 18 + 8)
+    -- the lines wrap at the card's width: their height once laid out
+    local function fitHeight()
+        local height = 0
+        for _, row in ipairs(card.lines:getChildren()) do
+            row:setHeight(math.max(18, row.text:getHeight() + 2))
+            height = height + row:getHeight()
+        end
+        card:setHeight(8 + 34 + 6 + height + 8)
+    end
+    fitHeight()
+    addEvent(function()
+        if not card:isDestroyed() then
+            fitHeight()
+        end
+    end)
     return true
 end
 

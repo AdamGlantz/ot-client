@@ -79,6 +79,9 @@ function itemPrice(key, supply)
     if not entry then
         return 0
     end
+    if entry.v then
+        return entry.v
+    end
     local best = supply and entry.buy and entry.buy[1] or entry.sell and entry.sell[1]
     return best and best[2] or 0
 end
@@ -169,9 +172,18 @@ function pauseSession()
     end
 end
 
+local saveSession
+local lastSave = 0
+
 local function changed()
     if onTrackerChange then
         onTrackerChange()
+    end
+    -- saved as it goes (a phone browser may close the tab without logging
+    -- out), at most every 10 seconds
+    if saveSession and g_clock.seconds() - lastSave >= 10 then
+        lastSave = g_clock.seconds()
+        saveSession()
     end
 end
 
@@ -394,7 +406,7 @@ end
 -- Kept per character across logins
 local SESSION_SETTING = 'client_hunt_session'
 
-local function saveSession()
+saveSession = function()
     local name = g_game.getCharacterName()
     if not session or not name or name == '' then
         return
@@ -407,7 +419,9 @@ local function saveSession()
     copy.elapsed = sessionSeconds()
     copy.stretchStart = nil
     if copy.state == 'tracking' then
+        -- (carries on after the next login)
         copy.state = 'paused'
+        copy.resumeOnLogin = true
     end
     all[name] = copy
     g_settings.setNode(SESSION_SETTING, all)
